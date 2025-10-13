@@ -1,3 +1,5 @@
+<!-- badges:start -->\n[![Badges Keeper](https://github.com/StegVerse/hybrid-collab-bridge/actions/workflows/docs-badge-sync.yml/badge.svg)](https://github.com/StegVerse/hybrid-collab-bridge/actions/workflows/docs-badge-sync.yml)\n<!-- badges:end -->
+
 # hybrid-collab-bridge
 
 A **stand-alone hybrid bridge**: API orchestration + human-coordination traces.

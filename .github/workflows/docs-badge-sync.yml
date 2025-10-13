@@ -1,0 +1,35 @@
+name: docs-badge-sync
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ "main" ]
+    paths:
+      - "README.md"
+      - "scripts/ensure_readme_badges.py"
+      - ".github/workflows/*.yml"
+      - ".github/workflows/*.yaml"
+  schedule:
+    - cron: "11 7 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  normalize-badges:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure README badges
+        run: |
+          python3 scripts/ensure_readme_badges.py
+      - name: Commit if changed
+        run: |
+          set -e
+          git config user.name  "StegVerse Bot"
+          git config user.email "bot@stegverse.org"
+          git add README.md || true
+          if ! git diff --cached --quiet; then
+            git commit -m "docs(readme): normalize badges block"
+            git push
+          else
+            echo "No changes to commit."
