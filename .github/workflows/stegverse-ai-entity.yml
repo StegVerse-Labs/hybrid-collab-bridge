@@ -2,7 +2,7 @@ name: StegVerse AI Entity (Bridge)
 
 on:
   # Visible "Run workflow" button (works in mobile UI)
-  workflow_dispatch:
+  workflow_dispatch: {}
     inputs:
       target_repo:
         description: "Full repo name (e.g. StegVerse/StegCore). Leave blank to just test entity."
