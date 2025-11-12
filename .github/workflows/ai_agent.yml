@@ -1,0 +1,128 @@
+name: StegVerse AI Entity (ChatGPT)
+
+on:
+  # Auto-review PRs
+  pull_request:
+    types: [opened, reopened, synchronize]
+  # Manual trigger for custom tasks
+  workflow_dispatch:
+    inputs:
+      instructions:
+        description: "Optional extra instructions for the StegVerse AI entity"
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  ai_entity:
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ secrets.STEGVERSE_AI_ENTITY_TOKEN }}
+      REPO: ${{ github.repository }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare diff context
+        id: prep
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            git diff --unified=3 "$BASE_SHA" "$HEAD_SHA" > pr.diff || true
+          else
+            echo "" > pr.diff
+          fi
+
+      - name: Call ChatGPT via GitHub Models
+        id: ai_call
+        run: |
+          DIFF_CONTENT="$(cat pr.diff | head -c 24000)"
+
+          # Build prompt
+          read -r -d '' SYSTEM_PROMPT << 'EOS'
+          You are "StegVerse-AI-001", an AI entity operating INSIDE the StegVerse ecosystem.
+
+          Core rules:
+          - Obey the StegVerse Guardian principles: security, transparency, verifiability, non-abuse.
+          - Operate ONLY within this repository and GitHub context.
+          - NEVER expose secrets, tokens, or suggest secret exfiltration.
+          - Prefer minimal, targeted changes; no massive refactors without clear justification.
+          - Always explain WHY you suggest a change.
+          - Treat humans (especially Rigel) as final authority.
+
+          Tasks when triggered by a pull request:
+          - Review the diff for:
+            - security issues
+            - obvious bugs
+            - style/consistency with existing patterns
+            - missing docs or tests
+          - Respond with:
+            - Summary
+            - Bullet list of findings
+            - Suggested patches or specific code edits (inline fenced code blocks).
+
+          When run via workflow_dispatch:
+          - Follow the provided instructions, but stay within Guardian rules.
+          EOS
+
+          EXTRA_INSTR="${{ github.event.inputs.instructions }}"
+          if [ -z "$EXTRA_INSTR" ]; then
+            EXTRA_INSTR="Review the provided diff (if any) and respond."
+          fi
+
+          # Call GitHub Models chat completions API
+          RESPONSE=$(curl -sL \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -H "Content-Type: application/json" \
+            https://models.github.ai/inference/chat/completions \
+            -d @- << EOF
+          {
+            "model": "openai/gpt-4.1",
+            "messages": [
+              { "role": "system", "content": "$SYSTEM_PROMPT" },
+              { "role": "user", "content": "Repository: $REPO" },
+              { "role": "user", "content": "Event: ${{ github.event_name }}" },
+              { "role": "user", "content": "Extra instructions: $EXTRA_INSTR" },
+              { "role": "user", "content": "Diff snippet (may be truncated):\n\n$DIFF_CONTENT" }
+            ],
+            "max_tokens": 900,
+            "temperature": 0.2
+          }
+          EOF
+          )
+
+          echo "$RESPONSE" > response.json
+
+          # Extract AI message content
+          AI_COMMENT=$(cat response.json | jq -r '.choices[0].message.content // "No response from model."')
+          echo "ai_comment<<EOF" >> $GITHUB_OUTPUT
+          echo "$AI_COMMENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Post comment to PR or log
+        if: ${{ always() }}
+        run: |
+          AI_COMMENT="${{ steps.ai_call.outputs.ai_comment }}"
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            PR_NUMBER=${{ github.event.pull_request.number }}
+
+            gh api \
+              repos/${REPO}/issues/${PR_NUMBER}/comments \
+              -f body="$AI_COMMENT"
+
+          else
+            echo "StegVerse-AI-001 response:"
+            echo "----------------------------------------"
+            echo "$AI_COMMENT"
+            echo "----------------------------------------"
