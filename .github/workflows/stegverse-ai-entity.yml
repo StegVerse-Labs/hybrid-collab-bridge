@@ -1,20 +1,18 @@
 name: StegVerse AI Entity (Bridge)
 
 on:
-  # Visible "Run workflow" button (works in mobile UI)
   workflow_dispatch:
     inputs:
       target_repo:
-        description: "Full repo name (e.g. StegVerse/StegCore). Leave blank to just test entity."
+        description: "Full repo name (e.g. StegVerse/StegCore)"
         required: false
       pr_number:
-        description: "PR number to review (optional)."
+        description: "PR number to review (optional)"
         required: false
       instructions:
-        description: "Optional instructions for StegVerse-AI-001."
+        description: "Optional instructions for StegVerse-AI-001"
         required: false
 
-  # Auto-triggered from other repos via forward-to-bridge.yml
   repository_dispatch:
     types: [stegverse-ai-review]
 
