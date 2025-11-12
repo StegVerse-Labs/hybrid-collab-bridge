@@ -1,8 +1,7 @@
 name: StegVerse AI Entity (Bridge)
 
-# 👇 This section MUST be formatted exactly like this
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
     inputs:
       target_repo:
         description: "Full repo name (e.g. StegVerse/StegCore)"
@@ -14,7 +13,6 @@ on:
         description: "Optional instructions for StegVerse-AI-001"
         required: false
 
-  # Auto-triggered from other repos via forward-to-bridge.yml
   repository_dispatch:
     types: [stegverse-ai-review]
 
