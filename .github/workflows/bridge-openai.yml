@@ -1,0 +1,172 @@
+name: StegVerse AI Entity (OpenAI API)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_repo:
+        description: "Full repo name (e.g. StegVerse/StegCore)"
+        required: false
+      pr_number:
+        description: "PR number (optional)"
+        required: false
+      instructions:
+        description: "Optional instructions"
+        required: false
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  ai_entity:
+    if: github.event_name != 'issue_comment' || contains(github.event.comment.body, '/run-bridge')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_STEGVERSE_AI_TOKEN }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+    steps:
+      - name: Ping
+        run: echo "✅ Dispatch: ${{ github.event_name }}"
+
+      - name: Checkout bridge repo
+        uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Install tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+          echo "${GH_TOKEN}" | gh auth login --with-token
+
+      - name: Resolve inputs (manual vs comment)
+        id: ctx
+        run: |
+          EVENT="${{ github.event_name }}"
+          if [ "$EVENT" = "issue_comment" ]; then
+            BODY="${{ github.event.comment.body }}"
+            TARGET_REPO=$(echo "$BODY" | sed -n 's/.*repo=\([^ ]*\).*/\1/p')
+            PR_NUMBER=$(echo "$BODY" | sed -n 's/.*pr=\([0-9][0-9]*\).*/\1/p')
+            INSTR=$(echo "$BODY" | sed -n 's/.*note="\([^"]*\)".*/\1/p')
+          else
+            TARGET_REPO="${{ github.event.inputs.target_repo }}"
+            PR_NUMBER="${{ github.event.inputs.pr_number }}"
+            INSTR="${{ github.event.inputs.instructions }}"
+          fi
+          [ -z "$INSTR" ] || [ "$INSTR" = "null" ] && INSTR="Act as StegVerse-AI-001. If PR given, review; else produce a repo summary."
+
+          {
+            echo "target_repo=$TARGET_REPO"
+            echo "pr_number=$PR_NUMBER"
+            echo "instructions<<EOF"
+            echo "$INSTR"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Fetch context (diff or repo view)
+        id: diff
+        run: |
+          TARGET_REPO="${{ steps.ctx.outputs.target_repo }}"
+          PR_NUMBER="${{ steps.ctx.outputs.pr_number }}"
+
+          if [ -n "$TARGET_REPO" ] && [ "$TARGET_REPO" != "null" ] && [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+            if gh pr view "$PR_NUMBER" --repo "$TARGET_REPO" >/dev/null 2>&1; then
+              gh pr diff "$PR_NUMBER" --repo "$TARGET_REPO" | head -c 24000 > pr.diff || true
+            fi
+          fi
+
+          if [ -f pr.diff ]; then
+            DIFF_CONTENT="$(cat pr.diff)"
+          elif [ -n "$TARGET_REPO" ] && [ "$TARGET_REPO" != "null" ]; then
+            DIFF_CONTENT="$(gh repo view "$TARGET_REPO" --json nameWithOwner,description,defaultBranchRef | jq -r tostring)"
+          else
+            DIFF_CONTENT="(No repo/PR provided; running self-check.)"
+          fi
+
+          python - <<'PY' > diff.json
+import json,sys
+print(json.dumps(sys.stdin.read()))
+PY
+          <<<"$DIFF_CONTENT"
+
+          echo "diff_json=$(cat diff.json)" >> $GITHUB_OUTPUT
+
+      - name: Call OpenAI (chat.completions)
+        id: ai
+        run: |
+          DIFF_JSON='${{ steps.diff.outputs.diff_json }}'
+          TARGET='${{ steps.ctx.outputs.target_repo }}'
+          PRNUM='${{ steps.ctx.outputs.pr_number }}'
+          INSTR='${{ steps.ctx.outputs.instructions }}'
+
+          SYSTEM_PROMPT='You are "StegVerse-AI-001" operating from the Hybrid Collaboration Bridge.
+Guardian rules:
+- Follow StegVerse Guardian principles (security, transparency, verifiability, non-abuse).
+- Only act on data provided.
+- Provide concise, actionable review:
+  1) Summary
+  2) Findings (bugs/security/style/docs/tests)
+  3) Concrete suggestions or small patches in fenced code blocks.
+- Humans (Rigel) are final authority.'
+
+          REQUEST=$(jq -n \
+            --arg model "gpt-4o" \
+            --arg sys "$SYSTEM_PROMPT" \
+            --arg repo "${TARGET:-none}" \
+            --arg pr   "${PRNUM:-none}" \
+            --arg diff "$DIFF_JSON" \
+            --arg ins  "$INSTR" \
+            '{
+              model: $model,
+              messages: [
+                {role:"system", content:$sys},
+                {role:"user", content:("Target repository: " + $repo)},
+                {role:"user", content:("PR number: " + $pr)},
+                {role:"user", content:"Context (diff or repo info):"},
+                {role:"user", content:$diff},
+                {role:"user", content:("Instructions: " + $ins)}
+              ],
+              max_tokens: 900,
+              temperature: 0.2
+            }')
+
+          RESPONSE=$(curl -sS https://api.openai.com/v1/chat/completions \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$REQUEST")
+
+          echo "$RESPONSE" > response.json
+          AI_TEXT=$(jq -r '.choices[0].message.content // empty' response.json)
+          if [ -z "$AI_TEXT" ]; then
+            AI_TEXT="(No response from model.)"
+          fi
+
+          {
+            echo "ai_comment<<EOF"
+            echo "$AI_TEXT"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Post result (PR comment / issue reply / bridge issue)
+        env:
+          AI_TEXT: ${{ steps.ai.outputs.ai_comment }}
+        run: |
+          echo "----- AI OUTPUT -----"
+          echo "$AI_TEXT"
+          echo "---------------------"
+
+          TARGET_REPO='${{ steps.ctx.outputs.target_repo }}'
+          PR_NUMBER='${{ steps.ctx.outputs.pr_number }}'
+
+          echo "${GH_TOKEN}" | gh auth login --with-token
+
+          if [ -n "$TARGET_REPO" ] && [ "$TARGET_REPO" != "null" ] && [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+            gh pr comment "$PR_NUMBER" --repo "$TARGET_REPO" --body "$AI_TEXT" || true
+          elif [ "${{ github.event_name }}" = "issue_comment" ]; then
+            gh issue comment ${{ github.event.issue.number }} --body "$AI_TEXT" || true
+          else
+            gh issue create --repo "${GITHUB_REPOSITORY}" --title "StegVerse-AI-001 report" --body "$AI_TEXT" || true
+          fi
