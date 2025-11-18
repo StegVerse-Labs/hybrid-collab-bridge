@@ -6,7 +6,7 @@ on:
     inputs:
       instructions:
         description: "Task for the Hybrid-Collab-Bridge AI entity"
-        required: true
+        required: false
         default: "Audit and improve connectivity based on stegverse_connectivity.md."
 
   # Mobile-friendly trigger: comment on ANY issue with /run-connectivity ...
@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   connectivity_entity:
@@ -56,9 +57,13 @@ jobs:
             fi
           else
             INSTR="${{ github.event.inputs.instructions }}"
+            if [ -z "$INSTR" ]; then
+              INSTR="Run connectivity audit using default instructions."
+            fi
           fi
 
           echo "INSTRUCTIONS=$INSTR" >> "$GITHUB_ENV"
+          echo "USER_PROMPT=$INSTR" >> "$GITHUB_ENV"
           echo "Using instructions:"
           echo "$INSTR"
 
