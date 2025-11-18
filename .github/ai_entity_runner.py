@@ -58,4 +58,30 @@ def main():
         print(f"❌ StegTVC resolution failed: {e}")
         sys.exit(1)
 
-    model = resolved["
+    model = resolved["model"]
+    print(f"📡 Using model: {model}")
+
+    # Step 2 — Load prompts
+    system_prompt = os.getenv("SYSTEM_PROMPT", "You are StegVerse-AI-Entity.")
+    user_prompt = os.getenv("USER_PROMPT", "No instructions provided.")
+
+    # Step 3 — Call GitHub Models
+    try:
+        print("🤖 Calling GitHub Models...")
+        response = call_github_models(model, system_prompt, user_prompt, gh_token)
+    except Exception as e:
+        print(f"❌ GitHub Models error: {e}")
+        sys.exit(1)
+
+    # Step 4 — Print output
+    try:
+        msg = response["choices"][0]["message"]["content"]
+        print("\n===== AI OUTPUT =====")
+        print(msg)
+        print("=====================\n")
+    except Exception:
+        print(json.dumps(response, indent=2))
+
+
+if __name__ == "__main__":
+    main()
