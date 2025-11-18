@@ -9,8 +9,7 @@ import sys
 import urllib.request
 
 # Use our new helper
-from .stegtvc_client import stegtvc_resolve
-
+from stegtvc_client import stegtvc_resolve
 
 def call_github_models(model: str, system: str, user: str, gh_token: str):
     """Direct call to GitHub Models."""
