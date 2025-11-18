@@ -1,7 +1,6 @@
 name: StegVerse Connectivity Entity (Hybrid-Collab-Bridge)
 
 on:
-  # Simple, mobile-friendly manual trigger
   workflow_dispatch:
     inputs:
       instructions:
@@ -20,8 +19,8 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       INSTRUCTIONS: ${{ github.event.inputs.instructions }}
       REPO: ${{ github.repository }}
-      # StegTVC core config for the connectivity entity (NEW ORG + REPO)
-      STEGTVC_URL: "https://raw.githubusercontent.com/StegVerse-Labs/TVC/main/app/config.py"
+      SYSTEM_PROMPT: "You are StegVerse-AI-Connectivity. Perform tasks reliably."
+      USER_PROMPT: ${{ github.event.inputs.instructions }}
 
     steps:
       - name: Checkout repository
@@ -39,25 +38,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: Resolve instructions (dispatch vs comment)
-        id: ctx
-        run: |
-          EVENT="${{ github.event_name }}"
-          if [ "$EVENT" = "workflow_dispatch" ]; then
-            INSTR="${{ github.event.inputs.instructions }}"
-          else
-            INSTR="Run connectivity_entity with default instructions."
-          fi
-
-          {
-            echo "instructions<<EOF"
-            echo "$INSTR"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Run Hybrid-Collab-Bridge AI entity (GitHub Models via StegTVC)
-        env:
-          INSTRUCTIONS: ${{ steps.ctx.outputs.instructions }}
+      - name: Run Hybrid-Collab-Bridge AI entity
         run: |
           python .github/ai_entity_runner.py
 
