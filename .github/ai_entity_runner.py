@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Ensure Python can import helper modules from .github directory
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, CURRENT_DIR)
 """
 AI Entity Runner for Hybrid-Collab-Bridge
 Now routed through StegTVC Core v1.0
