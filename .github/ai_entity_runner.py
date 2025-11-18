@@ -1,21 +1,24 @@
-import os
-import sys
-
-# Ensure Python can import helper modules from .github directory
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, CURRENT_DIR)
 """
 AI Entity Runner for Hybrid-Collab-Bridge
 Now routed through StegTVC Core v1.0
 """
 
 import os
-import json
 import sys
+import json
 import urllib.request
 
-# Use our new helper
+# ---------------------------------------------------------------------
+# Ensure Python can import helper modules from .github directory
+# ---------------------------------------------------------------------
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+if CURRENT_DIR not in sys.path:
+    sys.path.insert(0, CURRENT_DIR)
+
+# Use our new helper (lives in .github/stegtvc_client.py)
 from stegtvc_client import stegtvc_resolve
+# ---------------------------------------------------------------------
+
 
 def call_github_models(model: str, system: str, user: str, gh_token: str):
     """Direct call to GitHub Models."""
