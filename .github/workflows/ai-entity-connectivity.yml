@@ -20,6 +20,8 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       INSTRUCTIONS: ${{ github.event.inputs.instructions }}
       REPO: ${{ github.repository }}
+      # StegTV core config / endpoint for the connectivity entity
+      STEGTVC_URL: "https://raw.githubusercontent.com/StegVerse/StegTVC/main/app/config.py"
 
     steps:
       - name: Checkout repository
