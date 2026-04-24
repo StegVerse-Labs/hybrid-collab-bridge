@@ -1,9 +1,4 @@
-"""Governed AI Entity identity for StegVerse ecosystem.
-
-Every adapter instance, every proposal, every merge is tagged with
-an entity identity that includes scope, invariants, and compensation
-tracking.
-"""
+"""Governed AI Entity identity for StegVerse ecosystem."""
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
@@ -13,7 +8,6 @@ import json
 
 @dataclass(frozen=True)
 class EntityIdentity:
-    """Immutable identity for a governed AI entity."""
     entity_id: str
     entity_type: str
     org_id: str
@@ -38,14 +32,11 @@ class EntityIdentity:
         }
 
     def compute_invariant_hash(self, invariants: List[str]) -> str:
-        """Deterministic hash of behavioral invariants."""
         payload = json.dumps(sorted(invariants), sort_keys=True)
         return hashlib.sha256(payload.encode()).hexdigest()[:16]
 
 
 class EntityRegistry:
-    """Registry of all governed entities within an org."""
-
     def __init__(self, org_id: str):
         self.org_id = org_id
         self._entities: Dict[str, EntityIdentity] = {}

@@ -1,8 +1,4 @@
-"""Admission gate: BCAT/GCAT evaluation before execution.
-
-Every proposal, every expert output, every consensus merge must pass
-admission before execution. Human gate is exception-only.
-"""
+"""Admission gate: BCAT/GCAT evaluation before execution."""
 from __future__ import annotations
 from typing import Dict, Any, Literal
 from dataclasses import dataclass
@@ -26,8 +22,6 @@ class AdmissionResult:
 
 
 class AdmissionGate:
-    """Gatekeeper for all bridge operations."""
-
     def __init__(self, cge_client: CGELightClient, constitution: Dict[str, Any]):
         self.cge = cge_client
         self.constitution = constitution
@@ -39,7 +33,6 @@ class AdmissionGate:
         actor: EntityIdentity,
         source: str = "hybrid-collab-bridge",
     ) -> AdmissionResult:
-        """Admit a single proposal before execution."""
         ingest_result = await self.cge.ingest(
             payload=proposal,
             source=source,
@@ -88,7 +81,6 @@ class AdmissionGate:
         merge_output: Dict[str, Any],
         referee_actor: EntityIdentity,
     ) -> AdmissionResult:
-        """Admit the consensus merge result."""
         ingest_result = await self.cge.ingest(
             payload={
                 "proposals_count": len(proposals),
@@ -131,7 +123,6 @@ class AdmissionGate:
         )
 
     def _is_deferrable(self, bcat: Dict, gcat: Dict) -> bool:
-        """Check if scores are close enough to threshold to defer rather than deny."""
         margin = 0.1
         checks = [
             bcat.get("observability", 0) >= self.thresholds.get("observability_min", 0.6) - margin,

@@ -1,8 +1,4 @@
-"""CGE Light client for per-org governance.
-
-Supports both local (embedded) and remote CGE endpoints.
-Configurable per org to avoid single point of failure.
-"""
+"""CGE Light client for per-org governance."""
 from __future__ import annotations
 import os
 import json
@@ -16,14 +12,6 @@ from .entity import EntityIdentity
 
 
 class CGELightClient:
-    """Client for org-local CGE Light governance.
-
-    Modes:
-    - "embedded": Uses local cge_light/ directory (filesystem-based)
-    - "remote": POSTs to a CGE HTTP endpoint
-    - "hybrid": Embedded primary, remote fallback
-    """
-
     def __init__(
         self,
         org_id: str,
@@ -41,8 +29,6 @@ class CGELightClient:
         for subdir in ["state", "meta/receipts", "meta/status", "sandbox"]:
             (self.cge_path / subdir).mkdir(parents=True, exist_ok=True)
 
-    # -- Ingestion ------------------------------------------------
-
     async def ingest(
         self,
         payload: Dict[str, Any],
@@ -50,7 +36,6 @@ class CGELightClient:
         actor: EntityIdentity,
         mutation_class: str = "ingest",
     ) -> Dict[str, Any]:
-        """Ingest an object into the CGE ledger."""
         ingest_obj = {
             "type": mutation_class,
             "source": source,
@@ -73,7 +58,6 @@ class CGELightClient:
                 raise
 
     def _ingest_embedded(self, obj: Dict[str, Any]) -> Dict[str, Any]:
-        """Filesystem-based ingestion (CGE Light)."""
         import sys
         cge_path = str(self.cge_path)
         if cge_path not in sys.path:
@@ -91,7 +75,6 @@ class CGELightClient:
         return result
 
     async def _ingest_remote(self, obj: Dict[str, Any]) -> Dict[str, Any]:
-        """HTTP-based ingestion (full CGE or remote CGE Light)."""
         async with httpx.AsyncClient(timeout=30) as client:
             r = await client.post(
                 f"{self.endpoint}/v1/ingest",
@@ -102,8 +85,7 @@ class CGELightClient:
             return r.json()
 
     def _check_admissibility(self, bcat: Dict, gcat: Dict) -> bool:
-        """Check if bcat/gcat scores meet threshold profile."""
-        constitution_path = self.cge_path / "repo_constitution.yml"
+        constitution_path = self.cge_path / "repo_constitution.txt"
         if not constitution_path.exists():
             return True
 
@@ -120,8 +102,6 @@ class CGELightClient:
         ]
         return all(checks)
 
-    # -- Ledger ---------------------------------------------------
-
     async def append_ledger(
         self,
         mutation_class: str,
@@ -130,7 +110,6 @@ class CGELightClient:
         bcat: Dict[str, Any],
         gcat: Dict[str, Any],
     ) -> Dict[str, Any]:
-        """Append to ledger and generate receipt."""
         if self.mode == "embedded":
             import sys
             cge_path = str(self.cge_path)
@@ -165,14 +144,11 @@ class CGELightClient:
                 r.raise_for_status()
                 return r.json()
 
-    # -- Receipt Chain ---------------------------------------------
-
     async def chain_receipt(
         self,
         previous_receipt_id: Optional[str],
         current_receipt: Dict[str, Any],
     ) -> Dict[str, Any]:
-        """Link receipts into a chain for traceability."""
         chain_entry = {
             "chain_id": str(uuid.uuid4()),
             "previous_receipt_id": previous_receipt_id,
