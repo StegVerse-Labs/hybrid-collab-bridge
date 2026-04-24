@@ -34,23 +34,22 @@ failure_semantics:
 quarantine_rules:
   default_action: isolate
 
-# Quorum: human + AI entity pair required for policy changes
 quorum_rules:
   policy_change:
     required: [human_operator, ai_entity]
     min_count: 2
-    pairing_rule: "paired"
+    pairing_rule: paired
   standard_admission:
     required: [automated_process]
     min_count: 1
   emergency_halt:
     required: [human_operator, ai_entity, policy_engine]
     min_count: 2
-    pairing_rule: "any_two_of_three"
+    pairing_rule: any_two_of_three
   compensation_change:
     required: [human_operator, ai_entity]
     min_count: 2
-    pairing_rule: "paired"
+    pairing_rule: paired
 
 threshold_profiles:
   sandbox:
