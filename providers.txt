@@ -1,0 +1,57 @@
+providers:
+  # Cloud providers (require API key + network)
+  - name: claude
+    type: anthropic_text
+    enabled: true
+    capabilities:
+      - text-generate
+
+  - name: openai
+    type: openai_text
+    enabled: true
+    capabilities:
+      - text-generate
+
+  - name: kimi
+    type: kimi_text
+    enabled: true
+    capabilities:
+      - text-generate
+
+  - name: gemini
+    type: gemini_text
+    enabled: true
+    capabilities:
+      - text-generate
+
+  - name: grok
+    type: grok_text
+    enabled: true
+    capabilities:
+      - text-generate
+
+  - name: deepseek
+    type: deepseek_text
+    enabled: true
+    capabilities:
+      - text-generate
+
+  - name: perplexity
+    type: perplexity_text
+    enabled: true
+    capabilities:
+      - text-generate
+
+  # On-premise / local (no API key, no network required)
+  - name: ollama
+    type: ollama_text
+    enabled: true
+    capabilities:
+      - text-generate
+
+  # Test / fallback (always available)
+  - name: mock
+    type: mock_text
+    enabled: true
+    capabilities:
+      - text-generate

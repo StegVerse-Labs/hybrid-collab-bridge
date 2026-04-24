@@ -114,6 +114,10 @@ AI entities receive per-evaluation micro-payments tracked in the ledger as `comp
 | AaCT-E | Distributed per-repo | TV, TVC, StegBrain, StegCore, Orchestration |
 | **StegVerse-Labs** | **CGE Light (this repo)** | **Internal LLM adapter #2** |
 
+## Documentation
+
+- [`docs/DISCOVERY_API.md`](docs/DISCOVERY_API.md) — Provider discovery, connection, and denial handling
+
 ## License
 
 StegVerse Constitutional License — all changes require human+AI quorum.
