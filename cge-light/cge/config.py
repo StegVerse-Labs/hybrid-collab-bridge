@@ -12,11 +12,11 @@ def load_yaml(path: Path):
 
 
 def load_repo_contract():
-    return load_yaml(ROOT / "repo_contract.yml")
+    return load_yaml(ROOT / "repo_contract.txt")
 
 
 def load_repo_constitution():
-    return load_yaml(ROOT / "repo_constitution.yml")
+    return load_yaml(ROOT / "repo_constitution.txt")
 
 
 def ensure_dir(path: Path):
