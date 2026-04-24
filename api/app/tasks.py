@@ -1,9 +1,8 @@
-from typing import Literal, Dict, Any
+from dataclasses import dataclass
+from typing import Dict, Any
 
-TaskType = Literal["text-generate"]
-
+@dataclass
 class Task:
-    def __init__(self, task_type: TaskType, prompt: str, options: Dict[str, Any] | None = None):
-        self.task_type = task_type
-        self.prompt = prompt
-        self.options = options or {}
+    task_type: str
+    prompt: str
+    options: Dict[str, Any]

@@ -15,10 +15,12 @@ from .session_writer import ensure_session, write_text
 from .governance.entity import EntityIdentity, EntityRegistry
 from .governance.cge_client import CGELightClient
 from .governance.admission import AdmissionGate
+from .governance.discovery import ProviderDiscoveryEngine, DiscoveryResult
+from .models import DiscoveryRequest, DiscoveryResponse, DiscoveryResultItem, ProviderConnectRequest
 
 # -- Configuration -----------------------------------------------
 
-DEFAULT_CFG = (Path(__file__).resolve().parents[2] / "providers.yaml").resolve()
+DEFAULT_CFG = (Path(__file__).resolve().parents[2] / "providers.txt").resolve()
 env_cfg = os.getenv("HCB_PROVIDERS_PATH")
 if env_cfg:
     cfg_path = Path(env_cfg)
@@ -43,14 +45,15 @@ CGE = CGELightClient(
 )
 
 import yaml
-constitution_path = Path(CGE.cge_path / "repo_constitution.yml")
+constitution_path = Path(CGE.cge_path / "repo_constitution.txt")
 constitution = yaml.safe_load(constitution_path.read_text()) if constitution_path.exists() else {}
 GATE = AdmissionGate(cge_client=CGE, constitution=constitution)
 
 ENTITY_REG = EntityRegistry(org_id=ORG_ID)
+DISCOVERY = ProviderDiscoveryEngine()
 
 BRIDGE_ENTITY = EntityIdentity(
-    entity_id=f"bridge-{ORG_ID.lower().replace(" ", "-")}",
+    entity_id=f"bridge-{ORG_ID.lower().replace(' ', '-')}",
     entity_type="automated_process",
     org_id=ORG_ID,
     owner_human=os.getenv("HCB_OWNER_HUMAN", "owner"),
@@ -277,4 +280,148 @@ async def continue_collab(req: ContinueRequest, x_admin_token: str | None = Head
             requires_human=False,
             reasoning=f"Approved by {req.approver_type}: {req.approver_entity_id}",
         ).model_dump()
+    )
+
+
+# -- Provider Discovery ------------------------------------------
+
+@app.post("/v1/discover", response_model=DiscoveryResponse)
+async def discover_providers(req: DiscoveryRequest, x_admin_token: str | None = Header(default=None)):
+    """Discover available AI providers or query a specific one.
+
+    Query types:
+    - "other" or "scan" -> Full scan (local + env + network)
+    - Specific name (e.g., "openai", "kimi", "ollama") -> Query that provider
+    - "local" -> Scan only local servers
+    - "cloud" -> Scan only cloud providers with env keys
+    """
+    auth_or_403(x_admin_token)
+
+    results = []
+    scan_type = req.scan_type
+
+    if req.query.lower() in ["other", "scan", "all", "discover"]:
+        # Full discovery scan
+        scan_type = "auto"
+        raw_results = await DISCOVERY.scan_all()
+        results = [_convert_discovery(r) for r in raw_results]
+    elif req.query.lower() in ["local", "on-premise", "self-hosted"]:
+        scan_type = "local"
+        raw_results = await DISCOVERY.scan_local()
+        results = [_convert_discovery(r) for r in raw_results]
+    elif req.query.lower() in ["cloud", "env", "api"]:
+        scan_type = "env"
+        raw_results = await DISCOVERY.scan_environment()
+        results = [_convert_discovery(r) for r in raw_results]
+    else:
+        # Query specific provider
+        scan_type = "query"
+        result = DISCOVERY.query_provider(req.query)
+        results = [_convert_discovery(result)]
+
+    available = [r for r in results if r.status == "available"]
+    discoverable = [r for r in results if r.status == "discoverable"]
+    denied = [r for r in results if r.status == "denied"]
+
+    return DiscoveryResponse(
+        scan_type=scan_type,
+        results=results,
+        total_found=len(results),
+        total_available=len(available),
+        total_discoverable=len(discoverable),
+        total_denied=len(denied),
+    )
+
+
+@app.get("/v1/discover/scan")
+async def quick_scan(x_admin_token: str | None = Header(default=None)):
+    """Quick scan — returns only available providers."""
+    auth_or_403(x_admin_token)
+    raw_results = await DISCOVERY.scan_all()
+    available = [r for r in raw_results if r.status == "available"]
+    return {
+        "available": [_convert_discovery(r).model_dump() for r in available],
+        "count": len(available),
+    }
+
+
+@app.post("/v1/discover/connect")
+async def connect_provider(req: ProviderConnectRequest, x_admin_token: str | None = Header(default=None)):
+    """Connect a discovered provider to the bridge."""
+    auth_or_403(x_admin_token)
+
+    # Validate the provider type exists
+    from .registry import FACTORY
+    if req.provider_type not in FACTORY:
+        raise HTTPException(400, f"Unknown provider type: {req.provider_type}")
+
+    # Add to providers.txt
+    providers_path = Path(cfg_path)
+    with providers_path.open("r", encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+
+    # Check if already exists
+    existing = [p for p in cfg.get("providers", []) if p.get("name") == req.provider_id]
+    if existing:
+        return {"status": "already_connected", "provider": req.provider_id}
+
+    # Add new provider entry
+    new_entry = {
+        "name": req.provider_id,
+        "type": req.provider_type,
+        "enabled": True,
+        "capabilities": req.config.get("capabilities", ["text-generate"]),
+    }
+    cfg["providers"].append(new_entry)
+
+    with providers_path.open("w", encoding="utf-8") as f:
+        yaml.dump(cfg, f, default_flow_style=False, sort_keys=False)
+
+    # Reload registry
+    REG.reload()
+
+    # Test connection if requested
+    test_result = None
+    if req.test_connection:
+        provider = REG.get(req.provider_id)
+        if provider:
+            from .tasks import Task
+            try:
+                test_output = await provider.run(Task("text-generate", "Say 'connected'", {"temperature": 0.0}))
+                test_result = {
+                    "success": True,
+                    "output": test_output.get("text", "")[:100],
+                }
+            except Exception as e:
+                test_result = {
+                    "success": False,
+                    "error": str(e),
+                }
+
+    return {
+        "status": "connected",
+        "provider": req.provider_id,
+        "type": req.provider_type,
+        "test": test_result,
+        "instructions": [
+            f"Provider '{req.provider_id}' added to providers.txt",
+            "It is now available in /v1/run requests.",
+        ],
+    }
+
+
+def _convert_discovery(result: DiscoveryResult) -> DiscoveryResultItem:
+    """Convert internal DiscoveryResult to Pydantic model."""
+    return DiscoveryResultItem(
+        provider_id=result.provider_id,
+        provider_name=result.provider_name,
+        provider_type=result.provider_type,
+        status=result.status,
+        reason=result.reason,
+        connection_method=result.connection_method,
+        instructions=result.instructions,
+        config_template=result.config_template,
+        requires_network=result.requires_network,
+        requires_api_key=result.requires_api_key,
+        estimated_cost_tier=result.estimated_cost_tier,
     )

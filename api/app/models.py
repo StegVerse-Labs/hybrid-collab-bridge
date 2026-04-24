@@ -69,3 +69,44 @@ class ContinueRequest(BaseModel):
     approver_entity_id: str
     approver_type: Literal["human_operator", "ai_entity"]
     notes: Optional[str] = None
+
+
+# -- Discovery models ---------------------------------------------------------
+
+class DiscoveryRequest(BaseModel):
+    """Request to discover or query a provider."""
+    query: str = Field(..., description="Provider name, type, or 'other' for discovery scan")
+    scan_type: Literal["auto", "local", "env", "network", "query"] = "auto"
+
+
+class DiscoveryResultItem(BaseModel):
+    """A single discovery result."""
+    provider_id: str
+    provider_name: str
+    provider_type: str
+    status: Literal["available", "unavailable", "discoverable", "denied"]
+    reason: str
+    connection_method: Literal["local", "env", "network", "manual", "none"]
+    instructions: List[str] = []
+    config_template: Dict[str, Any] = {}
+    requires_network: bool = True
+    requires_api_key: bool = True
+    estimated_cost_tier: str = "unknown"
+
+
+class DiscoveryResponse(BaseModel):
+    """Response from provider discovery."""
+    scan_type: str
+    results: List[DiscoveryResultItem]
+    total_found: int
+    total_available: int
+    total_discoverable: int
+    total_denied: int
+
+
+class ProviderConnectRequest(BaseModel):
+    """Request to connect a discovered provider."""
+    provider_id: str
+    provider_type: str
+    config: Dict[str, Any]
+    test_connection: bool = True

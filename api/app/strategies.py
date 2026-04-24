@@ -1,8 +1,4 @@
-"""Consensus strategy with admission gates.
-
-Every proposal is ingested, evaluated, and receipted individually.
-The referee merge is a separate derive mutation with its own receipt.
-"""
+"""Consensus strategy with admission gates."""
 from typing import List, Dict, Any
 from .tasks import Task
 from .registry import ProviderRegistry
@@ -18,7 +14,6 @@ async def governed_consensus(
     opts: Dict[str, Any],
     bridge_entity: EntityIdentity,
 ) -> Dict[str, Any]:
-    """Run consensus with full admission at every step."""
     proposals = []
     previous_receipt_id = None
 
