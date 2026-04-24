@@ -27,9 +27,9 @@ class AnthropicText(Provider):
         async with httpx.AsyncClient(timeout=TIMEOUT) as client:
             r = await client.post(f"{ANTHROPIC_BASE}/v1/messages", headers=self.headers, json=payload)
             r.raise_for_status()
-        data = r.json()
-        pieces = []
-        for block in data.get("content", []):
-            if block.get("type") == "text":
-                pieces.append(block.get("text",""))
-        return {"text": "\n".join(pieces).strip()}
+            data = r.json()
+            pieces = []
+            for block in data.get("content", []):
+                if block.get("type") == "text":
+                    pieces.append(block.get("text",""))
+            return {"text": "\n".join(pieces).strip()}
