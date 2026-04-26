@@ -1,13 +1,56 @@
+version: "3.8"
+
 services:
-  bridge:
+  hybrid-bridge:
     build:
-      context: ../api
-      dockerfile: dockerfile
-    env_file:
-      - ../.env
+      context: .
+      dockerfile: infra/Dockerfile
     ports:
       - "8080:8080"
+    environment:
+      - HCB_ORG_ID=StegVerse-Labs
+      - HCB_CGE_MODE=embedded
+      - HCB_CGE_PATH=/app/cge_light
+      - HCB_OWNER_HUMAN=owner
+      - HCB_OWNER_AI=Beta_Orionis
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MOONSHOT_API_KEY=${MOONSHOT_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - OLLAMA_BASE=http://ollama:11434
     volumes:
-      - ../sessions:/app/sessions
-      - ../providers.yaml:/app/providers.yaml:ro
-    restart: unless-stopped
+      - ./cge_light:/app/cge_light:rw
+      - ./sessions:/app/sessions:rw
+      - ./state:/app/state:rw
+    depends_on:
+      - ollama
+    networks:
+      - stegverse-bridge
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - stegverse-bridge
+
+  # Optional: StegDB ingestion endpoint (future)
+  # stegdb:
+  #   image: stegverse/stegdb:latest
+  #   ports:
+  #     - "9000:9000"
+  #   networks:
+  #     - stegverse-bridge
+
+volumes:
+  ollama-data:
+
+networks:
+  stegverse-bridge:
+    driver: bridge
