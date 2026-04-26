@@ -1,0 +1,12 @@
+repo_name: hybrid-collab-bridge
+repo_id: stegverse-labs-hcb-001
+org_id: StegVerse-Labs
+policy_profile: standard
+parent_org: StegVerse-org
+cge_tier: light
+stegverse_authority: AaCT-E
+entity_model: governed_ai
+compensation_enabled: true
+owner_human: owner
+owner_ai: Beta_Orionis
+escalation_endpoint: ""

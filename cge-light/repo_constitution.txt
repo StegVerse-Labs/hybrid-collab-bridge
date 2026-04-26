@@ -1,0 +1,72 @@
+authority_classes:
+  - human_operator
+  - ai_entity
+  - automated_process
+  - policy_engine
+  - external_import
+
+mutation_classes:
+  - ingest
+  - create
+  - derive
+  - transform
+  - approve
+  - reject
+  - promote
+  - archive
+  - compensation
+
+promotion_states:
+  - unwired
+  - bootstrapped
+  - l1_passed
+  - l2_passed
+  - deploy_candidate
+  - l3_passed
+  - deployed
+
+failure_semantics:
+  schema_failure: block
+  receipt_failure: block
+  drift_detected: quarantine
+  replay_mismatch: quarantine
+
+quarantine_rules:
+  default_action: isolate
+
+quorum_rules:
+  policy_change:
+    required: [human_operator, ai_entity]
+    min_count: 2
+    pairing_rule: paired
+  standard_admission:
+    required: [automated_process]
+    min_count: 1
+  emergency_halt:
+    required: [human_operator, ai_entity, policy_engine]
+    min_count: 2
+    pairing_rule: any_two_of_three
+  compensation_change:
+    required: [human_operator, ai_entity]
+    min_count: 2
+    pairing_rule: paired
+
+threshold_profiles:
+  sandbox:
+    observability_min: 0.50
+    context_stability_min: 0.40
+    authority_clarity_min: 0.40
+    reversibility_margin_min: 0.20
+    risk_max: 0.90
+  standard:
+    observability_min: 0.60
+    context_stability_min: 0.50
+    authority_clarity_min: 0.50
+    reversibility_margin_min: 0.30
+    risk_max: 0.70
+  strict:
+    observability_min: 0.80
+    context_stability_min: 0.70
+    authority_clarity_min: 0.70
+    reversibility_margin_min: 0.50
+    risk_max: 0.40
