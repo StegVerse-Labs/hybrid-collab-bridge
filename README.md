@@ -118,6 +118,13 @@ AI entities receive per-evaluation micro-payments tracked in the ledger as `comp
 
 - [`docs/DISCOVERY_API.md`](docs/DISCOVERY_API.md) — Provider discovery, connection, and denial handling
 
+
+## File Extensions Note
+
+This repo uses `.txt` for all configuration files to ensure compatibility with iOS/Working Copy workflows where `.yml` files may have transfer issues.
+
+**Exception**: GitHub-native files (`.github/workflows/*.yml`, `.github/autopatch/*.yml`) use `.yml` as required by GitHub Actions. These are not edited on iOS.
+
 ## License
 
 StegVerse Constitutional License — all changes require human+AI quorum.
