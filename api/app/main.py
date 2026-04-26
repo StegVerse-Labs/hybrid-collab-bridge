@@ -16,7 +16,13 @@ from .governance.entity import EntityIdentity, EntityRegistry
 from .governance.cge_client import CGELightClient
 from .governance.admission import AdmissionGate
 from .governance.discovery import ProviderDiscoveryEngine, DiscoveryResult
-from .models import DiscoveryRequest, DiscoveryResponse, DiscoveryResultItem, ProviderConnectRequest
+from .governance.stegdb import StegDBClient
+from .governance.compensation import CompensationTracker
+from .governance.halt import EmergencyHalt
+from .models import (
+    RunRequest, ContinueRequest, RunResponse, Turn, ReceiptRef,
+    DiscoveryRequest, DiscoveryResponse, DiscoveryResultItem, ProviderConnectRequest,
+)
 
 # -- Configuration -----------------------------------------------
 
@@ -51,6 +57,9 @@ GATE = AdmissionGate(cge_client=CGE, constitution=constitution)
 
 ENTITY_REG = EntityRegistry(org_id=ORG_ID)
 DISCOVERY = ProviderDiscoveryEngine()
+STEGDB = StegDBClient(mode="direct" if os.getenv("HCB_STEGDB_ENDPOINT") else "filesystem")
+COMPENSATION = CompensationTracker(cge_client=CGE)
+HALT = EmergencyHalt(cge_client=CGE, constitution=constitution)
 
 BRIDGE_ENTITY = EntityIdentity(
     entity_id=f"bridge-{ORG_ID.lower().replace(' ', '-')}",
@@ -66,6 +75,10 @@ ENTITY_REG.register(BRIDGE_ENTITY)
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
 
 app = FastAPI(title="Hybrid Collab Bridge (Governed)", version="0.2.0")
+
+# Include dashboard router
+from .governance.dashboard import router as dashboard_router
+app.include_router(dashboard_router)
 
 # -- Auth --------------------------------------------------------
 
@@ -95,6 +108,10 @@ async def health():
 @app.post("/v1/run", response_model=RunResponse)
 async def run_collab(req: RunRequest, x_admin_token: str | None = Header(default=None)):
     auth_or_403(x_admin_token)
+
+    # Emergency halt check
+    if HALT.is_halted:
+        raise HTTPException(503, f"Emergency halt active: {HALT.get_status()['halt_record']['reason']}")
 
     caller_entity = BRIDGE_ENTITY
     if req.entity_id:
@@ -155,9 +172,28 @@ async def run_collab(req: RunRequest, x_admin_token: str | None = Header(default
         idx += 1
 
     final_admission = result["final"]
+
+    # Record compensation for all participants
+    for turn in turns:
+        if turn.receipt:
+            # Find the entity for this turn
+            entity_id = f"{BRIDGE_ENTITY.entity_id}-{turn.who}"
+            entity = ENTITY_REG.get(entity_id)
+            if entity:
+                comp = COMPENSATION.calculate_compensation(entity, turn.receipt.model_dump() if turn.receipt else {})
+                asyncio.create_task(COMPENSATION.record_compensation(comp))
+
     final_text = ""
     if final_admission.decision == "allow":
         final_text = final_admission.receipt.get("payload", {}).get("merge_output", {}).get("text", "")
+
+    # Ingest to StegDB
+    if final_admission.receipt:
+        asyncio.create_task(STEGDB.ingest_receipt(
+            receipt=final_admission.receipt,
+            actor=BRIDGE_ENTITY,
+            source="hybrid-collab-bridge/run",
+        ))
 
     if req.trace_level == "full":
         final_trace = {
@@ -282,6 +318,59 @@ async def continue_collab(req: ContinueRequest, x_admin_token: str | None = Head
         ).model_dump()
     )
 
+
+
+# -- Emergency Halt --------------------------------------------
+
+@app.post("/v1/halt/request")
+async def request_halt(
+    reason: str,
+    requester_entity_id: str,
+    x_admin_token: str | None = Header(default=None),
+):
+    """Request emergency halt. Requires quorum per constitution."""
+    auth_or_403(x_admin_token)
+
+    requester = ENTITY_REG.get(requester_entity_id)
+    if not requester:
+        requester = EntityIdentity(
+            entity_id=requester_entity_id,
+            entity_type="human_operator",  # Assume human if not registered
+            org_id=ORG_ID,
+            owner_human=BRIDGE_ENTITY.owner_human,
+        )
+
+    result = await HALT.request_halt(requester, reason)
+    return result
+
+
+@app.post("/v1/halt/lift")
+async def lift_halt(
+    reason: str,
+    requester_entity_id: str,
+    x_admin_token: str | None = Header(default=None),
+):
+    """Lift emergency halt. Requires same quorum as activation."""
+    auth_or_403(x_admin_token)
+
+    requester = ENTITY_REG.get(requester_entity_id)
+    if not requester:
+        requester = EntityIdentity(
+            entity_id=requester_entity_id,
+            entity_type="human_operator",
+            org_id=ORG_ID,
+            owner_human=BRIDGE_ENTITY.owner_human,
+        )
+
+    result = await HALT.lift_halt(requester, reason)
+    return result
+
+
+@app.get("/v1/halt/status")
+async def halt_status(x_admin_token: str | None = Header(default=None)):
+    """Get emergency halt status."""
+    auth_or_403(x_admin_token)
+    return HALT.get_status()
 
 # -- Provider Discovery ------------------------------------------
 
