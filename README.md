@@ -114,6 +114,78 @@ AI entities receive per-evaluation micro-payments tracked in the ledger as `comp
 | AaCT-E | Distributed per-repo | TV, TVC, StegBrain, StegCore, Orchestration |
 | **StegVerse-Labs** | **CGE Light (this repo)** | **Internal LLM adapter #2** |
 
+
+## TV/TVC Secret Management
+
+All API keys and tokens are managed through **TrustVault (TV)** + **TrustVaultController (TVC)**.
+
+### Principles
+
+- **No hardcoded secrets** — Only TVC reference IDs in config
+- **Ephemeral credentials** — Auto-rotated, short-lived (default 1 hour)
+- **Platform-agnostic** — Works with HashiCorp Vault, AWS KMS, Azure Key Vault, or custom TVC
+- **Zero secrets in files** — `.env` contains only reference IDs, never raw keys
+- **Auto-refresh** — Credentials refreshed before expiry (5-min buffer)
+
+### Configuration
+
+```bash
+# .env — Only reference IDs, never raw keys
+TVC_ENDPOINT=https://tvc.stegverse.org/v1
+CRED_OPENAI=cred-openai-prod
+CRED_ANTHROPIC=cred-anthropic-prod
+```
+
+### Docker Compose
+
+```bash
+# TVC runs as internal sidecar — no external ports
+docker-compose up -d tvc hybrid-bridge
+
+# TVC is on internal network only
+# Bridge requests credentials via Docker DNS: http://tvc:8080/v1
+```
+
+### Development (File Mode)
+
+```bash
+# Copy example vault
+cp .tv/vault.json.example .tv/vault.json
+# Edit with your dev keys (never commit)
+
+# Set mode
+TVC_MODE=file
+TV_VAULT_PATH=./.tv/vault.json
+```
+
+### Production (Direct Mode)
+
+```bash
+# TVC endpoint with auto-rotation
+TVC_MODE=direct
+TVC_ENDPOINT=https://tvc.stegverse.org/v1
+TVC_API_KEY=tvc-prod-reference
+
+# Credentials are fetched ephemeral, never stored locally
+```
+
+### Provider Adapter with TV/TVC
+
+```python
+from app.governance.tv_tvc import TVCClient, TVProviderAdapter
+from app.providers.openai_text import OpenAIText
+
+# Create TVC client
+tvc = TVCClient(mode="direct")
+
+# Wrap any provider with ephemeral credentials
+base = OpenAIText("openai")
+provider = TVProviderAdapter(base, tvc, "cred-openai-prod")
+
+# Token is fetched ephemeral, used, discarded
+result = await provider.run(task)
+```
+
 ## Documentation
 
 - [`docs/DISCOVERY_API.md`](docs/DISCOVERY_API.md) — Provider discovery, connection, and denial handling
