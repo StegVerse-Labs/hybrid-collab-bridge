@@ -1,6 +1,21 @@
 version: "3.8"
 
 services:
+  # TVC Sidecar — TrustVault Controller for ephemeral secrets
+  tvc:
+    image: stegverse/tvc:latest
+    environment:
+      - TVC_MODE=server
+      - TVC_VAULT_BACKEND=memory                    # Or etcd, consul, hashicorp-vault
+      - TVC_KEY_ROTATION_INTERVAL=3600             # Rotate every hour
+      - TVC_MAX_TTL=7200                           # Max credential lifetime
+    volumes:
+      - tvc-data:/var/lib/tvc
+    networks:
+      - stegverse-internal
+    # TVC is internal-only — no exposed ports
+    # Bridge communicates via Docker network
+
   hybrid-bridge:
     build:
       context: .
@@ -8,49 +23,58 @@ services:
     ports:
       - "8080:8080"
     environment:
+      - TVC_ENDPOINT=http://tvc:8080/v1              # Internal Docker DNS
+      - TVC_MODE=direct
+      - TVC_API_KEY=${TVC_API_KEY}                 # Injected at deploy time
+
+      # Credential references (non-sensitive)
+      - CRED_OPENAI=cred-openai-prod
+      - CRED_ANTHROPIC=cred-anthropic-prod
+      - CRED_MOONSHOT=cred-moonshot-prod
+      - CRED_GOOGLE=cred-google-prod
+      - CRED_XAI=cred-xai-prod
+      - CRED_DEEPSEEK=cred-deepseek-prod
+      - CRED_PERPLEXITY=cred-perplexity-prod
+
+      # Bridge config
       - HCB_ORG_ID=StegVerse-Labs
       - HCB_CGE_MODE=embedded
       - HCB_CGE_PATH=/app/cge_light
       - HCB_OWNER_HUMAN=owner
       - HCB_OWNER_AI=Beta_Orionis
-      - ADMIN_TOKEN=${ADMIN_TOKEN}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - MOONSHOT_API_KEY=${MOONSHOT_API_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - XAI_API_KEY=${XAI_API_KEY}
-      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
-      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - ADMIN_TOKEN=${ADMIN_TOKEN}                  # Should also come from TVC
+
+      # Ollama (local, no secrets)
       - OLLAMA_BASE=http://ollama:11434
+
+      # StegDB (future)
+      - HCB_STEGDB_ENDPOINT=${HCB_STEGDB_ENDPOINT}
     volumes:
       - ./cge_light:/app/cge_light:rw
       - ./sessions:/app/sessions:rw
-      - ./state:/app/state:rw
+      - bridge-state:/app/state
     depends_on:
+      - tvc
       - ollama
     networks:
+      - stegverse-internal
       - stegverse-bridge
 
   ollama:
     image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
     volumes:
       - ollama-data:/root/.ollama
     networks:
-      - stegverse-bridge
-
-  # Optional: StegDB ingestion endpoint (future)
-  # stegdb:
-  #   image: stegverse/stegdb:latest
-  #   ports:
-  #     - "9000:9000"
-  #   networks:
-  #     - stegverse-bridge
+      - stegverse-internal
+    # Internal only — no exposed ports
 
 volumes:
+  tvc-data:
+  bridge-state:
   ollama-data:
 
 networks:
+  stegverse-internal:
+    internal: true                                  # No external access
   stegverse-bridge:
     driver: bridge
