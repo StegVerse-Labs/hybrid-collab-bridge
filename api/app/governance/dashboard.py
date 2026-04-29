@@ -4,19 +4,31 @@ Endpoints for monitoring ledger state, receipt chains, entity registry,
 and admission statistics. No mutations — read-only.
 """
 from __future__ import annotations
+import json
 from typing import Dict, Any, List
+from pathlib import Path
 from fastapi import APIRouter, Header, HTTPException
-
-from ..governance.entity import EntityRegistry
-from ..governance.cge_client import CGELightClient
 
 router = APIRouter(prefix="/v1/dashboard", tags=["dashboard"])
 
+# Shared config — set at app startup
+ADMIN_TOKEN: str = ""
+CGE_PATH: Path = Path("./cge_light")
+ENTITY_REGISTRY = None
 
-def auth_or_403(token: str | None, admin_token: str):
-    if not admin_token:
+
+def set_config(admin_token: str, cge_path: Path, entity_registry):
+    """Set dashboard config from main.py at startup."""
+    global ADMIN_TOKEN, CGE_PATH, ENTITY_REGISTRY
+    ADMIN_TOKEN = admin_token
+    CGE_PATH = cge_path
+    ENTITY_REGISTRY = entity_registry
+
+
+def auth_or_403(token: str | None):
+    if not ADMIN_TOKEN:
         return
-    if token != admin_token:
+    if token != ADMIN_TOKEN:
         raise HTTPException(status_code=403, detail="Forbidden")
 
 
@@ -26,10 +38,9 @@ async def ledger_state(
     x_admin_token: str | None = Header(default=None),
 ):
     """Read ledger entries."""
-    from ...main import ADMIN_TOKEN, CGE
-    auth_or_403(x_admin_token, ADMIN_TOKEN)
+    auth_or_403(x_admin_token)
 
-    ledger_path = CGE.cge_path / "state" / "ledger.jsonl"
+    ledger_path = CGE_PATH / "state" / "ledger.jsonl"
     if not ledger_path.exists():
         return {"entries": [], "count": 0}
 
@@ -49,23 +60,20 @@ async def receipt_detail(
     x_admin_token: str | None = Header(default=None),
 ):
     """Get receipt details and verification status."""
-    from ...main import ADMIN_TOKEN, CGE
-    auth_or_403(x_admin_token, ADMIN_TOKEN)
+    auth_or_403(x_admin_token)
 
-    import json
-    receipt_path = CGE.cge_path / "meta" / "receipts" / "latest_receipt.json"
+    receipt_path = CGE_PATH / "meta" / "receipts" / "latest_receipt.json"
     if not receipt_path.exists():
         raise HTTPException(404, "No receipts found")
 
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
 
     # If querying a specific receipt, search ledger
-    ledger_path = CGE.cge_path / "state" / "ledger.jsonl"
+    ledger_path = CGE_PATH / "state" / "ledger.jsonl"
     if ledger_path.exists():
         lines = ledger_path.read_text(encoding="utf-8").strip().splitlines()
         for line in lines:
             entry = json.loads(line)
-            # Check if this entry's receipt matches
             if entry.get("receipt_id") == receipt_id:
                 return {
                     "receipt": receipt,
@@ -84,14 +92,16 @@ async def entity_registry(
     x_admin_token: str | None = Header(default=None),
 ):
     """List all governed entities."""
-    from ...main import ADMIN_TOKEN, ENTITY_REG
-    auth_or_403(x_admin_token, ADMIN_TOKEN)
+    auth_or_403(x_admin_token)
 
-    entities = [e.to_dict() for e in ENTITY_REG.all()]
+    if ENTITY_REGISTRY is None:
+        return {"entities": [], "count": 0, "org_id": "unknown"}
+
+    entities = [e.to_dict() for e in ENTITY_REGISTRY.all()]
     return {
         "entities": entities,
         "count": len(entities),
-        "org_id": ENTITY_REG.org_id,
+        "org_id": ENTITY_REGISTRY.org_id,
     }
 
 
@@ -100,10 +110,9 @@ async def admission_stats(
     x_admin_token: str | None = Header(default=None),
 ):
     """Admission statistics."""
-    from ...main import ADMIN_TOKEN, CGE
-    auth_or_403(x_admin_token, ADMIN_TOKEN)
+    auth_or_403(x_admin_token)
 
-    ledger_path = CGE.cge_path / "state" / "ledger.jsonl"
+    ledger_path = CGE_PATH / "state" / "ledger.jsonl"
     if not ledger_path.exists():
         return {"total": 0, "approved": 0, "rejected": 0, "compensation": 0}
 
@@ -135,14 +144,12 @@ async def receipt_chain(
     x_admin_token: str | None = Header(default=None),
 ):
     """Get receipt chain by ID."""
-    from ...main import ADMIN_TOKEN, CGE
-    auth_or_403(x_admin_token, ADMIN_TOKEN)
+    auth_or_403(x_admin_token)
 
-    chain_path = CGE.cge_path / "meta" / "receipt_chains.jsonl"
+    chain_path = CGE_PATH / "meta" / "receipt_chains.jsonl"
     if not chain_path.exists():
         raise HTTPException(404, "No chains found")
 
-    import json
     lines = chain_path.read_text(encoding="utf-8").strip().splitlines()
     chain_entries = []
 

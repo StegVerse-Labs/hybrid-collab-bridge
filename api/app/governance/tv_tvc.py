@@ -220,6 +220,40 @@ class TVCClient:
             expires_at=expiry,
         )
 
+
+    async def get_credential_with_fallback(
+        self,
+        credential_id: str,
+        provider_type: str,
+        env_fallback: Optional[str] = None,
+    ) -> Optional[EphemeralCredential]:
+        """Get credential with fallback chain: TVC → env → skip.
+
+        Args:
+            credential_id: TVC reference ID
+            provider_type: Provider type for validation
+            env_fallback: Env var name for fallback (e.g., "ANTHROPIC_API_KEY")
+        """
+        # 1. Try TVC first
+        cred = await self.get_credential(credential_id, provider_type)
+        if cred and not cred.is_expired:
+            return cred
+
+        # 2. Try env fallback
+        if env_fallback:
+            token = os.getenv(env_fallback)
+            if token:
+                return EphemeralCredential(
+                    credential_id=f"{credential_id}-env-fallback",
+                    provider_type=provider_type,
+                    token=token,
+                    expires_at=time.time() + 86400,  # 24h for env fallback
+                    metadata={"source": "env_fallback", "env_var": env_fallback},
+                )
+
+        # 3. No credential available
+        return None
+
     def invalidate(self, credential_id: str) -> None:
         """Explicitly invalidate a cached credential."""
         if credential_id in self._cache:
