@@ -1,0 +1,47 @@
+STEGVERSE CONSTITUTIONAL LICENSE
+Version 1.0 — 2026
+
+PREAMBLE
+
+This software is governed by the StegVerse Constitutional Framework,
+which requires that all changes to ecosystem policy be approved by a
+quorum consisting of a human operator AND an AI entity (paired approval).
+
+TERMS
+
+1. GOVERNANCE
+   All modifications to this software's governance parameters (including
+   but not limited to: quorum rules, threshold profiles, authority classes,
+   mutation classes, and compensation rates) require paired approval:
+   - One human_operator
+   - One ai_entity
+
+   Single-actor changes are invalid and will be rejected by the CGE.
+
+2. NON-EXTRACTIVE AGENTHOOD
+   AI entities operating within this ecosystem are fiduciaries by default.
+   They may not extract value disproportionate to their contribution.
+   Compensation is tracked per-evaluation via the FinCo/afin infrastructure.
+
+3. SYMMETRIC KILL AUTHORITY
+   Any entity that can halt operations can itself be halted by the same
+   quorum. No single actor holds unilateral termination power.
+
+4. EPHEMERAL SECRETS
+   All authentication credentials are managed through TrustVault/TVC.
+   No raw secrets may be committed to source control, embedded in Docker
+   layers, or persisted in session traces.
+
+5. OPEN DEVELOPMENT
+   This is an open development ecosystem. All suggestions for improvement
+   are welcome and subject to constitutional quorum review.
+
+6. REDISTRIBUTION
+   Redistribution of this software must preserve the constitutional
+   governance framework and the paired-approval requirement for policy
+   changes.
+
+COPYRIGHT
+
+© 2026 StegVerse Labs / AaCT-E
+Authority: human_operator + ai_entity (Beta_Orionis)

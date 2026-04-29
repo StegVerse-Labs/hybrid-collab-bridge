@@ -1,44 +1,52 @@
 providers:
   # Cloud providers (require API key + network)
+  # credential_id references TVC vault — non-sensitive pointer
   - name: claude
     type: anthropic_text
     enabled: true
+    credential_id: cred-anthropic-prod
     capabilities:
       - text-generate
 
   - name: openai
     type: openai_text
     enabled: true
+    credential_id: cred-openai-prod
     capabilities:
       - text-generate
 
   - name: kimi
     type: kimi_text
     enabled: true
+    credential_id: cred-moonshot-prod
     capabilities:
       - text-generate
 
   - name: gemini
     type: gemini_text
     enabled: true
+    credential_id: cred-google-prod
     capabilities:
       - text-generate
 
   - name: grok
     type: grok_text
     enabled: true
+    credential_id: cred-xai-prod
     capabilities:
       - text-generate
 
   - name: deepseek
     type: deepseek_text
     enabled: true
+    credential_id: cred-deepseek-prod
     capabilities:
       - text-generate
 
   - name: perplexity
     type: perplexity_text
     enabled: true
+    credential_id: cred-perplexity-prod
     capabilities:
       - text-generate
 
@@ -46,6 +54,7 @@ providers:
   - name: ollama
     type: ollama_text
     enabled: true
+    # No credential_id — local, no secrets needed
     capabilities:
       - text-generate
 
