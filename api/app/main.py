@@ -3,6 +3,7 @@
 Every endpoint is admission-gated. Human gate is exception-only.
 """
 import os
+import asyncio
 import json
 from pathlib import Path
 from fastapi import FastAPI, Header, HTTPException
@@ -19,6 +20,11 @@ from .governance.discovery import ProviderDiscoveryEngine, DiscoveryResult
 from .governance.stegdb import StegDBClient
 from .governance.compensation import CompensationTracker
 from .governance.halt import EmergencyHalt
+from .governance.sdk_alignment import SharedGovernanceSurface
+from .governance.stegdb_wiring import StegDBWiring
+from .governance.publisher import PublisherClient, PublishableOutput
+from .governance.aacte_demo import AaCTEDemoPipeline
+from .governance.stegcge_compiler import StegCGECompiler
 from .models import (
     RunRequest, ContinueRequest, RunResponse, Turn, ReceiptRef,
     DiscoveryRequest, DiscoveryResponse, DiscoveryResultItem, ProviderConnectRequest,
@@ -57,9 +63,18 @@ GATE = AdmissionGate(cge_client=CGE, constitution=constitution)
 
 ENTITY_REG = EntityRegistry(org_id=ORG_ID)
 DISCOVERY = ProviderDiscoveryEngine()
+
+# Configure dashboard
+from .governance.dashboard import set_config as set_dashboard_config
+set_dashboard_config(ADMIN_TOKEN, CGE.cge_path, ENTITY_REG)
 STEGDB = StegDBClient(mode="direct" if os.getenv("HCB_STEGDB_ENDPOINT") else "filesystem")
 COMPENSATION = CompensationTracker(cge_client=CGE)
 HALT = EmergencyHalt(cge_client=CGE, constitution=constitution)
+SDK_SURFACE = SharedGovernanceSurface(cge_client=CGE, constitution=constitution)
+STEGDB_WIRING = StegDBWiring()
+PUBLISHER = PublisherClient()
+AACTE = AaCTEDemoPipeline(cge_client=CGE, constitution=constitution)
+STEGCGE = StegCGECompiler()
 
 BRIDGE_ENTITY = EntityIdentity(
     entity_id=f"bridge-{ORG_ID.lower().replace(' ', '-')}",
@@ -74,7 +89,7 @@ ENTITY_REG.register(BRIDGE_ENTITY)
 
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
 
-app = FastAPI(title="Hybrid Collab Bridge (Governed)", version="0.2.0")
+app = FastAPI(title="Hybrid Collab Bridge (Governed)", version="1.0.0")
 
 # Include dashboard router
 from .governance.dashboard import router as dashboard_router
@@ -94,7 +109,7 @@ def auth_or_403(token: str | None):
 async def health():
     return {
         "ok": True,
-        "version": "0.2.0",
+        "version": "1.0.0",
         "providers": REG.list(),
         "providers_path": str(cfg_path),
         "org_id": ORG_ID,
@@ -180,7 +195,15 @@ async def run_collab(req: RunRequest, x_admin_token: str | None = Header(default
             entity_id = f"{BRIDGE_ENTITY.entity_id}-{turn.who}"
             entity = ENTITY_REG.get(entity_id)
             if entity:
-                comp = COMPENSATION.calculate_compensation(entity, turn.receipt.model_dump() if turn.receipt else {})
+                # Build receipt dict from the actual ledger receipt
+                receipt_dict = {
+                    "receipt_id": turn.receipt.receipt_id,
+                    "ledger_entry_id": turn.receipt.ledger_entry_id,
+                    "entry_hash": turn.receipt.entry_hash,
+                    "decision": turn.receipt.decision,
+                    "verified": turn.receipt.verified,
+                }
+                comp = COMPENSATION.calculate_compensation(entity, receipt_dict)
                 asyncio.create_task(COMPENSATION.record_compensation(comp))
 
     final_text = ""
@@ -514,3 +537,253 @@ def _convert_discovery(result: DiscoveryResult) -> DiscoveryResultItem:
         requires_api_key=result.requires_api_key,
         estimated_cost_tier=result.estimated_cost_tier,
     )
+
+
+# -- SDK Alignment -----------------------------------------------
+
+@app.post("/v1/sdk/govern")
+async def sdk_govern_output(
+    provider: str,
+    model: str,
+    prompt: str,
+    output: str,
+    entity_id: str,
+    x_admin_token: str | None = Header(default=None),
+):
+    """Govern user-facing LLM output (SDK parity endpoint)."""
+    auth_or_403(x_admin_token)
+
+    entity = ENTITY_REG.get(entity_id) or EntityIdentity(
+        entity_id=entity_id,
+        entity_type="ai_entity",
+        org_id=ORG_ID,
+        owner_human=BRIDGE_ENTITY.owner_human,
+    )
+
+    result = await SDK_SURFACE.govern_llm_output(
+        provider=provider,
+        model=model,
+        prompt=prompt,
+        output=output,
+        entity=entity,
+    )
+
+    return result.__dict__
+
+
+@app.post("/v1/sdk/verify")
+async def verify_cross_adapter(
+    sdk_receipt: Dict[str, Any],
+    bridge_receipt: Dict[str, Any],
+    x_admin_token: str | None = Header(default=None),
+):
+    """Verify SDK and bridge receipts are consistent."""
+    auth_or_403(x_admin_token)
+    return await SDK_SURFACE.verify_cross_adapter(sdk_receipt, bridge_receipt)
+
+
+# -- StegDB Wiring -----------------------------------------------
+
+@app.post("/v1/stegdb/push")
+async def stegdb_push_run(
+    session_path: str,
+    receipt: Dict[str, Any],
+    x_admin_token: str | None = Header(default=None),
+):
+    """Manually push a run result to StegDB."""
+    auth_or_403(x_admin_token)
+
+    return await STEGDB_WIRING.push_run_result(
+        session_path=session_path,
+        final_receipt=receipt,
+        turns=[],
+        bridge_entity=BRIDGE_ENTITY,
+    )
+
+
+@app.get("/v1/stegdb/history/{entity_id}")
+async def stegdb_history(
+    entity_id: str,
+    limit: int = 100,
+    x_admin_token: str | None = Header(default=None),
+):
+    """Query StegDB for entity history."""
+    auth_or_403(x_admin_token)
+    return await STEGDB_WIRING.query_entity_history(entity_id, limit)
+
+
+# -- Publisher Integration ---------------------------------------
+
+@app.post("/v1/publish/paper")
+async def publish_paper(
+    title: str,
+    content: str,
+    authors: List[str],
+    venue: str,
+    receipt_id: str,
+    bcat: Dict[str, Any],
+    gcat: Dict[str, Any],
+    tags: List[str] = [],
+    x_admin_token: str | None = Header(default=None),
+):
+    """Submit governed output as academic paper."""
+    auth_or_403(x_admin_token)
+
+    output = PublishableOutput(
+        content=content,
+        title=title,
+        authors=authors,
+        receipt_id=receipt_id,
+        bcat=bcat,
+        gcat=gcat,
+        tags=tags,
+        format="paper",
+    )
+
+    return await PUBLISHER.submit_paper(output, venue)
+
+
+@app.post("/v1/publish/social")
+async def publish_social(
+    title: str,
+    content: str,
+    platform: str,
+    receipt_id: str,
+    tags: List[str] = [],
+    thread: bool = False,
+    x_admin_token: str | None = Header(default=None),
+):
+    """Post governed output to social media."""
+    auth_or_403(x_admin_token)
+
+    output = PublishableOutput(
+        content=content,
+        title=title,
+        authors=[BRIDGE_ENTITY.owner_human],
+        receipt_id=receipt_id,
+        bcat={},
+        gcat={},
+        tags=tags,
+        format="social",
+    )
+
+    return await PUBLISHER.post_social(output, platform, thread)
+
+
+@app.post("/v1/publish/blog")
+async def publish_blog(
+    title: str,
+    content: str,
+    platform: str = "stegverse",
+    receipt_id: str = "",
+    tags: List[str] = [],
+    x_admin_token: str | None = Header(default=None),
+):
+    """Publish governed output as blog post."""
+    auth_or_403(x_admin_token)
+
+    output = PublishableOutput(
+        content=content,
+        title=title,
+        authors=[BRIDGE_ENTITY.owner_human],
+        receipt_id=receipt_id,
+        bcat={},
+        gcat={},
+        tags=tags,
+        format="blog",
+    )
+
+    return await PUBLISHER.publish_blog(output, platform)
+
+
+# -- AaCT-E Demo Pipeline ----------------------------------------
+
+@app.post("/v1/aacte/experiment")
+async def aacte_experiment(
+    experiment_id: str,
+    hypothesis: str,
+    parameters: Dict[str, Any],
+    entity_id: str = "",
+    x_admin_token: str | None = Header(default=None),
+):
+    """Run GCAT/BCAT experiment via AaCT-E demo pipeline."""
+    auth_or_403(x_admin_token)
+
+    entity = ENTITY_REG.get(entity_id) or BRIDGE_ENTITY
+
+    return await AACTE.run_experiment(
+        experiment_id=experiment_id,
+        hypothesis=hypothesis,
+        parameters=parameters,
+        entity=entity,
+    )
+
+
+@app.post("/v1/aacte/validate")
+async def aacte_validate(
+    experiment_id: str,
+    result_data: Dict[str, Any],
+    entity_id: str = "",
+    x_admin_token: str | None = Header(default=None),
+):
+    """Validate experiment results."""
+    auth_or_403(x_admin_token)
+
+    entity = ENTITY_REG.get(entity_id) or BRIDGE_ENTITY
+
+    return await AACTE.validate_experiment_result(
+        experiment_id=experiment_id,
+        result_data=result_data,
+        entity=entity,
+    )
+
+
+# -- StegCGE Compiler --------------------------------------------
+
+@app.post("/v1/stegcge/register")
+async def stegcge_register(
+    org_id: str,
+    cge_tier: str = "light",
+    x_admin_token: str | None = Header(default=None),
+):
+    """Register org with StegCGE master compiler."""
+    auth_or_403(x_admin_token)
+
+    STEGCGE.register_org(org_id, cge_tier)
+    return {"status": "registered", "org_id": org_id, "tier": cge_tier}
+
+
+@app.post("/v1/stegcge/compile")
+async def stegcge_compile(x_admin_token: str | None = Header(default=None)):
+    """Compile cross-org policy."""
+    auth_or_403(x_admin_token)
+    return await STEGCGE.compile_policy()
+
+
+@app.get("/v1/stegcge/status")
+async def stegcge_status(x_admin_token: str | None = Header(default=None)):
+    """Get StegCGE compiler status."""
+    auth_or_403(x_admin_token)
+    return STEGCGE.get_master_status()
+
+
+@app.get("/v1/stegcge/health/{org_id}")
+async def stegcge_org_health(
+    org_id: str,
+    x_admin_token: str | None = Header(default=None),
+):
+    """Check org health via StegCGE."""
+    auth_or_403(x_admin_token)
+    return await STEGCGE.check_org_health(org_id)
+
+
+@app.post("/v1/stegcge/repair")
+async def stegcge_repair(
+    org_id: str,
+    x_admin_token: str | None = Header(default=None),
+):
+    """Direct repair for failed org."""
+    auth_or_403(x_admin_token)
+
+    status = await STEGCGE.check_org_health(org_id)
+    return await STEGCGE.direct_repair(org_id, status)
