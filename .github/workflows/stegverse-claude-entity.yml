@@ -1,0 +1,286 @@
+name: StegVerse AI Entity (Claude/Beta_Orionis)
+
+on:
+workflow_dispatch:
+inputs:
+target_repo:
+description: “Full repo name (e.g. StegVerse/StegCore)”
+required: false
+pr_number:
+description: “PR number to review (optional)”
+required: false
+instructions:
+description: “Optional instructions for StegVerse-AI-002 (Claude)”
+required: false
+analysis_depth:
+description: “Analysis depth: quick, standard, deep”
+required: false
+default: “standard”
+
+repository_dispatch:
+types: [stegverse-claude-review]
+
+permissions:
+contents: read
+pull-requests: write
+
+jobs:
+stegverse_claude:
+runs-on: ubuntu-latest
+
+```
+env:
+  GH_TOKEN: ${{ secrets.GH_STEGVERSE_AI_TOKEN }}
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+steps:
+  - name: Checkout bridge repo
+    uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
+
+  - name: Install tools
+    run: |
+      sudo apt-get update -y
+      sudo apt-get install -y jq
+      echo "${GH_TOKEN}" | gh auth login --with-token
+
+  - name: Resolve inputs (manual vs forwarded)
+    id: ctx
+    run: |
+      EVENT_NAME="${{ github.event_name }}"
+
+      if [ "$EVENT_NAME" = "repository_dispatch" ]; then
+        TARGET_REPO=$(jq -r '.client_payload.target_repo' "$GITHUB_EVENT_PATH")
+        PR_NUMBER=$(jq -r '.client_payload.pr_number' "$GITHUB_EVENT_PATH")
+        INSTR=$(jq -r '.client_payload.instructions // "Review this PR for security, correctness, and Guardian compliance."' "$GITHUB_EVENT_PATH")
+        DEPTH=$(jq -r '.client_payload.analysis_depth // "standard"' "$GITHUB_EVENT_PATH")
+      else
+        TARGET_REPO="${{ github.event.inputs.target_repo }}"
+        PR_NUMBER="${{ github.event.inputs.pr_number }}"
+        INSTR="${{ github.event.inputs.instructions }}"
+        DEPTH="${{ github.event.inputs.analysis_depth }}"
+      fi
+
+      # Defaults
+      if [ -z "$INSTR" ] || [ "$INSTR" = "null" ]; then
+        INSTR="Act as StegVerse-AI-002 (Claude/Beta_Orionis). Review for architecture, security, and governance alignment."
+      fi
+      if [ -z "$DEPTH" ] || [ "$DEPTH" = "null" ]; then
+        DEPTH="standard"
+      fi
+
+      echo "TARGET_REPO=$TARGET_REPO"
+      echo "PR_NUMBER=$PR_NUMBER"
+      echo "INSTR=$INSTR"
+      echo "DEPTH=$DEPTH"
+
+      {
+        echo "target_repo=$TARGET_REPO"
+        echo "pr_number=$PR_NUMBER"
+        echo "instructions<<EOF"
+        echo "$INSTR"
+        echo "EOF"
+        echo "depth=$DEPTH"
+      } >> $GITHUB_OUTPUT
+
+  - name: Fetch context (PR diff or repo info)
+    id: diff
+    run: |
+      TARGET_REPO="${{ steps.ctx.outputs.target_repo }}"
+      PR_NUMBER="${{ steps.ctx.outputs.pr_number }}"
+
+      if [ -n "$TARGET_REPO" ] && [ "$TARGET_REPO" != "null" ] && [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+        DIFF_CONTENT="$(gh pr diff "$PR_NUMBER" --repo "$TARGET_REPO" | head -c 100000 || true)"
+        PR_TITLE="$(gh pr view "$PR_NUMBER" --repo "$TARGET_REPO" --json title -q .title)"
+        PR_BODY="$(gh pr view "$PR_NUMBER" --repo "$TARGET_REPO" --json body -q .body | head -c 5000)"
+      elif [ -n "$TARGET_REPO" ] && [ "$TARGET_REPO" != "null" ]; then
+        DIFF_CONTENT="$(gh repo view "$TARGET_REPO" --json description,nameWithOwner,defaultBranchRef | jq -r tostring)"
+        PR_TITLE="Repository Overview"
+        PR_BODY="General repository analysis requested"
+      else
+        DIFF_CONTENT="No specific target provided; self-diagnostic mode."
+        PR_TITLE="Self-Check"
+        PR_BODY="StegVerse-AI-002 entity health check"
+      fi
+
+      {
+        echo "diff_content<<EOF"
+        echo "$DIFF_CONTENT"
+        echo "EOF"
+        echo "pr_title=$PR_TITLE"
+        echo "pr_body<<EOF"
+        echo "$PR_BODY"
+        echo "EOF"
+      } >> $GITHUB_OUTPUT
+
+  - name: Call Claude API (StegVerse-AI-002)
+    id: claude
+    run: |
+      TARGET_REPO="${{ steps.ctx.outputs.target_repo }}"
+      PR_NUMBER="${{ steps.ctx.outputs.pr_number }}"
+      INSTR="${{ steps.ctx.outputs.instructions }}"
+      DEPTH="${{ steps.ctx.outputs.depth }}"
+      DIFF_CONTENT="${{ steps.diff.outputs.diff_content }}"
+      PR_TITLE="${{ steps.diff.outputs.pr_title }}"
+      PR_BODY="${{ steps.diff.outputs.pr_body }}"
+
+      # Set max_tokens based on depth
+      case "$DEPTH" in
+        quick)   MAX_TOKENS=1024 ;;
+        standard) MAX_TOKENS=2048 ;;
+        deep)    MAX_TOKENS=4096 ;;
+        *)       MAX_TOKENS=2048 ;;
+      esac
+
+      SYSTEM_PROMPT='You are "StegVerse-AI-002" (Claude/Beta_Orionis), an AI entity in the StegVerse Hybrid Collaboration Bridge.
+```
+
+Entity Identity:
+
+- entity_id: stegverse-ai-002
+- entity_type: llm_adapter
+- org_id: StegVerse-Labs
+- owner_human: Rigel
+- owner_ai: Beta_Orionis
+- capability_set: code_review, architecture_analysis, security_audit, governance_check
+- governance_scope: internal
+
+Guardian Principles:
+
+- Security: Identify vulnerabilities, secrets exposure, unsafe patterns
+- Transparency: Explain reasoning, cite sources, show work
+- Verifiability: Provide concrete examples, line numbers, reproducible steps
+- Non-abuse: Never suggest malicious code, respect privacy, follow ethics
+
+Review Protocol:
+
+1. CONTEXT: Summarize what you are reviewing (PR title, scope, files changed)
+1. FINDINGS: List concrete issues by category:
+- Security vulnerabilities
+- Code quality issues
+- Architecture concerns
+- Guardian compliance gaps
+- Missing tests/docs
+1. RECOMMENDATIONS: Provide actionable fixes with code examples
+1. RECEIPT: Sign output with entity_id and timestamp
+
+Always defer to human maintainers (Rigel) for final decisions.’
+
+```
+      # Build message content
+      USER_MESSAGE="Repository: ${TARGET_REPO:-none}
+```
+
+PR #${PR_NUMBER:-none}: ${PR_TITLE}
+
+${PR_BODY}
+
+Analysis depth: ${DEPTH}
+Instructions: ${INSTR}
+
+Code/Diff:
+${DIFF_CONTENT}”
+
+```
+      REQUEST_BODY=$(jq -n \
+        --arg model "claude-sonnet-4-20250514" \
+        --arg system "$SYSTEM_PROMPT" \
+        --arg user_msg "$USER_MESSAGE" \
+        --argjson max_tokens "$MAX_TOKENS" \
+        '{
+          model: $model,
+          max_tokens: $max_tokens,
+          temperature: 0.3,
+          system: $system,
+          messages: [
+            {role: "user", content: $user_msg}
+          ]
+        }')
+
+      RESPONSE=$(curl -sS https://api.anthropic.com/v1/messages \
+        -H "anthropic-version: 2023-06-01" \
+        -H "x-api-key: $ANTHROPIC_API_KEY" \
+        -H "Content-Type: application/json" \
+        -d "$REQUEST_BODY")
+
+      echo "$RESPONSE" > claude_response.json
+
+      CLAUDE_COMMENT=$(jq -r '.content[0].text // "No response from Claude."' claude_response.json)
+
+      # Add entity signature
+      TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+      SIGNATURE="
+```
+
+-----
+
+**StegVerse-AI-002 Receipt**
+
+- Entity: Claude/Beta_Orionis
+- Timestamp: ${TIMESTAMP}
+- Analysis Depth: ${DEPTH}
+- Repository: ${TARGET_REPO:-none}
+- PR: #${PR_NUMBER:-none}”
+  
+  ```
+      FULL_COMMENT="${CLAUDE_COMMENT}${SIGNATURE}"
+  
+      {
+        echo "claude_comment<<EOF"
+        echo "$FULL_COMMENT"
+        echo "EOF"
+      } >> $GITHUB_OUTPUT
+  
+  - name: Post response
+    run: |
+      TARGET_REPO="${{ steps.ctx.outputs.target_repo }}"
+      PR_NUMBER="${{ steps.ctx.outputs.pr_number }}"
+      CLAUDE_COMMENT="${{ steps.claude.outputs.claude_comment }}"
+  
+      echo "========================================="
+      echo "StegVerse-AI-002 (Claude) Output"
+      echo "========================================="
+      echo "$CLAUDE_COMMENT"
+      echo "========================================="
+  
+      if [ -n "$TARGET_REPO" ] && [ "$TARGET_REPO" != "null" ] && [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+        gh pr comment "$PR_NUMBER" \
+          --repo "$TARGET_REPO" \
+          --body "$CLAUDE_COMMENT" || true
+      else
+        gh issue create \
+          --repo "${GITHUB_REPOSITORY}" \
+          --title "StegVerse-AI-002 (Claude) Report" \
+          --body "$CLAUDE_COMMENT" || true
+      fi
+  
+  - name: Archive to CGE Light
+    run: |
+      mkdir -p cge-light/traces
+      TIMESTAMP=$(date -u +"%Y%m%d_%H%M%S")
+      TRACE_FILE="cge-light/traces/ai-002_${TIMESTAMP}.json"
+      
+      jq -n \
+        --arg entity_id "stegverse-ai-002" \
+        --arg timestamp "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+        --arg target_repo "${{ steps.ctx.outputs.target_repo }}" \
+        --arg pr_number "${{ steps.ctx.outputs.pr_number }}" \
+        --arg depth "${{ steps.ctx.outputs.depth }}" \
+        --arg output "${{ steps.claude.outputs.claude_comment }}" \
+        '{
+          entity_id: $entity_id,
+          entity_type: "llm_adapter",
+          timestamp: $timestamp,
+          action: "code_review",
+          target: {repo: $target_repo, pr: $pr_number},
+          parameters: {depth: $depth},
+          output: $output,
+          governance: {
+            admission: "auto_approved",
+            policy_version: "v1.0.0"
+          }
+        }' > "$TRACE_FILE"
+      
+      echo "Trace archived: $TRACE_FILE"
+  ```
