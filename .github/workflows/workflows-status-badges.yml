@@ -3,7 +3,7 @@ name: Workflows Status Badges
 on:
   workflow_dispatch: {}
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     paths:
       - ".github/workflows/**"
       - ".github/docs/**"
@@ -19,14 +19,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
+        with:
+          python-version: "3.11"
 
       - name: Install deps
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip pyyaml
 
       - name: Scan workflows and render badge + docs
@@ -34,115 +37,130 @@ jobs:
         run: |
           set -euo pipefail
           python - <<'PY'
-          import yaml, pathlib, datetime, json, re
+          import datetime
+          import json
+          import pathlib
+          import re
+          import yaml
 
-          ROOT   = pathlib.Path(".")
-          WF_DIR = ROOT/".github/workflows"
-          BADGE  = ROOT/".github/badges/workflows.svg"
-          DOC    = ROOT/".github/docs/WORKFLOWS_STATUS.md"
-          README = ROOT/"README.md"
+          ROOT = pathlib.Path(".")
+          WF_DIR = ROOT / ".github/workflows"
+          BADGE = ROOT / ".github/badges/workflows.svg"
+          DOC = ROOT / ".github/docs/WORKFLOWS_STATUS.md"
+          README = ROOT / "README.md"
 
           BADGE.parent.mkdir(parents=True, exist_ok=True)
           DOC.parent.mkdir(parents=True, exist_ok=True)
 
-          def load_yaml(p: pathlib.Path):
-            try:
-              return yaml.safe_load(p.read_text(encoding="utf-8"))
-            except Exception as e:
-              return e  # mark as broken
+          def load_yaml(path: pathlib.Path):
+              try:
+                  return yaml.safe_load(path.read_text(encoding="utf-8"))
+              except Exception as exc:
+                  return exc
 
-          def has_dispatch(d):
-            if not isinstance(d, dict): return False
-            on = d.get("on")
-            if on is None: return False
-            if isinstance(on, str): 
-              return on == "workflow_dispatch"
-            if isinstance(on, list):
-              return "workflow_dispatch" in on
-            if isinstance(on, dict):
-              # reusable-only → ignore for “dispatch” purposes
-              if set(on.keys()) == {"workflow_call"}:
-                return False
-              return "workflow_dispatch" in on
-            return False
+          def has_dispatch(doc):
+              if not isinstance(doc, dict):
+                  return False
+
+              triggers = doc.get("on")
+              if triggers is None:
+                  triggers = doc.get(True)  # PyYAML YAML 1.1 compatibility for the key "on".
+
+              if triggers is None:
+                  return False
+              if isinstance(triggers, str):
+                  return triggers == "workflow_dispatch"
+              if isinstance(triggers, list):
+                  return "workflow_dispatch" in triggers
+              if isinstance(triggers, dict):
+                  if set(triggers.keys()) == {"workflow_call"}:
+                      return False
+                  return "workflow_dispatch" in triggers
+              return False
 
           rows = []
-          ok = nodisp = broken = 0
-          for p in sorted(WF_DIR.glob("*.y*ml")):
-            data = load_yaml(p)
-            state = ""
-            note  = ""
-            if isinstance(data, Exception):
-              broken += 1
-              state = "❌ broken"
-              note = type(data).__name__
-            else:
-              if has_dispatch(data):
-                ok += 1
-                state = "✅ ok"
+          ok = 0
+          nodisp = 0
+          broken = 0
+
+          for path in sorted(WF_DIR.glob("*.y*ml")):
+              doc = load_yaml(path)
+              note = ""
+              if isinstance(doc, Exception):
+                  broken += 1
+                  state = "❌ broken"
+                  note = type(doc).__name__
+              elif has_dispatch(doc):
+                  ok += 1
+                  state = "✅ ok"
               else:
-                nodisp += 1
-                state = "➖ no-dispatch"
-            rows.append((p.name, state, note))
+                  nodisp += 1
+                  state = "➖ no-dispatch"
+              rows.append((path.name, state, note))
 
           total = ok + nodisp + broken
-          now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+          now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-          # --- badge svg
           def svg_badge(label, value, color):
-            label_w = 6 * len(label) + 10
-            val_w   = 6 * len(value) + 10
-            tot_w   = label_w + val_w
-            return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{tot_w}" height="20" role="img" aria-label="{label}: {value}">
-  <linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient>
-  <mask id="m"><rect width="{tot_w}" height="20" rx="3" fill="#fff"/></mask>
-  <g mask="url(#m)">
-    <rect width="{label_w}" height="20" fill="#555"/>
-    <rect x="{label_w}" width="{val_w}" height="20" fill="{color}"/>
-    <rect width="{tot_w}" height="20" fill="url(#s)"/>
-  </g>
-  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
-    <text x="{label_w/2:.1f}" y="14">{label}</text>
-    <text x="{label_w + val_w/2:.1f}" y="14">{value}</text>
-  </g>
-</svg>'''
+              label_w = 6 * len(label) + 10
+              value_w = 6 * len(value) + 10
+              total_w = label_w + value_w
+              return "\n".join([
+                  f'<svg xmlns="http://www.w3.org/2000/svg" width="{total_w}" height="20" role="img" aria-label="{label}: {value}">',
+                  '  <linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient>',
+                  f'  <mask id="m"><rect width="{total_w}" height="20" rx="3" fill="#fff"/></mask>',
+                  '  <g mask="url(#m)">',
+                  f'    <rect width="{label_w}" height="20" fill="#555"/>',
+                  f'    <rect x="{label_w}" width="{value_w}" height="20" fill="{color}"/>',
+                  f'    <rect width="{total_w}" height="20" fill="url(#s)"/>',
+                  '  </g>',
+                  '  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">',
+                  f'    <text x="{label_w / 2:.1f}" y="14">{label}</text>',
+                  f'    <text x="{label_w + value_w / 2:.1f}" y="14">{value}</text>',
+                  '  </g>',
+                  '</svg>',
+              ])
 
-          # green if none broken; amber if any nodisp; red if any broken
           color = "#4c1" if broken == 0 and nodisp == 0 else ("#dfb317" if broken == 0 else "#e05d44")
           BADGE.write_text(svg_badge("workflows", f"{ok}/{total}", color), encoding="utf-8")
 
-          # --- docs
-          lines = []
-          lines += [f"# Workflows Status", "", f"_Last updated: **{now}**_", ""]
-          lines += [f"- ✅ OK (has `workflow_dispatch`): **{ok}**",
-                    f"- ➖ Valid but no dispatch button: **{nodisp}**",
-                    f"- ❌ Broken YAML: **{broken}**", ""]
-          lines += ["| Workflow | State | Note |","|---|---|---|"]
-          for n, s, note in rows:
-            lines.append(f"| `{n}` | {s} | {note} |")
+          lines = [
+              "# Workflows Status",
+              "",
+              f"_Last updated: **{now}**_",
+              "",
+              f"- ✅ OK (has `workflow_dispatch`): **{ok}**",
+              f"- ➖ Valid but no dispatch button: **{nodisp}**",
+              f"- ❌ Broken YAML: **{broken}**",
+              "",
+              "| Workflow | State | Note |",
+              "|---|---|---|",
+          ]
+          for name, state, note in rows:
+              lines.append(f"| `{name}` | {state} | {note} |")
           DOC.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-          # --- README block
-          txt = README.read_text(encoding="utf-8") if README.exists() else "# Repository\n\n"
+          text = README.read_text(encoding="utf-8") if README.exists() else "# Repository\n\n"
           start = "<!-- workflows:status -->"
-          end   = "<!-- /workflows:status -->"
+          end = "<!-- /workflows:status -->"
           block = (
-            f"{start}\n"
-            f"[![workflows](.github/badges/workflows.svg)](.github/docs/WORKFLOWS_STATUS.md)\n\n"
-            f"{ok}/{total} OK · {nodisp} no-dispatch · {broken} broken — _{now}_\n"
-            f"{end}"
+              f"{start}\n"
+              f"[![workflows](.github/badges/workflows.svg)](.github/docs/WORKFLOWS_STATUS.md)\n\n"
+              f"{ok}/{total} OK · {nodisp} no-dispatch · {broken} broken — _{now}_\n"
+              f"{end}"
           )
-          if start in txt and end in txt:
-            new = re.sub(rf"{re.escape(start)}.*?{re.escape(end)}", block, txt, flags=re.S)
+          if start in text and end in text:
+              updated = re.sub(rf"{re.escape(start)}.*?{re.escape(end)}", block, text, flags=re.S)
           else:
-            new = txt.rstrip() + "\n\n## Workflows Status\n\n" + block + "\n"
-          if new != txt:
-            README.write_text(new, encoding="utf-8")
+              updated = text.rstrip() + "\n\n## Workflows Status\n\n" + block + "\n"
 
-          print(json.dumps({"ok":ok,"nodisp":nodisp,"broken":broken,"total":total}, indent=2))
+          if updated != text:
+              README.write_text(updated, encoding="utf-8")
+
+          print(json.dumps({"ok": ok, "nodisp": nodisp, "broken": broken, "total": total}, indent=2))
           PY
 
-      - name: Post-run: AutoDocs (if available)
+      - name: Post-run AutoDocs (if available)
         run: |
           set -euo pipefail
           if [ -f "scripts/autodocs_generate.py" ]; then
@@ -155,7 +173,7 @@ jobs:
       - name: Commit badge + docs (if changed)
         run: |
           set -euo pipefail
-          git config user.name  "StegVerse Bot"
+          git config user.name "StegVerse Bot"
           git config user.email "bot@stegverse.org"
           git add .github/badges/workflows.svg .github/docs/WORKFLOWS_STATUS.md README.md || true
           if ! git diff --cached --quiet; then
