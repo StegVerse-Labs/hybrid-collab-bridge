@@ -3,7 +3,7 @@
 This module intentionally provides a small, stable public function:
     stegtvc_resolve(use_case, module, importance="normal", **kwargs)
 
-The diagnostic workflow imports that function directly.
+The diagnostic workflow and connectivity entity import that function directly.
 """
 
 from __future__ import annotations
@@ -19,12 +19,7 @@ def stegtvc_resolve(
     importance: str = "normal",
     **kwargs: Any,
 ) -> Dict[str, Any]:
-    """Resolve a StegTVC request into a deterministic diagnostic record.
-
-    This is intentionally fail-closed for missing required fields, but it does
-    not require external network access. It gives the workflow a stable import
-    and a useful connectivity/self-check payload.
-    """
+    """Resolve a StegTVC request into a deterministic diagnostic record."""
 
     if not use_case:
         raise ValueError("use_case is required")
