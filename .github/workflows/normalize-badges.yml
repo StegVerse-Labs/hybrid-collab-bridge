@@ -1,0 +1,45 @@
+name: normalize-badges
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "README.md"
+      - "scripts/ensure_readme_badges.py"
+      - ".github/workflows/normalize-badges.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  normalize-badges:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Ensure README badges
+        shell: bash
+        run: |
+          set -e
+          python3 scripts/ensure_readme_badges.py
+
+      - name: Commit if changed
+        shell: bash
+        run: |
+          set -e
+
+          git config user.name "StegVerse Bot"
+          git config user.email "bot@stegverse.org"
+
+          git add README.md || true
+
+          if ! git diff --cached --quiet; then
+            git commit -m "docs(readme): normalize badges block"
+            git push
+          else
+            echo "No changes to commit."
+          fi

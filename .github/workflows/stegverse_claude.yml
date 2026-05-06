@@ -1,0 +1,173 @@
+name: stegverse_claude
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_repo:
+        description: "Repository to review, e.g. StegVerse-Labs/hybrid-collab-bridge"
+        required: false
+        default: ""
+      pr_number:
+        description: "Optional PR number"
+        required: false
+        default: ""
+      extra_instructions:
+        description: "Optional extra instructions"
+        required: false
+        default: ""
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write
+
+jobs:
+  stegverse-claude:
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare review context
+        id: context
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_REPO: ${{ github.repository }}
+          INPUT_TARGET_REPO: ${{ inputs.target_repo }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -e
+
+          TARGET_REPO="${INPUT_TARGET_REPO:-$EVENT_REPO}"
+          PR_NUMBER="${INPUT_PR_NUMBER:-}"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            PR_NUMBER="$EVENT_PR_NUMBER"
+          fi
+
+          : > context.txt
+          : > pr_title.txt
+          : > pr_body.txt
+
+          if [ -n "$TARGET_REPO" ] && [ "$TARGET_REPO" != "null" ] && [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+            if gh pr view "$PR_NUMBER" --repo "$TARGET_REPO" >/dev/null 2>&1; then
+              gh pr diff "$PR_NUMBER" --repo "$TARGET_REPO" | head -c 24000 > context.txt || true
+              gh pr view "$PR_NUMBER" --repo "$TARGET_REPO" --json title -q .title > pr_title.txt || true
+              gh pr view "$PR_NUMBER" --repo "$TARGET_REPO" --json body -q .body | head -c 5000 > pr_body.txt || true
+            fi
+          fi
+
+          if [ ! -s context.txt ] && [ -n "$TARGET_REPO" ] && [ "$TARGET_REPO" != "null" ]; then
+            gh repo view "$TARGET_REPO" --json nameWithOwner,description,defaultBranchRef | jq -r tostring > context.txt
+            printf '%s\n' "Repository Overview" > pr_title.txt
+            printf '%s\n' "General repository analysis requested." > pr_body.txt
+          fi
+
+          if [ ! -s context.txt ]; then
+            printf '%s\n' "No specific target provided. Running self-diagnostic mode." > context.txt
+            printf '%s\n' "Self-Check" > pr_title.txt
+            printf '%s\n' "StegVerse-AI-002 entity health check." > pr_body.txt
+          fi
+
+          {
+            echo "target_repo=$TARGET_REPO"
+            echo "pr_number=$PR_NUMBER"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Call Claude
+        id: claude
+        shell: bash
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          REPO: ${{ steps.context.outputs.target_repo }}
+          EVENT_NAME: ${{ github.event_name }}
+          EXTRA_INSTR: ${{ inputs.extra_instructions }}
+        run: |
+          set -e
+
+          if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+            echo "ANTHROPIC_API_KEY is not configured."
+            exit 1
+          fi
+
+          REVIEW_CONTEXT="$(cat context.txt)"
+          PR_TITLE="$(cat pr_title.txt)"
+          PR_BODY="$(cat pr_body.txt)"
+
+          SYSTEM_PROMPT="You are StegVerse-AI-002. Review the supplied repository or PR context. Return concise, actionable findings. Prioritize execution-boundary failures, credential failures, syntax failures, missing imports, and verification steps."
+
+          jq -n \
+            --arg model "claude-3-5-sonnet-20241022" \
+            --arg system "$SYSTEM_PROMPT" \
+            --arg repo "$REPO" \
+            --arg event "$EVENT_NAME" \
+            --arg extra "$EXTRA_INSTR" \
+            --arg title "$PR_TITLE" \
+            --arg body "$PR_BODY" \
+            --arg context "$REVIEW_CONTEXT" \
+            '{
+              model: $model,
+              max_tokens: 900,
+              temperature: 0.2,
+              system: $system,
+              messages: [
+                {
+                  role: "user",
+                  content: (
+                    "Repository: " + $repo +
+                    "\nEvent: " + $event +
+                    "\nExtra instructions: " + $extra +
+                    "\nTitle: " + $title +
+                    "\nBody: " + $body +
+                    "\n\nContext, possibly truncated:\n\n" + $context
+                  )
+                }
+              ]
+            }' > request.json
+
+          curl -sS https://api.anthropic.com/v1/messages \
+            -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "Content-Type: application/json" \
+            -d @request.json > response.json
+
+          if jq -e '.error' response.json >/dev/null 2>&1; then
+            cat response.json
+            exit 1
+          fi
+
+          AI_COMMENT="$(jq -r '[.content[]? | select(.type == "text") | .text] | join("\n") // "No response from Claude."' response.json)"
+
+          {
+            echo "ai_comments<<EOF"
+            echo "$AI_COMMENT"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Post comment to PR or log
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ steps.context.outputs.target_repo }}
+          PR_NUMBER: ${{ steps.context.outputs.pr_number }}
+          AI_COMMENT: ${{ steps.claude.outputs.ai_comments }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -e
+
+          if [ "$EVENT_NAME" = "pull_request" ] && [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+            gh api \
+              "repos/${REPO}/issues/${PR_NUMBER}/comments" \
+              -f body="$AI_COMMENT"
+          else
+            echo "StegVerse-AI-002 response:"
+            echo "----------------------------------------"
+            echo "$AI_COMMENT"
+            echo "----------------------------------------"
+          fi
