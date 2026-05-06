@@ -1,0 +1,50 @@
+name: connectivity_entity
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  connectivity-entity:
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      INSTRUCTIONS: "Audit and improve connectivity based on stegverse_connectivity.md."
+      REPO: ${{ github.repository }}
+      SYSTEM_PROMPT: "You are StegVerse-AI-Connectivity. Perform tasks reliably."
+      USER_PROMPT: "Audit and improve connectivity based on stegverse_connectivity.md."
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run Hybrid-Collab-Bridge AI entity
+        shell: bash
+        run: |
+          set -e
+          python .github/ai_entity_runner.py
+
+      - name: Commit and push changes if any
+        shell: bash
+        run: |
+          set -e
+
+          git config user.name "StegVerse Bot"
+          git config user.email "bot@stegverse.org"
+
+          git add -A
+
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(connectivity): refresh diagnostic artifacts"
+            git push
+          else
+            echo "No changes to commit."
+          fi

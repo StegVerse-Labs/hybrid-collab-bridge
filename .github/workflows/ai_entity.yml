@@ -48,6 +48,7 @@ jobs:
 
           TARGET_REPO="${INPUT_TARGET_REPO:-$EVENT_REPO}"
           PR_NUMBER="${INPUT_PR_NUMBER:-}"
+
           if [ "$EVENT_NAME" = "pull_request" ]; then
             PR_NUMBER="$EVENT_PR_NUMBER"
           fi
@@ -85,7 +86,6 @@ jobs:
           set -e
 
           DIFF_CONTENT="$(cat context.txt)"
-
           SYSTEM_PROMPT="You are StegVerse-AI-001. Review the supplied repository or PR context. Return concise, actionable findings. Prioritize execution-boundary failures, credential failures, syntax failures, missing imports, and verification steps."
 
           jq -n \
