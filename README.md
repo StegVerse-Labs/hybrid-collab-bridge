@@ -1,3 +1,5 @@
+<!-- badges:start -->\n[![Badges Keeper](https://github.com/StegVerse-Labs/hybrid-collab-bridge/actions/workflows/docs-badge-sync.yml/badge.svg)](https://github.com/StegVerse-Labs/hybrid-collab-bridge/actions/workflows/docs-badge-sync.yml)\n<!-- badges:end -->
+
 # hybrid-collab-bridge v1.0.0
 
 A **governed internal ecosystem adapter**: API orchestration + BCAT/GCAT admission + CGE-monitored traces.
