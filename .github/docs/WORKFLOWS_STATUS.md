@@ -1,8 +1,8 @@
 # Workflows Status
 
-_Last updated: **2026-05-06 12:22 UTC**_
+_Last updated: **2026-06-15 00:12 UTC**_
 
-- OK with workflow_dispatch: **17**
+- OK with workflow_dispatch: **18**
 - Valid but no dispatch button: **1**
 - Broken YAML: **0**
 
@@ -25,4 +25,5 @@ _Last updated: **2026-05-06 12:22 UTC**_
 | `stegverse-claude-entity.yml` | ok |  |
 | `stegverse_claude.yml` | ok |  |
 | `sync-to-canonical.yml` | ok |  |
+| `test-readiness.yml` | ok |  |
 | `workflows-status-badges.yml` | ok |  |
