@@ -1,9 +1,9 @@
 # Workflows Status
 
-_Last updated: **2026-06-15 00:12 UTC**_
+_Last updated: **2026-06-15 00:19 UTC**_
 
-- OK with workflow_dispatch: **18**
-- Valid but no dispatch button: **1**
+- OK with workflow_dispatch: **19**
+- Valid but no dispatch button: **0**
 - Broken YAML: **0**
 
 | Workflow | State | Note |
@@ -15,7 +15,7 @@ _Last updated: **2026-06-15 00:12 UTC**_
 | `autopatch.yml` | ok |  |
 | `bridge-github-models.yml` | ok |  |
 | `bridge-openai.yml` | ok |  |
-| `ci.yml` | no-dispatch |  |
+| `ci.yml` | ok |  |
 | `connectivity_entity.yml` | ok |  |
 | `diagnostic.yml` | ok |  |
 | `docs-badge-sync.yml` | ok |  |
