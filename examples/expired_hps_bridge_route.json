@@ -1,0 +1,20 @@
+{
+  "route_type": "hps_bridge_route",
+  "route_id": "bridge_route_expired_001",
+  "origin": "LLM_ADAPTER",
+  "requested_capability": "publication.handoff",
+  "heartbeat_result": "PASS",
+  "standing_class": "RESTORED",
+  "standing_required": "RESTORED",
+  "capability_window_state": "EXPIRED",
+  "supports": {
+    "authority_valid": true,
+    "policy_current": true,
+    "delegation_current": true,
+    "evidence_fresh": false,
+    "coordinate_valid": true,
+    "reconstruction_available": true
+  },
+  "expiration_triggers": ["evidence_stale"],
+  "expected_bridge_decision": "DENY"
+}
