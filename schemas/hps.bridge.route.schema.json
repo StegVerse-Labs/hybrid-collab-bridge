@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/StegVerse-Labs/hybrid-collab-bridge/schemas/hps.bridge.route.schema.json",
+  "title": "HPS Bridge Route",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "route_type",
+    "route_id",
+    "origin",
+    "requested_capability",
+    "heartbeat_result",
+    "standing_class",
+    "standing_required",
+    "capability_window_state",
+    "supports",
+    "expiration_triggers",
+    "expected_bridge_decision"
+  ],
+  "properties": {
+    "route_type": {"const": "hps_bridge_route"},
+    "route_id": {"type": "string", "minLength": 1},
+    "origin": {"type": "string", "enum": ["SDK", "LLM_ADAPTER", "SITE", "EXTERNAL_ADAPTER", "MANUAL_REVIEW"]},
+    "requested_capability": {"type": "string", "minLength": 1},
+    "heartbeat_result": {"type": "string"},
+    "standing_class": {"type": "string", "enum": ["RESTORED", "DEGRADED", "FAILED"]},
+    "standing_required": {"type": "string", "enum": ["RESTORED", "DEGRADED"]},
+    "capability_window_state": {"type": "string", "enum": ["OPEN", "CLOSED", "EXPIRED", "REVIEW"]},
+    "supports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority_valid", "policy_current", "delegation_current", "evidence_fresh", "coordinate_valid", "reconstruction_available"],
+      "properties": {
+        "authority_valid": {"type": "boolean"},
+        "policy_current": {"type": "boolean"},
+        "delegation_current": {"type": "boolean"},
+        "evidence_fresh": {"type": "boolean"},
+        "coordinate_valid": {"type": "boolean"},
+        "reconstruction_available": {"type": "boolean"}
+      }
+    },
+    "expiration_triggers": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "expected_bridge_decision": {"type": "string", "enum": ["ALLOW_NEXT_BOUNDARY", "DENY", "REVIEW", "FAIL_CLOSED"]}
+  }
+}
