@@ -1,0 +1,20 @@
+{
+  "route_type": "hps_bridge_route",
+  "route_id": "bridge_route_sdk_001",
+  "origin": "SDK",
+  "requested_capability": "memory.commit",
+  "heartbeat_result": "PASS",
+  "standing_class": "RESTORED",
+  "standing_required": "RESTORED",
+  "capability_window_state": "OPEN",
+  "supports": {
+    "authority_valid": true,
+    "policy_current": true,
+    "delegation_current": true,
+    "evidence_fresh": true,
+    "coordinate_valid": true,
+    "reconstruction_available": true
+  },
+  "expiration_triggers": [],
+  "expected_bridge_decision": "ALLOW_NEXT_BOUNDARY"
+}
