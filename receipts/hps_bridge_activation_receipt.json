@@ -1,0 +1,32 @@
+{
+  "receipt_type": "hps_bridge_activation_receipt",
+  "receipt_id": "hps_bridge_activation_2026_07_08_001",
+  "timestamp": "2026-07-08T00:00:00Z",
+  "repository": "StegVerse-Labs/hybrid-collab-bridge",
+  "status": "INSTALLED_OBSERVATION_PENDING",
+  "role": "shared_hps_route_bridge_for_sibling_input_nests",
+  "canonical_hps_source": "Admissible-Existence/HPS",
+  "orchestration_source": "master-records/orchestration",
+  "sibling_inputs": [
+    "StegVerse-org/StegVerse-SDK",
+    "StegVerse-org/LLM-adapter"
+  ],
+  "installed_artifacts": [
+    "HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md",
+    "docs/HPS_ROUTE_BRIDGE.md",
+    "schemas/hps.bridge.route.schema.json",
+    "examples/sdk_origin_hps_bridge_route.json",
+    "examples/llm_origin_hps_bridge_route.json",
+    "examples/expired_hps_bridge_route.json",
+    "scripts/verify_hps_bridge_route.py",
+    "tests/test_hps_bridge_route.py"
+  ],
+  "non_authority": {
+    "executes": false,
+    "publishes": false,
+    "grants_authority": false,
+    "replaces_formalism": false,
+    "replaces_orchestration": false
+  },
+  "reconstruction_available": true
+}
