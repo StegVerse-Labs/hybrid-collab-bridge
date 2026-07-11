@@ -27,7 +27,9 @@ jobs:
         run: |
           cd api
           python -m compileall app
-      - name: Run tests
+      - name: Run API tests
         run: |
           cd api
           pytest -q tests
+      - name: Run governed transition normalization tests
+        run: python -m pytest -q tests/test_governed_transition_normalization.py
