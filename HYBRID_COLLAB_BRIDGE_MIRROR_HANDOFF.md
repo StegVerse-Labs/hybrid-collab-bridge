@@ -120,6 +120,15 @@ LLM candidate identity preservation and Ecosystem-Delegation routing
 origin/route mismatch fail-closed behavior
 ```
 
+## Validation evidence request
+
+```text
+Branch: codex/normalization-ci-evidence
+Purpose: expose the existing CI run through a pull-request event
+Implementation delta: none beyond this evidence-request marker
+Promotion rule: merge only after hybrid-bridge-ci passes on this branch
+```
+
 ## Remaining files or modules to install
 
 ```text
