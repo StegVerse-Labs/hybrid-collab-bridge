@@ -10,7 +10,7 @@ This file is the current handoff and task source of truth for this repository.
 
 ```text
 Goal: normalize sibling transition candidates into one governed next-boundary record
-Phase: SDK normalization installed; LLM parity and delegation integration next
+Phase: SDK-and-LLM-normalization-parity-installed
 Result: LOCAL_IMPLEMENTATION_INSTALLED_VALIDATION_PENDING
 ```
 
@@ -35,7 +35,7 @@ StegVerse-SDK / LLM-adapter
   -> emit origin-specific DECLARED candidates
 
 hybrid-collab-bridge
-  -> validate origin/route pairing
+  -> validate candidate/route origin pairing
   -> evaluate HPS route state
   -> preserve transition_id, run_id, event_id, and origin_manifest_id
   -> attach bridge decision evidence
@@ -48,28 +48,20 @@ master-records/orchestration
   -> lifecycle, final receipt, custody, reconstruction, Site index
 ```
 
-## Installed HPS bridge files
-
-```text
-docs/HPS_ROUTE_BRIDGE.md
-schemas/hps.bridge.route.schema.json
-examples/sdk_origin_hps_bridge_route.json
-examples/llm_origin_hps_bridge_route.json
-examples/expired_hps_bridge_route.json
-scripts/verify_hps_bridge_route.py
-tests/test_hps_bridge_route.py
-receipts/hps_bridge_activation_receipt.json
-```
-
 ## Installed governed-candidate normalization
 
 ```text
 scripts/normalize_governed_transition_candidate.py
 examples/sdk_transition_candidate.input.json
+examples/llm_transition_candidate.input.json
+examples/sdk_origin_hps_bridge_route.json
+examples/llm_origin_hps_bridge_route.json
 tests/test_governed_transition_normalization.py
 ```
 
-The normalizer maps bridge decisions to lifecycle posture:
+Both sibling origins now use the same normalization implementation and relational contract.
+
+Decision-to-lifecycle mapping:
 
 ```text
 ALLOW_NEXT_BOUNDARY -> READY
@@ -78,7 +70,7 @@ DENY -> BLOCKED
 FAIL_CLOSED -> FAIL_CLOSED
 ```
 
-It does not convert bridge output into admissibility or execution authority. Output remains:
+Output remains bounded:
 
 ```text
 admissibility_result: PENDING
@@ -108,19 +100,17 @@ The bridge does not publish.
 The bridge does not grant authority.
 ALLOW_NEXT_BOUNDARY is not admissibility.
 Normalization is not final-receipt issuance.
-The bridge prepares a bounded record for the next governed boundary.
 ```
 
 ## Next task
 
 ```text
-1. Add and verify LLM-adapter candidate normalization parity.
-2. Register normalization checks in the repository's existing validation surface without adding a workflow.
-3. Read ECOSYSTEM_DELEGATION_MIRROR_HANDOFF.md.
-4. Install delegation-decision references while preserving transition_id and run_id.
-5. Return the bounded decision record to master-records/orchestration for lifecycle enrichment.
+1. Register normalization tests in the repository's existing validation surface without adding a workflow.
+2. Observe validation evidence for both SDK and LLM normalization.
+3. Pass normalized records to Ecosystem-Delegation.
+4. Return bounded delegation results to master-records/orchestration.
 ```
 
 ## Archive posture
 
-This handoff contains the current bridge architecture, installed normalization files, authority limits, and next task. Earlier conversation context is not required.
+This handoff contains the current bridge architecture, parity implementation, authority limits, and next task. Earlier conversation context is not required.
