@@ -10,8 +10,8 @@ This file is the current handoff and task source of truth for this repository.
 
 ```text
 Goal: normalize sibling transition candidates into one governed next-boundary record
-Phase: SDK-and-LLM-normalization-parity-registered-in-existing-CI
-Result: IMPLEMENTATION_AND_VALIDATION_WIRING_INSTALLED_EVIDENCE_PENDING
+Phase: SDK-and-LLM-normalization-parity-validated
+Result: GOVERNED_NORMALIZATION_GREEN
 ```
 
 ## Architecture
@@ -57,7 +57,7 @@ examples/llm_transition_candidate.input.json
 examples/sdk_origin_hps_bridge_route.json
 examples/llm_origin_hps_bridge_route.json
 tests/test_governed_transition_normalization.py
-.github/workflows/ci.yml updated to run the normalization test in the existing CI surface
+.github/workflows/ci.yml with separate governed-normalization and api-tests jobs
 ```
 
 Both sibling origins use the same normalization implementation and relational contract.
@@ -103,16 +103,18 @@ ALLOW_NEXT_BOUNDARY is not admissibility.
 Normalization is not final-receipt issuance.
 ```
 
-## Validation surface
+## Validation evidence
 
 ```text
-Existing workflow: .github/workflows/ci.yml
-Existing API tests: api/tests
-Registered normalization test: tests/test_governed_transition_normalization.py
-No new workflow added.
+Pull request: #4
+Workflow: hybrid-bridge-ci
+Run: 29167913108
+Job: governed-normalization
+Conclusion: success
+Test command: python -m pytest -q tests/test_governed_transition_normalization.py
 ```
 
-The normalization test covers:
+Observed green coverage:
 
 ```text
 SDK candidate identity preservation and Ecosystem-Delegation routing
@@ -120,12 +122,13 @@ LLM candidate identity preservation and Ecosystem-Delegation routing
 origin/route mismatch fail-closed behavior
 ```
 
+The existing API test job remains independently red. It is not part of the governed normalization result and is tracked as a separate repository repair task.
+
 ## Remaining files or modules to install
 
 ```text
 StegVerse-Labs/hybrid-collab-bridge:
-  - no additional normalization implementation files known for this goal
-  - observed green CI evidence remains to be recorded
+  - repair the pre-existing api-tests job under its separate task
 
 StegVerse-Labs/Ecosystem-Delegation:
   - normalized transition-candidate intake contract
@@ -139,12 +142,12 @@ master-records/orchestration:
 ## Next task
 
 ```text
-1. Observe the existing CI workflow after normalization test registration.
-2. Repair only a concrete failing command if CI is red.
-3. Pass normalized records to Ecosystem-Delegation.
-4. Return bounded delegation results to master-records/orchestration.
+1. Install normalized transition-candidate intake in Ecosystem-Delegation.
+2. Return bounded delegation results to master-records/orchestration.
+3. Preserve transition_id and run_id through delegation and final receipt.
+4. Repair the legacy bridge API test failure without changing normalization authority boundaries.
 ```
 
 ## Archive posture
 
-This handoff contains the current bridge architecture, parity implementation, validation wiring, authority limits, remaining cross-repo installations, and next task. Earlier conversation context is not required.
+This handoff contains the completed normalization architecture, green validation evidence, authority limits, remaining cross-repo installations, and next task. Earlier conversation context is not required.

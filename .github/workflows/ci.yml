@@ -9,7 +9,20 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  governed-normalization:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test dependency
+        run: python -m pip install pytest
+      - name: Run governed transition normalization tests
+        run: python -m pytest -q tests/test_governed_transition_normalization.py
+
+  api-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -31,5 +44,3 @@ jobs:
         run: |
           cd api
           pytest -q tests
-      - name: Run governed transition normalization tests
-        run: python -m pytest -q tests/test_governed_transition_normalization.py
