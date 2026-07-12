@@ -139,15 +139,44 @@ master-records/orchestration:
   - transition_id and run_id lifecycle preservation record
 ```
 
+## Current failure event
+
+```text
+Notification date: 2026-07-12
+Repository: StegVerse-Labs/hybrid-collab-bridge
+Branch: main
+Commit: 6cec140
+Workflow: docs-badge-sync
+Job: normalize-badges
+Run: 29187122775
+Result: failed in 3 seconds
+Annotations: 2
+Failure class: documentation automation workflow failure
+```
+
+The workflow and repository-local script were inspected. The workflow checks out the repository, runs `scripts/ensure_readme_badges.py`, and conditionally commits only `README.md`. The notification did not expose the first failing step or annotation text. A bounded defect cannot be established from duration and annotation count alone, so no script, workflow, badge, authority, release, or cross-repository behavior was changed.
+
+```text
+DOCS_BADGE_SYNC_FAILURE_CORRELATED
+WORKFLOW_AND_SCRIPT_PRESENT
+FIRST_FAILING_STEP_NOT_AVAILABLE
+BOUNDED_REPAIR_NOT_ESTABLISHED
+NORMALIZATION_RESULT_REMAINS_INDEPENDENTLY_GREEN
+```
+
 ## Next task
 
 ```text
-1. Install normalized transition-candidate intake in Ecosystem-Delegation.
-2. Return bounded delegation results to master-records/orchestration.
-3. Preserve transition_id and run_id through delegation and final receipt.
-4. Repair the legacy bridge API test failure without changing normalization authority boundaries.
+1. Retrieve the exact first failing step and annotation text for run 29187122775.
+2. If the failure is syntax, path, checkout, or repository-local push handling, apply the smallest non-destructive repair without changing normalization authority boundaries.
+3. Verify docs-badge-sync on the repair commit or later and record the run result here.
+4. Continue the declared normalization path only after its destination prerequisites and authority are satisfied.
+5. Install normalized transition-candidate intake in Ecosystem-Delegation.
+6. Return bounded delegation results to master-records/orchestration.
+7. Preserve transition_id and run_id through delegation and final receipt.
+8. Repair the legacy bridge API test failure without changing normalization authority boundaries.
 ```
 
 ## Archive posture
 
-This handoff contains the completed normalization architecture, green validation evidence, authority limits, remaining cross-repo installations, and next task. Earlier conversation context is not required.
+This handoff contains the completed normalization architecture, green validation evidence, authority limits, remaining cross-repo installations, the docs-badge-sync failure blocker, and exact continuation order. Earlier conversation context is not required.
