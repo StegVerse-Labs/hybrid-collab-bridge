@@ -11,7 +11,7 @@ import argparse
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from api.app.governance.delegation_candidate import build_delegation_candidate
 
@@ -82,8 +82,14 @@ def reconcile(sessions: Path, outbox: Path, state_path: Path) -> dict[str, Any]:
         try:
             trace = json.loads(source.read_text(encoding="utf-8"))
             candidate = candidate_from_trace(trace, source)
+            record = candidate.to_dict()
+            context = trace.get("delegation_context")
+            if isinstance(context, dict):
+                # Standing evidence is preserved for downstream HPS evaluation,
+                # but the bridge does not evaluate or grant delegation itself.
+                record["delegation_context"] = context
             target = outbox / f"{candidate.candidate_id}.json"
-            target.write_text(json.dumps(candidate.to_dict(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            target.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
             processed.append(str(target))
         except Exception as exc:  # fail one record without suppressing queue evidence
             skipped.append({"source": str(source), "error": f"{type(exc).__name__}: {exc}"})
