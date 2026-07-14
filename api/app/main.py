@@ -26,9 +26,10 @@ from .governance.publisher import PublisherClient, PublishableOutput
 from .governance.aacte_demo import AaCTEDemoPipeline
 from .governance.stegcge_compiler import StegCGECompiler
 from .models import (
-    RunRequest, ContinueRequest, RunResponse, Turn, ReceiptRef,
+    RunRequest, ContinueRequest, RunResponse, Turn, ReceiptRef, IntegrityEvidence,
     DiscoveryRequest, DiscoveryResponse, DiscoveryResultItem, ProviderConnectRequest,
 )
+from .governance.artifact_integrity import evaluate_artifact_integrity
 
 # -- Configuration -----------------------------------------------
 
@@ -210,10 +211,33 @@ async def run_collab(req: RunRequest, x_admin_token: str | None = Header(default
     if final_admission.decision == "allow":
         final_text = final_admission.receipt.get("payload", {}).get("merge_output", {}).get("text", "")
 
-    # Ingest to StegDB
-    if final_admission.receipt:
+    # Artifact integrity is evaluated after provider admission but before
+    # candidate ingestion. It does not replace BCAT/GCAT admissibility.
+    integrity_result = None
+    integrity_evidence = None
+    if final_admission.decision == "allow":
+        required_sections = (
+            req.artifact_manifest.required_sections
+            if req.artifact_manifest is not None
+            else []
+        )
+        integrity_result = evaluate_artifact_integrity(final_text, required_sections)
+        integrity_evidence = IntegrityEvidence(**integrity_result.to_dict())
+
+    # Attach bounded integrity evidence to a copied receipt. A candidate with
+    # failed integrity cannot enter StegDB as an accepted run result.
+    receipt_for_ingest = final_admission.receipt
+    if final_admission.receipt and integrity_result is not None:
+        receipt_for_ingest = json.loads(json.dumps(final_admission.receipt))
+        receipt_for_ingest.setdefault("payload", {})["artifact_integrity"] = integrity_result.to_dict()
+
+    may_ingest = bool(final_admission.receipt) and (
+        final_admission.decision != "allow"
+        or (integrity_result is not None and integrity_result.passed)
+    )
+    if may_ingest:
         asyncio.create_task(STEGDB.ingest_receipt(
-            receipt=final_admission.receipt,
+            receipt=receipt_for_ingest,
             actor=BRIDGE_ENTITY,
             source="hybrid-collab-bridge/run",
         ))
@@ -227,7 +251,8 @@ async def run_collab(req: RunRequest, x_admin_token: str | None = Header(default
                 "gcat": final_admission.gcat,
                 "reasoning": final_admission.reasoning,
             },
-            "receipt": final_admission.receipt,
+            "integrity": integrity_result.to_dict() if integrity_result else None,
+            "receipt": receipt_for_ingest,
             "chain_id": result.get("chain_id"),
         }
         write_text(session_dir, "03_referee.json", json.dumps(final_trace, indent=2))
@@ -237,12 +262,16 @@ async def run_collab(req: RunRequest, x_admin_token: str | None = Header(default
     status = "OK"
     requires_human = False
     if result["status"] == "DENIED":
-        status = "DENIED"
+        status = "ADMISSIBILITY_FAILED"
     elif result["status"] == "DEFERRED":
-        status = "PAUSED_FOR_REVIEW"
+        status = "EXCEPTION_REVIEW"
         requires_human = True
+    elif integrity_result and integrity_result.decision == "FAIL_CLOSED":
+        status = "INTEGRITY_FAILED"
+    elif integrity_result and integrity_result.decision == "NEEDS_REPAIR":
+        status = "NEEDS_REPAIR"
     elif req.human_gate:
-        status = "PAUSED_FOR_REVIEW"
+        status = "EXCEPTION_REVIEW"
         requires_human = True
 
     return JSONResponse(
@@ -261,6 +290,7 @@ async def run_collab(req: RunRequest, x_admin_token: str | None = Header(default
             ) if final_admission.receipt else None,
             final_bcat=final_admission.bcat,
             final_gcat=final_admission.gcat,
+            integrity=integrity_evidence,
             chain_id=result.get("chain_id"),
             requires_human=requires_human,
             reasoning=final_admission.reasoning,
