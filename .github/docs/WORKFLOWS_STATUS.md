@@ -1,8 +1,8 @@
 # Workflows Status
 
-_Last updated: **2026-07-14 05:04 UTC**_
+_Last updated: **2026-07-14 05:27 UTC**_
 
-- OK with workflow_dispatch: **21**
+- OK with workflow_dispatch: **22**
 - Valid but no dispatch button: **0**
 - Broken YAML: **0**
 
@@ -22,6 +22,7 @@ _Last updated: **2026-07-14 05:04 UTC**_
 | `install-internal-artifact-integrity.yml` | ok |  |
 | `install-run-boundary-cge-event.yml` | ok |  |
 | `normalize-badges.yml` | ok |  |
+| `reconcile-internal-adapter.yml` | ok |  |
 | `stegtv-connectivity-diagnostic.yml` | ok |  |
 | `stegverse-ai-entity.yml` | ok |  |
 | `stegverse-claude-entity.yml` | ok |  |
