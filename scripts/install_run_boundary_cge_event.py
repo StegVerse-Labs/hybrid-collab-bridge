@@ -8,6 +8,7 @@ from pathlib import Path
 import py_compile
 
 MAIN = Path("api/app/main.py")
+INSTALLATION_REVISION = "2026-07-14-r1"
 
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -121,7 +122,7 @@ def main() -> int:
 
     MAIN.write_text(text, encoding="utf-8")
     py_compile.compile(str(MAIN), doraise=True)
-    print("Installed deterministic run-boundary policy and CGE integrity event")
+    print(f"Installed deterministic run-boundary policy and CGE integrity event ({INSTALLATION_REVISION})")
     return 0
 
 
