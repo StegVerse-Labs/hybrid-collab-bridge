@@ -1,0 +1,41 @@
+name: install-internal-artifact-integrity
+
+on:
+  push:
+    paths:
+      - scripts/install_internal_artifact_integrity_wiring.py
+      - .github/workflows/install-internal-artifact-integrity.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install artifact-integrity wiring
+        run: python3 scripts/install_internal_artifact_integrity_wiring.py
+      - name: Compile governed API
+        run: python3 -m py_compile api/app/main.py api/app/models.py api/app/governance/artifact_integrity.py
+      - name: Run bounded API contract tests
+        run: |
+          python3 -m pip install -r api/requirements.txt pytest
+          cd api
+          pytest -q tests/test_models.py tests/test_artifact_integrity.py
+      - name: Commit installed wiring
+        run: |
+          if git diff --quiet -- api/app/main.py; then
+            echo "Artifact-integrity wiring already installed."
+            exit 0
+          fi
+          git config user.name "StegVerse Bot"
+          git config user.email "stegverse-bot@users.noreply.github.com"
+          git add api/app/main.py
+          git commit -m "Wire artifact integrity before internal proposal ingestion"
+          git push
