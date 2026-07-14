@@ -1,4 +1,6 @@
-<!-- badges:start -->\n[![Badges Keeper](https://github.com/StegVerse-Labs/hybrid-collab-bridge/actions/workflows/docs-badge-sync.yml/badge.svg)](https://github.com/StegVerse-Labs/hybrid-collab-bridge/actions/workflows/docs-badge-sync.yml)\n<!-- badges:end -->
+<!-- badges:start -->
+[![Badges Keeper](https://github.com/StegVerse-Labs/hybrid-collab-bridge/actions/workflows/docs-badge-sync.yml/badge.svg)](https://github.com/StegVerse-Labs/hybrid-collab-bridge/actions/workflows/docs-badge-sync.yml)
+<!-- badges:end -->
 
 # hybrid-collab-bridge v1.0.0
 
