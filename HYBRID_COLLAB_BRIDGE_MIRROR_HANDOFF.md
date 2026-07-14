@@ -10,8 +10,8 @@ This file is the current handoff and task source of truth for this repository.
 
 ```text
 Goal: govern internal LLM proposals through deterministic normalization and artifact integrity before the next ecosystem boundary
-Phase: internal-adapter-integrity-contract-installed
-Result: NORMALIZATION_GREEN_INTEGRITY_IMPLEMENTED_VALIDATION_PENDING
+Phase: internal-adapter-integrity-runtime-wired
+Result: NORMALIZATION_GREEN_INTEGRITY_ENFORCED_BEFORE_INGESTION
 ```
 
 The repository is the second LLM adapter and is internal to the StegVerse ecosystem. It is distinct from the SDK-facing adapter used with user-owned LLM accounts.
@@ -88,82 +88,102 @@ ALLOW_NEXT_BOUNDARY is not admissibility
 
 ## Documentation badge repair
 
-Original failure:
-
 ```text
-Workflow: docs-badge-sync
-Run: 29187122775
-Job: normalize-badges
-First failing step: Ensure README badges
-Failure location: split_badges() invocation
-```
-
-Repair:
-
-```text
-File: scripts/ensure_readme_badges.py
+Original run: 29187122775
+Original failure: split_badges() invocation
+Repair file: scripts/ensure_readme_badges.py
 Repair commit: c4a305bf84cb25c8432251237d349500fbcfd867
+Behavioral verification commit: 0af2d5d3425c3b0963a92ccad7e95a9895ba52c2
+Behavioral result: StegVerse Bot normalized and committed the README badge block
 ```
 
-Behavioral verification:
+Badge repair is verified without changing normalization or authority behavior.
+
+## API and artifact-integrity contracts
 
 ```text
-Automated commit: 0af2d5d3425c3b0963a92ccad7e95a9895ba52c2
-Author: StegVerse Bot
-Message: docs(readme): normalize badges block
-Result: repaired script successfully normalized and committed the README badge block
-```
+api/app/models.py
+  Commit: 548356cf7e2dd353082fef65bac430da4816c315
+  Adds ArtifactManifest, IntegrityEvidence, and explicit governed statuses
 
-The bot-authored normalization commit is durable evidence that the repaired badge workflow reached its commit step. Badge repair is considered verified without changing normalization or authority behavior.
-
-## API test repair installed
-
-The legacy `api-tests` job ran `cd api && pytest -q tests` while `api/tests` contained no executable tests, producing an independently red job after successful dependency installation and compilation.
-
-Installed bounded contract tests:
-
-```text
-api/tests/test_models.py
-Commit: 1d04566abb6b42f6daef19ee91743fea35dfe0d8
-Coverage:
-  - human_gate defaults to false and remains exception-only
-  - governed response states remain representable
-  - denied output does not require a fabricated final artifact
-```
-
-Workflow validation of this repair remains pending.
-
-## Artifact integrity contract installed
-
-```text
 api/app/governance/artifact_integrity.py
-Commit: 8f21b9050ec04f3cf040046a5436ded4d5c45307
+  Commit: 8f21b9050ec04f3cf040046a5436ded4d5c45307
 
 api/tests/test_artifact_integrity.py
-Commit: dae1348963e4cce7d06f64957162e2597ecebf33
+  Commit: dae1348963e4cce7d06f64957162e2597ecebf33
+
+api/tests/test_models.py
+  Initial repair commit: 1d04566abb6b42f6daef19ee91743fea35dfe0d8
+  Expanded contract commit: 212ccba5d679912b4412028faf93036c003f8ea7
 ```
 
-The contract is manifest-driven rather than README-specific. It:
-
-```text
-hashes candidate content with SHA-256
-fails closed on empty content
-returns NEEDS_REPAIR when declared required sections are missing
-returns ALLOW_NEXT_BOUNDARY only when declared structural requirements are present
-states explicitly that downstream admissibility remains pending
-```
+The integrity contract is manifest-driven. It hashes candidate content, fails closed on empty content, returns `NEEDS_REPAIR` for missing declared sections, and returns `ALLOW_NEXT_BOUNDARY` only when declared structural requirements are present.
 
 Artifact integrity does not diagnose semantic correctness, grant authority, execute, publish, delegate, or issue final receipts.
+
+## Runtime integrity wiring
+
+Installed files and commits:
+
+```text
+scripts/install_internal_artifact_integrity_wiring.py
+  Commit: 7aeb60ac041e65ee3e9e35d3217c234ed872ed2b
+  Trigger revision: 1e1de36f9b32d71126b351875cc1d6f6cdb08be8
+
+.github/workflows/install-internal-artifact-integrity.yml
+  Commit: 8e8463ee8bf27363f556ab48dc440adf1fd5bdb3
+
+api/app/main.py
+  Automated install commit: 883f33c7a09eeb45a4b032b49d74312888d68260
+  Author: StegVerse Bot
+```
+
+The one-shot installer workflow compiled the governed API and ran the bounded model and artifact-integrity tests before creating the automated runtime-wiring commit. The bot commit is durable evidence that those pre-commit steps completed successfully.
+
+The `/v1/run` path now:
+
+```text
+extracts admitted final output
+  -> evaluates declared artifact requirements
+  -> emits SHA-256 and missing-section evidence
+  -> blocks accepted-candidate ingestion on NEEDS_REPAIR or FAIL_CLOSED
+  -> attaches bounded integrity evidence to the copied receipt and trace
+  -> returns explicit status independently from BCAT/GCAT admission
+```
+
+Status separation now includes:
+
+```text
+ADMISSIBILITY_FAILED
+INTEGRITY_FAILED
+NEEDS_REPAIR
+EXCEPTION_REVIEW
+OK
+```
+
+Denied and deferred governance receipts may still be monitored as governance events. An allowed candidate cannot enter StegDB as an accepted run result unless artifact integrity passes.
+
+## Non-authority rule
+
+```text
+The bridge does not execute.
+The bridge does not publish.
+The bridge does not grant delegation authority.
+The bridge does not issue final receipts.
+Provider admission is not artifact integrity.
+Artifact integrity is not BCAT/GCAT admissibility.
+Human review is not commit authority.
+Provider consensus is not commit authority.
+```
 
 ## Remaining files or modules to install
 
 ```text
 StegVerse-Labs/hybrid-collab-bridge:
-  - obtain green api-tests workflow evidence for commits 1d04566 and dae1348 or a later commit
-  - wire artifact integrity into the internal proposal path before ingestion
-  - add artifact manifest fields to the API request/response contract
-  - replace remaining PAUSED_FOR_REVIEW conflation with explicit NEEDS_REPAIR, INTEGRITY_FAILED, ADMISSIBILITY_FAILED, and EXCEPTION_REVIEW states
-  - emit bounded integrity evidence into CGE receipts
+  - add direct endpoint tests proving failed integrity does not invoke accepted-candidate StegDB ingestion
+  - emit a dedicated CGE ledger event for integrity evaluation rather than only embedding evidence in the copied final receipt
+  - define automated repair-loop candidate creation without granting execution authority
+  - remove or formally deprecate legacy PAUSED_FOR_REVIEW, DENIED, and DEFERRED response aliases after receipt migration review
 
 StegVerse-Labs/Ecosystem-Delegation:
   - normalized transition-candidate intake contract
@@ -172,24 +192,25 @@ StegVerse-Labs/Ecosystem-Delegation:
 master-records/orchestration:
   - observed workflow evidence record
   - transition_id and run_id lifecycle preservation record
+  - integrity evidence custody and reconstruction mapping
 ```
 
 ## Next task
 
 ```text
-1. Observe and record api-tests validation for the installed API and artifact-integrity tests.
-2. Add artifact manifest declarations to RunRequest without granting execution authority.
-3. Evaluate generated final output through artifact integrity before ingestion.
-4. Return NEEDS_REPAIR or FAIL_CLOSED independently from BCAT/GCAT admissibility.
-5. Attach integrity hash, missing-section evidence, and decision to CGE-monitored receipts.
-6. Install normalized transition-candidate intake in Ecosystem-Delegation.
+1. Add direct run-boundary tests for ALLOW, NEEDS_REPAIR, FAIL_CLOSED, ADMISSIBILITY_FAILED, and EXCEPTION_REVIEW.
+2. Prove that an allowed but structurally incomplete artifact is not ingested as an accepted run result.
+3. Emit a bounded CGE integrity-evaluation ledger event containing hash, manifest, missing sections, and decision.
+4. Define the repair-candidate contract and preserve the original artifact hash and run identity.
+5. Install normalized transition-candidate intake in Ecosystem-Delegation.
+6. Return bounded delegation results to master-records/orchestration.
 7. Preserve transition_id and run_id through delegation and final receipt.
 ```
 
 ## Permitted continuation scope
 
-Permitted changes are bounded to deterministic parsing, tests, internal proposal normalization, artifact integrity, ingestion interfaces, admissibility status handling, CGE evidence, and receipts. Do not grant the bridge execution, publication, delegation, final-receipt, or cross-repository authority.
+Permitted changes are bounded to deterministic parsing, tests, internal proposal normalization, artifact integrity, ingestion interfaces, admissibility status handling, CGE evidence, repair candidates, and receipts. Do not grant the bridge execution, publication, delegation, final-receipt, or cross-repository authority.
 
 ## Archive posture
 
-This handoff preserves the internal-adapter distinction, completed normalization architecture, green normalization evidence, verified badge repair, API-test repair, artifact-integrity implementation, authority limits, pending validation, remaining installations, and exact continuation order. Earlier conversation context is not required.
+This handoff preserves the internal-adapter distinction, completed normalization architecture, green normalization evidence, verified badge repair, API and integrity contracts, runtime pre-ingestion enforcement, authority limits, remaining installations, and exact continuation order. Earlier conversation context is not required.
