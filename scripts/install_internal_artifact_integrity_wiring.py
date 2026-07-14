@@ -3,7 +3,8 @@
 
 This bounded installer performs exact-anchor replacements only. It does not
 change provider behavior, BCAT/GCAT authority, publication, delegation, or
-final-receipt authority.
+final-receipt authority. The workflow reruns safely because every replacement
+requires exactly one pre-install anchor.
 """
 from pathlib import Path
 import py_compile
