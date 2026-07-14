@@ -1,8 +1,8 @@
 # Workflows Status
 
-_Last updated: **2026-07-14 07:22 UTC**_
+_Last updated: **2026-07-14 07:40 UTC**_
 
-- OK with workflow_dispatch: **23**
+- OK with workflow_dispatch: **24**
 - Valid but no dispatch button: **0**
 - Broken YAML: **0**
 
@@ -30,4 +30,5 @@ _Last updated: **2026-07-14 07:22 UTC**_
 | `stegverse_claude.yml` | ok |  |
 | `sync-to-canonical.yml` | ok |  |
 | `test-readiness.yml` | ok |  |
+| `transport-delegation-outbox.yml` | ok |  |
 | `workflows-status-badges.yml` | ok |  |
