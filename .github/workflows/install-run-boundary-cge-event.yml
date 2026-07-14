@@ -1,0 +1,47 @@
+name: install-run-boundary-cge-event
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/install_run_boundary_cge_event.py
+      - api/app/governance/run_boundary.py
+      - api/tests/test_run_boundary.py
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python -m pip install -r api/requirements.txt
+      - name: Run bounded boundary tests before mutation
+        run: |
+          cd api
+          python -m pytest -q tests/test_models.py tests/test_artifact_integrity.py tests/test_run_boundary.py
+      - name: Install run-boundary policy and CGE integrity event
+        run: python scripts/install_run_boundary_cge_event.py
+      - name: Compile governed API
+        run: python -m py_compile api/app/main.py
+      - name: Run bounded tests after mutation
+        run: |
+          cd api
+          python -m pytest -q tests/test_models.py tests/test_artifact_integrity.py tests/test_run_boundary.py
+      - name: Commit bounded runtime wiring
+        run: |
+          if git diff --quiet -- api/app/main.py; then
+            echo "Run-boundary wiring already installed."
+            exit 0
+          fi
+          git config user.name "StegVerse Bot"
+          git config user.email "stegverse-bot@users.noreply.github.com"
+          git add api/app/main.py
+          git commit -m "Emit dedicated CGE integrity event at run boundary"
+          git push
