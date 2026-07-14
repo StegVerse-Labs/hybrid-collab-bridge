@@ -14,6 +14,22 @@ Phase: SDK-and-LLM-normalization-parity-validated
 Result: GOVERNED_NORMALIZATION_GREEN
 ```
 
+The repository is the second LLM adapter and is internal to the StegVerse ecosystem. It is distinct from the SDK-facing adapter used with user-owned LLM accounts.
+
+## Internal adapter mandate
+
+```text
+provider proposal
+  -> canonical candidate normalization
+  -> ingestion
+  -> BCAT/GCAT admissibility at commit
+  -> CGE monitoring and replay
+  -> bounded receipt
+  -> next governed boundary only
+```
+
+Human review is exception-only. It is not the routine commit authority. The bridge must remain non-executing and must not treat model generation, referee output, normalization, or human review as admissibility.
+
 ## Architecture
 
 ```text
@@ -21,7 +37,7 @@ SDK candidate          \
 LLM-adapter candidate   \
 Site candidate           -> hybrid-collab-bridge normalization
 External adapter        /            |
-Manual review          /             v
+Manual exception review/             v
                          StegVerse-Labs/Ecosystem-Delegation
                                       |
                                       v
@@ -31,15 +47,17 @@ Manual review          /             v
 ## Ownership boundary
 
 ```text
-StegVerse-SDK / LLM-adapter
-  -> emit origin-specific DECLARED candidates
+StegVerse-SDK / user-account LLM adapter
+  -> emit user/SDK-origin DECLARED candidates
 
-hybrid-collab-bridge
+hybrid-collab-bridge / internal LLM adapter
+  -> emit and normalize internal ecosystem candidates
   -> validate candidate/route origin pairing
   -> evaluate HPS route state
   -> preserve transition_id, run_id, event_id, and origin_manifest_id
   -> attach bridge decision evidence
   -> retarget only to Ecosystem-Delegation
+  -> never self-grant execution authority
 
 Ecosystem-Delegation
   -> evaluate governed delegation and authority references
@@ -101,6 +119,8 @@ The bridge does not publish.
 The bridge does not grant authority.
 ALLOW_NEXT_BOUNDARY is not admissibility.
 Normalization is not final-receipt issuance.
+Human review is not commit authority.
+Provider consensus is not commit authority.
 ```
 
 ## Validation evidence
@@ -122,13 +142,46 @@ LLM candidate identity preservation and Ecosystem-Delegation routing
 origin/route mismatch fail-closed behavior
 ```
 
-The existing API test job remains independently red. It is not part of the governed normalization result and is tracked as a separate repository repair task.
+The existing API test job remains independently red and is a separate repair task.
+
+## Documentation badge failure and repair
+
+Original failure evidence:
+
+```text
+Notification date: 2026-07-12
+Branch: main
+Commit: 6cec14059a8a8396c64be7bdd3a0a82139c437e2
+Workflow: docs-badge-sync
+Run: 29187122775
+Job: normalize-badges
+First failing step: Ensure README badges
+Command: python3 scripts/ensure_readme_badges.py
+Failure location: split_badges() invocation from main()
+```
+
+Bounded repair installed:
+
+```text
+File: scripts/ensure_readme_badges.py
+Repair commit: c4a305bf84cb25c8432251237d349500fbcfd867
+Change: replace newline-sensitive substitution with deterministic complete-badge extraction
+Change: preserve canonical workflow ordering and one badge per line
+Authority impact: none
+Normalization impact: none
+```
+
+No workflow run was associated with the repair commit when first queried. Verification remains pending and must be recorded here when observed.
 
 ## Remaining files or modules to install
 
 ```text
 StegVerse-Labs/hybrid-collab-bridge:
+  - verify docs-badge-sync after commit c4a305b or a later commit
   - repair the pre-existing api-tests job under its separate task
+  - add proposal/artifact integrity contract for internal LLM output
+  - replace routine human_gate semantics with automated admissibility/integrity states
+  - connect normalized proposals to ingestion, BCAT/GCAT, and CGE interfaces
 
 StegVerse-Labs/Ecosystem-Delegation:
   - normalized transition-candidate intake contract
@@ -139,44 +192,22 @@ master-records/orchestration:
   - transition_id and run_id lifecycle preservation record
 ```
 
-## Current failure event
-
-```text
-Notification date: 2026-07-12
-Repository: StegVerse-Labs/hybrid-collab-bridge
-Branch: main
-Commit: 6cec140
-Workflow: docs-badge-sync
-Job: normalize-badges
-Run: 29187122775
-Result: failed in 3 seconds
-Annotations: 2
-Failure class: documentation automation workflow failure
-```
-
-The workflow and repository-local script were inspected. The workflow checks out the repository, runs `scripts/ensure_readme_badges.py`, and conditionally commits only `README.md`. The notification did not expose the first failing step or annotation text. A bounded defect cannot be established from duration and annotation count alone, so no script, workflow, badge, authority, release, or cross-repository behavior was changed.
-
-```text
-DOCS_BADGE_SYNC_FAILURE_CORRELATED
-WORKFLOW_AND_SCRIPT_PRESENT
-FIRST_FAILING_STEP_NOT_AVAILABLE
-BOUNDED_REPAIR_NOT_ESTABLISHED
-NORMALIZATION_RESULT_REMAINS_INDEPENDENTLY_GREEN
-```
-
 ## Next task
 
 ```text
-1. Retrieve the exact first failing step and annotation text for run 29187122775.
-2. If the failure is syntax, path, checkout, or repository-local push handling, apply the smallest non-destructive repair without changing normalization authority boundaries.
-3. Verify docs-badge-sync on the repair commit or later and record the run result here.
-4. Continue the declared normalization path only after its destination prerequisites and authority are satisfied.
+1. Verify docs-badge-sync on repair commit c4a305b or a later commit and record the run result.
+2. Repair the legacy bridge API test failure without changing normalization authority boundaries.
+3. Define the internal-adapter proposal and artifact-integrity contracts.
+4. Replace human-review-default behavior with automatic integrity/admissibility status handling; retain human review only as an exception route.
 5. Install normalized transition-candidate intake in Ecosystem-Delegation.
 6. Return bounded delegation results to master-records/orchestration.
 7. Preserve transition_id and run_id through delegation and final receipt.
-8. Repair the legacy bridge API test failure without changing normalization authority boundaries.
 ```
+
+## Permitted continuation scope
+
+Permitted changes are bounded to deterministic parsing, tests, internal proposal normalization, artifact integrity, ingestion interfaces, admissibility status handling, CGE evidence, and receipts. Do not grant the bridge execution, publication, delegation, final-receipt, or cross-repository authority.
 
 ## Archive posture
 
-This handoff contains the completed normalization architecture, green validation evidence, authority limits, remaining cross-repo installations, the docs-badge-sync failure blocker, and exact continuation order. Earlier conversation context is not required.
+This handoff preserves the internal-adapter distinction, completed normalization architecture, green evidence, authority limits, badge-repair commit, pending verification, remaining installations, and exact continuation order. Earlier conversation context is not required after this file is verified.
