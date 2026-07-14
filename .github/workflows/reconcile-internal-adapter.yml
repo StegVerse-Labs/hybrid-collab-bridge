@@ -1,0 +1,64 @@
+name: reconcile-internal-adapter
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+  push:
+    paths:
+      - scripts/reconcile_internal_adapter.py
+      - scripts/install_run_boundary_cge_event.py
+      - api/app/governance/artifact_integrity.py
+      - api/app/governance/run_boundary.py
+      - api/app/governance/repair_candidate.py
+      - api/app/models.py
+      - api/tests/test_models.py
+      - api/tests/test_artifact_integrity.py
+      - api/tests/test_run_boundary.py
+      - api/tests/test_repair_candidate.py
+      - .github/workflows/reconcile-internal-adapter.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reconcile-internal-adapter
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python -m pip install -r api/requirements.txt
+      - name: Reconcile declared runtime contracts
+        run: python scripts/reconcile_internal_adapter.py
+      - name: Compile governed runtime
+        run: python -m py_compile api/app/main.py
+      - name: Run bounded internal-adapter tests
+        run: |
+          cd api
+          python -m pytest -q \
+            tests/test_models.py \
+            tests/test_artifact_integrity.py \
+            tests/test_run_boundary.py \
+            tests/test_repair_candidate.py
+      - name: Commit reconciled runtime and state
+        run: |
+          if git diff --quiet -- api/app/main.py state/internal_adapter_reconciliation.json; then
+            echo "Internal adapter already reconciled."
+            exit 0
+          fi
+          git config user.name "StegVerse Bot"
+          git config user.email "stegverse-bot@users.noreply.github.com"
+          git add api/app/main.py state/internal_adapter_reconciliation.json
+          git commit -m "Reconcile governed internal adapter runtime"
+          git pull --rebase origin main
+          git push origin HEAD:main
