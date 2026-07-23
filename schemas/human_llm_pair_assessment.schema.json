@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stegverse.org/schemas/human_llm_pair_assessment.schema.json",
+  "title": "Human–LLM Pair Assessment",
+  "type": "object",
+  "required": ["assessment_id", "trace_id", "timestamp", "tests", "review", "overall_outcome", "error_attribution"],
+  "properties": {
+    "assessment_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "claim_consequence": {"enum": ["low", "moderate", "high", "critical"]},
+    "tests": {
+      "type": "object",
+      "required": ["meaning_preservation", "vocabulary_alignment", "boundary_control", "contradiction_detection", "evidence_classification", "audit_gap_control", "review_comprehension", "revision_integrity", "independent_reconstruction"],
+      "additionalProperties": false,
+      "properties": {
+        "meaning_preservation": {"$ref": "#/$defs/testResult"},
+        "vocabulary_alignment": {"$ref": "#/$defs/testResult"},
+        "boundary_control": {"$ref": "#/$defs/testResult"},
+        "contradiction_detection": {"$ref": "#/$defs/testResult"},
+        "evidence_classification": {"$ref": "#/$defs/testResult"},
+        "audit_gap_control": {"$ref": "#/$defs/testResult"},
+        "review_comprehension": {"$ref": "#/$defs/testResult"},
+        "revision_integrity": {"$ref": "#/$defs/testResult"},
+        "independent_reconstruction": {"$ref": "#/$defs/testResult"}
+      }
+    },
+    "review": {
+      "type": "object",
+      "required": ["human_present", "comprehension_demonstrated", "objections_considered"],
+      "properties": {
+        "human_present": {"type": "boolean"},
+        "comprehension_demonstrated": {"type": "boolean"},
+        "objections_considered": {"type": "boolean"},
+        "reviewer_summary": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "overall_outcome": {"enum": ["PASS", "PARTIAL", "FAIL", "INDETERMINATE"]},
+    "error_attribution": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["human_originated", "model_originated", "interaction_originated", "review_failed", "translation_originated", "boundary_originated", "amplification_originated"]}
+    },
+    "notes": {"type": "string"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "testResult": {
+      "type": "object",
+      "required": ["status", "score", "critical", "evidence"],
+      "properties": {
+        "status": {"enum": ["PASS", "PARTIAL", "FAIL", "INDETERMINATE"]},
+        "score": {"type": "number", "minimum": 0, "maximum": 1},
+        "critical": {"type": "boolean"},
+        "evidence": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  }
+}
