@@ -1,23 +1,19 @@
 #!/usr/bin/env python3
-"""Build deterministic, hash-chained receipts for mediated composition assessments."""
-
+"""Build and verify authenticated mediated-composition receipt chains."""
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 from pathlib import Path
 from typing import Any, Iterable
 
-GENESIS_HASH = "0" * 64
-
-
-def canonical_json(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-
-
-def sha256_json(value: Any) -> str:
-    return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
+from api.app.governance.human_llm_evidence import (
+    GENESIS_HASH,
+    build_mediated_receipts,
+    canonical_json,
+    verify_mediated_chain,
+)
+from api.app.governance.receipt_signing import ReceiptSigner
 
 
 def iter_records(path: Path) -> Iterable[dict[str, Any]]:
@@ -34,66 +30,42 @@ def iter_records(path: Path) -> Iterable[dict[str, Any]]:
             yield record
 
 
-def build_receipts(record: dict[str, Any], previous_hash: str = GENESIS_HASH) -> tuple[list[dict[str, Any]], str]:
-    mediated = record.get("mediated_composition")
-    if not isinstance(mediated, dict):
-        return [], previous_hash
-
-    assessment_id = record.get("assessment_id")
-    trace_id = record.get("trace_id")
-    timestamp = record.get("timestamp")
-    local = mediated.get("local_admissibility", [])
-    if not all(isinstance(item, dict) for item in local):
-        raise ValueError(f"{assessment_id}: local_admissibility entries must be objects")
-
-    receipts: list[dict[str, Any]] = []
-    chain_hash = previous_hash
-    assessment_hash = sha256_json(record)
-    for sequence, decision in enumerate(local, start=1):
-        payload = {
-            "receipt_type": "mediated_local_admissibility",
-            "assessment_id": assessment_id,
-            "trace_id": trace_id,
-            "timestamp": timestamp,
-            "sequence": sequence,
-            "participant_id": decision.get("participant_id"),
-            "decision": decision.get("decision"),
-            "policy_ref": decision.get("policy_ref"),
-            "evidence": decision.get("evidence", []),
-            "declared_receipt_ref": decision.get("receipt_ref"),
-            "claimed_level": mediated.get("claimed_level"),
-            "assessment_hash": assessment_hash,
-            "previous_hash": chain_hash,
-        }
-        receipt_hash = sha256_json(payload)
-        receipt = {**payload, "receipt_hash": receipt_hash}
-        receipts.append(receipt)
-        chain_hash = receipt_hash
-    return receipts, chain_hash
-
-
-def build_file(input_path: Path, output_path: Path) -> int:
+def build_file(input_path: Path, output_path: Path, verification_path: Path | None = None) -> int:
+    signer = ReceiptSigner.from_environment(required=True)
+    assert signer is not None
     all_receipts: list[dict[str, Any]] = []
     chain_hash = GENESIS_HASH
     for record in iter_records(input_path):
-        receipts, chain_hash = build_receipts(record, chain_hash)
+        receipts, chain_hash = build_mediated_receipts(record, chain_hash, signer=signer)
         all_receipts.extend(receipts)
+
+    verification = verify_mediated_chain(all_receipts, signer)
+    if all_receipts and not verification["verified"]:
+        raise ValueError("generated receipt chain failed authentication or continuity verification")
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8") as handle:
         for receipt in all_receipts:
             handle.write(canonical_json(receipt) + "\n")
-    print(f"WROTE: {len(all_receipts)} receipts; head={chain_hash}")
+
+    verify_path = verification_path or output_path.with_suffix(output_path.suffix + ".verification.json")
+    verify_path.parent.mkdir(parents=True, exist_ok=True)
+    verify_path.write_text(json.dumps(verification, indent=2), encoding="utf-8")
+    print(
+        f"WROTE: {len(all_receipts)} authenticated receipts; "
+        f"head={chain_hash}; verified={verification['verified']}; verification={verify_path}"
+    )
     return 0
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("input", type=Path, help="Assessment JSONL input")
-    parser.add_argument("output", type=Path, help="Receipt JSONL output")
+    parser.add_argument("output", type=Path, help="Authenticated receipt JSONL output")
+    parser.add_argument("--verification", type=Path, help="Optional verification report path")
     args = parser.parse_args()
     try:
-        return build_file(args.input, args.output)
+        return build_file(args.input, args.output, args.verification)
     except (OSError, ValueError) as exc:
         parser.error(str(exc))
     return 2
