@@ -9,6 +9,7 @@ on:
       - "api/app/governance/human_llm_evidence.py"
       - "api/app/governance/human_llm_interoperability.py"
       - "api/app/governance/human_llm_run_hook.py"
+      - "api/app/governance/receipt_signing.py"
       - "schemas/human_llm_pair_assessment.schema.json"
       - "examples/human_llm_pair_assessments.jsonl"
       - "tools/validate_human_llm_pair_assessments.py"
@@ -18,6 +19,7 @@ on:
       - "tests/test_human_llm_interoperability_runtime.py"
       - "tests/test_human_llm_run_hook.py"
       - "tests/test_mediated_transition_receipts.py"
+      - "tests/test_receipt_signing.py"
       - ".github/workflows/human-llm-interoperability.yml"
   pull_request:
     paths:
@@ -27,6 +29,7 @@ on:
       - "api/app/governance/human_llm_evidence.py"
       - "api/app/governance/human_llm_interoperability.py"
       - "api/app/governance/human_llm_run_hook.py"
+      - "api/app/governance/receipt_signing.py"
       - "schemas/human_llm_pair_assessment.schema.json"
       - "examples/human_llm_pair_assessments.jsonl"
       - "tools/validate_human_llm_pair_assessments.py"
@@ -36,6 +39,7 @@ on:
       - "tests/test_human_llm_interoperability_runtime.py"
       - "tests/test_human_llm_run_hook.py"
       - "tests/test_mediated_transition_receipts.py"
+      - "tests/test_receipt_signing.py"
       - ".github/workflows/human-llm-interoperability.yml"
   workflow_dispatch:
 
@@ -45,6 +49,10 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      HCB_RECEIPT_SIGNING_KEY: ci-only-human-llm-receipt-signing-key
+      HCB_RECEIPT_SIGNER_ID: ci-human-llm-assessor
+      HCB_RECEIPT_SIGNING_KEY_REF: ci:ephemeral:human-llm-receipts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -54,7 +62,7 @@ jobs:
         run: python -m pip install --upgrade pip pytest fastapi pydantic httpx pyyaml jsonschema
       - name: Validate example records
         run: python tools/validate_human_llm_pair_assessments.py examples/human_llm_pair_assessments.jsonl
-      - name: Build mediated transition receipts
+      - name: Build and verify authenticated mediated transition receipts
         run: python tools/build_mediated_transition_receipts.py examples/human_llm_pair_assessments.jsonl /tmp/mediated-transition-receipts.jsonl
-      - name: Run assessment and receipt tests
-        run: python -m pytest -q tests/test_human_llm_pair_assessments.py tests/test_human_llm_evidence.py tests/test_human_llm_interoperability_runtime.py tests/test_human_llm_run_hook.py tests/test_mediated_transition_receipts.py
+      - name: Run assessment, evidence, and authentication tests
+        run: python -m pytest -q tests/test_human_llm_pair_assessments.py tests/test_human_llm_evidence.py tests/test_human_llm_interoperability_runtime.py tests/test_human_llm_run_hook.py tests/test_mediated_transition_receipts.py tests/test_receipt_signing.py
