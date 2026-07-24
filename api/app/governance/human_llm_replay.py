@@ -12,6 +12,7 @@ from typing import Any
 
 from fastapi import APIRouter, Header, HTTPException
 
+from .governance_snapshot import regenerate_bcat_gcat
 from .human_llm_evidence import sha256_json, validate_schema, verify_mediated_chain
 from .receipt_signing import ReceiptSigner
 
@@ -152,11 +153,34 @@ def replay_assessment(session_dir: Path, assessment_id: str) -> dict[str, Any]:
                 if declared_reference.get("count") != receipt_verification.get("count"):
                     receipt_errors.append("persisted receipt count does not match reconstructed count")
 
+    snapshot_path = session_dir / "08_commit_time_governance_snapshot.json"
+    governance_replay: dict[str, Any] | None = None
+    governance_errors: list[str] = []
+    if not snapshot_path.exists():
+        governance_errors.append("commit-time governance snapshot not found")
+    else:
+        snapshot = _read_json(snapshot_path)
+        governance_replay = regenerate_bcat_gcat(snapshot)
+        governance_errors.extend(governance_replay.get("errors", []))
+        snapshot_proposal = snapshot.get("proposal", {})
+        if snapshot_proposal.get("assessment_hash") != assessment_hash:
+            governance_errors.append("snapshot proposal assessment hash does not match replayed assessment")
+        if snapshot.get("bcat") != admission.get("bcat"):
+            governance_errors.append("snapshot BCAT does not match assessment artifact")
+        if snapshot.get("gcat") != admission.get("gcat"):
+            governance_errors.append("snapshot GCAT does not match assessment artifact")
+
     canonical_decision = admission.get("canonical_decision")
+    regenerated_canonical = (
+        governance_replay.get("regenerated", {}).get("canonical_decision")
+        if isinstance(governance_replay, dict)
+        else None
+    )
+    canonical_regenerated = regenerated_canonical == canonical_decision
     stored_decision = admission.get("decision")
     if expected_structural == "allow":
-        expected_final = canonical_decision
-    elif expected_structural == "defer" and canonical_decision == "deny":
+        expected_final = regenerated_canonical
+    elif expected_structural == "defer" and regenerated_canonical == "deny":
         expected_final = "deny"
     else:
         expected_final = expected_structural
@@ -168,14 +192,21 @@ def replay_assessment(session_dir: Path, assessment_id: str) -> dict[str, Any]:
         "assessment_hash_verified": assessment_hash_verified,
         "outcome_verified": outcome_verified,
         "structural_decision_verified": structural_verified,
-        "canonical_decision_reconciled": decision_verified,
+        "governance_snapshot_verified": bool(governance_replay and governance_replay.get("verified") and not governance_errors),
+        "bcat_gcat_regenerated": bool(
+            governance_replay
+            and governance_replay.get("checks", {}).get("bcat_regenerated")
+            and governance_replay.get("checks", {}).get("gcat_regenerated")
+        ),
+        "canonical_decision_regenerated": canonical_regenerated,
+        "final_decision_verified": decision_verified,
         "publication_status_verified": publication_verified,
         "receipt_chain_verified": (
             not mediated_present
             or bool(receipt_verification and receipt_verification.get("verified") and not receipt_errors)
         ),
     }
-    errors = [*schema_errors, *receipt_errors]
+    errors = [*schema_errors, *receipt_errors, *governance_errors]
     for name, passed in checks.items():
         if not passed:
             errors.append(f"replay check failed: {name}")
@@ -198,11 +229,14 @@ def replay_assessment(session_dir: Path, assessment_id: str) -> dict[str, Any]:
         "reconstructed": {
             "outcome": expected_outcome,
             "structural_decision": expected_structural,
+            "canonical_decision": regenerated_canonical,
             "decision": expected_final,
-            "publication_allowed": stored_decision == "allow",
+            "publication_allowed": expected_final == "allow",
         },
+        "governance_replay": governance_replay,
         "receipt_verification": receipt_verification,
         "source_artifact": str(artifact_path),
+        "governance_snapshot_artifact": str(snapshot_path),
     }
     replay_path = session_dir / "07_human_llm_replay_verification.json"
     replay_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
