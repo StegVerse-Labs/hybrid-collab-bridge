@@ -5,7 +5,10 @@ on:
     paths:
       - "api/app/__init__.py"
       - "api/app/governance/__init__.py"
+      - "api/app/governance/admission.py"
+      - "api/app/governance/cge_client.py"
       - "api/app/governance/dashboard.py"
+      - "api/app/governance/governance_snapshot.py"
       - "api/app/governance/human_llm_evidence.py"
       - "api/app/governance/human_llm_interoperability.py"
       - "api/app/governance/human_llm_replay.py"
@@ -15,6 +18,7 @@ on:
       - "examples/human_llm_pair_assessments.jsonl"
       - "tools/validate_human_llm_pair_assessments.py"
       - "tools/build_mediated_transition_receipts.py"
+      - "tests/test_governance_snapshot.py"
       - "tests/test_human_llm_pair_assessments.py"
       - "tests/test_human_llm_evidence.py"
       - "tests/test_human_llm_interoperability_runtime.py"
@@ -27,7 +31,10 @@ on:
     paths:
       - "api/app/__init__.py"
       - "api/app/governance/__init__.py"
+      - "api/app/governance/admission.py"
+      - "api/app/governance/cge_client.py"
       - "api/app/governance/dashboard.py"
+      - "api/app/governance/governance_snapshot.py"
       - "api/app/governance/human_llm_evidence.py"
       - "api/app/governance/human_llm_interoperability.py"
       - "api/app/governance/human_llm_replay.py"
@@ -37,6 +44,7 @@ on:
       - "examples/human_llm_pair_assessments.jsonl"
       - "tools/validate_human_llm_pair_assessments.py"
       - "tools/build_mediated_transition_receipts.py"
+      - "tests/test_governance_snapshot.py"
       - "tests/test_human_llm_pair_assessments.py"
       - "tests/test_human_llm_evidence.py"
       - "tests/test_human_llm_interoperability_runtime.py"
@@ -68,5 +76,5 @@ jobs:
         run: python tools/validate_human_llm_pair_assessments.py examples/human_llm_pair_assessments.jsonl
       - name: Build and verify authenticated mediated transition receipts
         run: python tools/build_mediated_transition_receipts.py examples/human_llm_pair_assessments.jsonl /tmp/mediated-transition-receipts.jsonl
-      - name: Run assessment, evidence, authentication, and replay tests
-        run: python -m pytest -q tests/test_human_llm_pair_assessments.py tests/test_human_llm_evidence.py tests/test_human_llm_interoperability_runtime.py tests/test_human_llm_replay.py tests/test_human_llm_run_hook.py tests/test_mediated_transition_receipts.py tests/test_receipt_signing.py
+      - name: Run assessment, evidence, authentication, snapshot, and replay tests
+        run: python -m pytest -q tests/test_governance_snapshot.py tests/test_human_llm_pair_assessments.py tests/test_human_llm_evidence.py tests/test_human_llm_interoperability_runtime.py tests/test_human_llm_replay.py tests/test_human_llm_run_hook.py tests/test_mediated_transition_receipts.py tests/test_receipt_signing.py
