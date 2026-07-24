@@ -1,4 +1,4 @@
-"""Tests for runtime schema enforcement and mediated receipt persistence."""
+"""Tests for runtime schema enforcement and authenticated receipt persistence."""
 from __future__ import annotations
 
 import json
@@ -9,7 +9,17 @@ from api.app.governance.human_llm_evidence import (
     build_mediated_receipts,
     persist_mediated_receipts,
     validate_schema,
+    verify_mediated_chain,
 )
+from api.app.governance.receipt_signing import ReceiptSigner
+
+
+def signer() -> ReceiptSigner:
+    return ReceiptSigner(
+        signer_id="test-evidence-assessor",
+        key_ref="test:evidence:key",
+        secret=b"evidence-test-secret",
+    )
 
 
 def pair_record() -> dict:
@@ -96,27 +106,32 @@ def test_schema_rejects_undeclared_fields():
     assert any("Additional properties" in error for error in validate_schema(record))
 
 
-def test_mediated_receipts_are_ordered_and_persisted(tmp_path: Path):
+def test_mediated_receipts_are_ordered_authenticated_and_persisted(tmp_path: Path):
     record = mediated_record()
+    active_signer = signer()
     assert validate_schema(record) == []
-    receipts, head = build_mediated_receipts(record)
+    receipts, head = build_mediated_receipts(record, signer=active_signer)
     assert len(receipts) == 3
     assert receipts[0]["previous_hash"] == GENESIS_HASH
     assert receipts[1]["previous_hash"] == receipts[0]["receipt_hash"]
     assert head == receipts[-1]["receipt_hash"]
+    assert verify_mediated_chain(receipts, active_signer)["verified"] is True
 
-    reference = persist_mediated_receipts(record, tmp_path)
+    reference = persist_mediated_receipts(record, tmp_path, signer=active_signer)
     assert reference is not None
     assert reference["chain_head"] == head
+    assert reference["signatures_verified"] is True
+    assert Path(reference["verification_path"]).exists()
     lines = Path(reference["path"]).read_text(encoding="utf-8").splitlines()
     assert [json.loads(line)["participant_id"] for line in lines] == ["model-a", "human-h", "model-b"]
 
 
 def test_receipt_hash_changes_when_local_decision_changes():
+    active_signer = signer()
     first = mediated_record()
     second = mediated_record()
     second["mediated_composition"]["local_admissibility"][1]["decision"] = "deny"
-    first_receipts, first_head = build_mediated_receipts(first)
-    second_receipts, second_head = build_mediated_receipts(second)
+    first_receipts, first_head = build_mediated_receipts(first, signer=active_signer)
+    second_receipts, second_head = build_mediated_receipts(second, signer=active_signer)
     assert first_receipts[0]["receipt_hash"] != second_receipts[0]["receipt_hash"]
     assert first_head != second_head
