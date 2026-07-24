@@ -8,6 +8,8 @@ from fastapi import APIRouter, Header, HTTPException
 
 from .human_llm_interoperability import configure as configure_interoperability
 from .human_llm_interoperability import router as interoperability_router
+from .human_llm_replay import configure_replay
+from .human_llm_replay import router as interoperability_replay_router
 
 router = APIRouter()
 ADMIN_TOKEN: str = ""
@@ -21,6 +23,7 @@ def set_config(admin_token: str, cge_path: Path, entity_registry):
     CGE_PATH = Path(cge_path)
     ENTITY_REGISTRY = entity_registry
     configure_interoperability(admin_token=admin_token, cge_path=CGE_PATH)
+    configure_replay(admin_token=admin_token)
 
 
 def auth_or_403(token: str | None):
@@ -105,3 +108,4 @@ async def receipt_chain(chain_id: str, x_admin_token: str | None = Header(defaul
 
 
 router.include_router(interoperability_router)
+router.include_router(interoperability_replay_router)
