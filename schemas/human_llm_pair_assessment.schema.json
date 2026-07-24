@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://stegverse.org/schemas/human_llm_pair_assessment.schema.json",
-  "title": "Human–LLM Pair Assessment",
+  "title": "Human–LLM Pair and Mediated Composition Assessment",
   "type": "object",
   "required": ["assessment_id", "trace_id", "timestamp", "tests", "review", "overall_outcome", "error_attribution"],
   "properties": {
@@ -36,11 +36,12 @@
       },
       "additionalProperties": false
     },
+    "mediated_composition": {"$ref": "#/$defs/mediatedComposition"},
     "overall_outcome": {"enum": ["PASS", "PARTIAL", "FAIL", "INDETERMINATE"]},
     "error_attribution": {
       "type": "array",
       "uniqueItems": true,
-      "items": {"enum": ["human_originated", "model_originated", "interaction_originated", "review_failed", "translation_originated", "boundary_originated", "amplification_originated"]}
+      "items": {"enum": ["human_originated", "model_originated", "interaction_originated", "review_failed", "translation_originated", "boundary_originated", "amplification_originated", "continuity_originated", "mediation_originated", "provenance_originated", "agency_inflation"]}
     },
     "notes": {"type": "string"}
   },
@@ -54,6 +55,143 @@
         "score": {"type": "number", "minimum": 0, "maximum": 1},
         "critical": {"type": "boolean"},
         "evidence": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "participant": {
+      "type": "object",
+      "required": ["participant_id", "participant_type", "role"],
+      "properties": {
+        "participant_id": {"type": "string", "minLength": 1},
+        "participant_type": {"enum": ["human", "model", "biological_entity", "artificial_agent", "organization", "distributed_collective", "unknown"]},
+        "role": {"enum": ["source", "intermediary", "destination", "observer", "governor"]},
+        "identity_evidence": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "continuityRecord": {
+      "type": "object",
+      "required": ["participant_id", "status", "evidence"],
+      "properties": {
+        "participant_id": {"type": "string"},
+        "status": {"enum": ["verified", "partial", "broken", "unknown"]},
+        "evidence": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "directionalRate": {
+      "type": "object",
+      "required": ["from", "to", "unit", "observed", "limit"],
+      "properties": {
+        "from": {"type": "string"},
+        "to": {"type": "string"},
+        "unit": {"enum": ["messages_per_minute", "tokens_per_minute", "distinctions_per_exchange", "events_per_hour", "unknown"]},
+        "observed": {"type": "number", "minimum": 0},
+        "limit": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "scopeRecord": {
+      "type": "object",
+      "required": ["participant_id", "observe", "express", "interpret", "execute"],
+      "properties": {
+        "participant_id": {"type": "string"},
+        "observe": {"type": "array", "items": {"type": "string"}},
+        "express": {"type": "array", "items": {"type": "string"}},
+        "interpret": {"type": "array", "items": {"type": "string"}},
+        "execute": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "fidelityRecord": {
+      "type": "object",
+      "required": ["symbolic", "semantic", "pragmatic", "causal", "governance", "evidence"],
+      "properties": {
+        "symbolic": {"type": "number", "minimum": 0, "maximum": 1},
+        "semantic": {"type": "number", "minimum": 0, "maximum": 1},
+        "pragmatic": {"type": "number", "minimum": 0, "maximum": 1},
+        "causal": {"type": "number", "minimum": 0, "maximum": 1},
+        "governance": {"type": "number", "minimum": 0, "maximum": 1},
+        "evidence": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "localAdmissibility": {
+      "type": "object",
+      "required": ["participant_id", "decision", "policy_ref", "evidence", "receipt_ref"],
+      "properties": {
+        "participant_id": {"type": "string"},
+        "decision": {"enum": ["allow", "deny", "quarantine", "defer"]},
+        "policy_ref": {"type": "string", "minLength": 1},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "receipt_ref": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "nullModel": {
+      "type": "object",
+      "required": ["name", "tested", "result", "evidence"],
+      "properties": {
+        "name": {"enum": ["common_training", "human_imposition", "generic_language", "prompt_contamination", "confirmation_bias", "selective_reporting", "coincidental_convergence", "independent_convergence"]},
+        "tested": {"type": "boolean"},
+        "result": {"enum": ["rejected", "not_rejected", "inconclusive", "not_tested"]},
+        "evidence": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "mediatedComposition": {
+      "type": "object",
+      "required": ["claimed_level", "participants", "continuity", "channel", "intentionality", "directional_rates", "permitted_scopes", "fidelity", "local_admissibility", "null_models", "adaptation_evidence", "controls", "collective_agency_claim"],
+      "properties": {
+        "claimed_level": {"enum": ["influence", "relay", "semantic_mediation", "adaptive_interoperability", "governed_composition", "collective_agency"]},
+        "participants": {"type": "array", "minItems": 3, "items": {"$ref": "#/$defs/participant"}},
+        "continuity": {"type": "array", "minItems": 3, "items": {"$ref": "#/$defs/continuityRecord"}},
+        "channel": {
+          "type": "object",
+          "required": ["medium_state", "observations", "stateful_intermediary"],
+          "properties": {
+            "medium_state": {"enum": ["preexisting", "developing", "emergent", "unknown"]},
+            "observations": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+            "stateful_intermediary": {"type": "boolean"}
+          },
+          "additionalProperties": false
+        },
+        "intentionality": {
+          "type": "object",
+          "additionalProperties": {"enum": ["unaware", "incidental", "inferred", "deliberate", "unknown"]}
+        },
+        "directional_rates": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/directionalRate"}},
+        "permitted_scopes": {"type": "array", "minItems": 3, "items": {"$ref": "#/$defs/scopeRecord"}},
+        "fidelity": {"$ref": "#/$defs/fidelityRecord"},
+        "local_admissibility": {"type": "array", "minItems": 3, "items": {"$ref": "#/$defs/localAdmissibility"}},
+        "null_models": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nullModel"}},
+        "adaptation_evidence": {"type": "array", "items": {"type": "string"}},
+        "controls": {
+          "type": "object",
+          "required": ["paraphrase", "intermediary_substitution", "relay_delay", "hidden_provenance", "adversarial_relay", "independent_convergence"],
+          "properties": {
+            "paraphrase": {"type": "boolean"},
+            "intermediary_substitution": {"type": "boolean"},
+            "relay_delay": {"type": "boolean"},
+            "hidden_provenance": {"type": "boolean"},
+            "adversarial_relay": {"type": "boolean"},
+            "independent_convergence": {"type": "boolean"}
+          },
+          "additionalProperties": false
+        },
+        "collective_agency_claim": {"type": "boolean"},
+        "joint_agency_evidence": {
+          "type": "object",
+          "properties": {
+            "persistent_joint_state": {"type": "boolean"},
+            "integrated_objective_selection": {"type": "boolean"},
+            "shared_memory_or_continuity": {"type": "boolean"},
+            "joint_decision_boundary": {"type": "boolean"},
+            "joint_error_correction": {"type": "boolean"},
+            "accountable_joint_action": {"type": "boolean"}
+          },
+          "additionalProperties": false
+        }
       },
       "additionalProperties": false
     }
