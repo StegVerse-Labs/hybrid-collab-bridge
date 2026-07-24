@@ -268,5 +268,5 @@ StegVerse Constitutional License — all changes require human+AI quorum.
 <!-- workflows:status -->
 [![workflows](.github/badges/workflows.svg)](.github/docs/WORKFLOWS_STATUS.md)
 
-25/25 OK · 0 no-dispatch · 0 broken — _2026-07-24 00:14 UTC_
+25/25 OK · 0 no-dispatch · 0 broken — _2026-07-24 01:01 UTC_
 <!-- /workflows:status -->
