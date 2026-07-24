@@ -1,13 +1,18 @@
-"""Governance Dashboard — Read-only operational visibility.
+"""Governance Dashboard — operational visibility and governed sub-routers.
 
-Endpoints for monitoring ledger state, receipt chains, entity registry,
-and admission statistics. No mutations — read-only.
+Dashboard endpoints are read-only. Mutation-capable governance surfaces are
+mounted as explicit subordinate routers and retain their own admission logic.
 """
 from __future__ import annotations
 import json
 from typing import Dict, Any, List
 from pathlib import Path
 from fastapi import APIRouter, Header, HTTPException
+
+from .human_llm_interoperability import (
+    router as interoperability_router,
+    configure as configure_interoperability,
+)
 
 router = APIRouter(prefix="/v1/dashboard", tags=["dashboard"])
 
@@ -18,11 +23,12 @@ ENTITY_REGISTRY = None
 
 
 def set_config(admin_token: str, cge_path: Path, entity_registry):
-    """Set dashboard config from main.py at startup."""
+    """Set dashboard and subordinate governance-router config from main.py."""
     global ADMIN_TOKEN, CGE_PATH, ENTITY_REGISTRY
     ADMIN_TOKEN = admin_token
     CGE_PATH = cge_path
     ENTITY_REGISTRY = entity_registry
+    configure_interoperability(admin_token=admin_token, cge_path=cge_path)
 
 
 def auth_or_403(token: str | None):
@@ -68,7 +74,6 @@ async def receipt_detail(
 
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
 
-    # If querying a specific receipt, search ledger
     ledger_path = CGE_PATH / "state" / "ledger.jsonl"
     if ledger_path.exists():
         lines = ledger_path.read_text(encoding="utf-8").strip().splitlines()
@@ -163,3 +168,8 @@ async def receipt_chain(
         "entries": chain_entries,
         "length": len(chain_entries),
     }
+
+
+# Mount the governed Human–LLM assessment API at /v1/interoperability while
+# preserving the existing dashboard router registration in main.py.
+router.include_router(interoperability_router)
