@@ -1,27 +1,32 @@
 """Governed Human–LLM pair assessment runtime and API.
 
-The pair and its trace are evaluated as one interoperability unit. Admission is
-fail-closed for critical structural failures and for missing demonstrated
-comprehension on high-consequence claims.
+The human/model pair and its trace are evaluated as one interoperability unit.
+Structural admission is fail-closed and is then passed through the bridge's
+canonical BCAT/GCAT AdmissionGate and CGELightClient receipt path.
 """
 from __future__ import annotations
 
 import hashlib
 import json
 import os
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from uuid import uuid4
 
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
+
+from .admission import AdmissionGate
+from .cge_client import CGELightClient
+from .entity import EntityIdentity
 
 router = APIRouter(prefix="/v1/interoperability", tags=["human-llm-interoperability"])
 
 ADMIN_TOKEN = ""
 CGE_PATH = Path("./cge_light")
 SESSIONS_ROOT = Path(os.getenv("HCB_SESSIONS_ROOT", "sessions"))
+CGE_CLIENT: CGELightClient | None = None
+ADMISSION_GATE: AdmissionGate | None = None
+ASSESSOR_ENTITY: EntityIdentity | None = None
 
 REQUIRED_TESTS = {
     "meaning_preservation",
@@ -61,16 +66,49 @@ class AssessmentResult(BaseModel):
     admission_decision: str
     publication_allowed: bool
     errors: list[str] = Field(default_factory=list)
+    bcat: dict[str, Any] = Field(default_factory=dict)
+    gcat: dict[str, Any] = Field(default_factory=dict)
     receipt: dict[str, Any]
     session_artifact: str
 
 
-def configure(admin_token: str, cge_path: Path, sessions_root: Path | None = None) -> None:
-    global ADMIN_TOKEN, CGE_PATH, SESSIONS_ROOT
+def configure(
+    admin_token: str,
+    cge_path: Path,
+    sessions_root: Path | None = None,
+    cge_client: CGELightClient | None = None,
+    admission_gate: AdmissionGate | None = None,
+    assessor_entity: EntityIdentity | None = None,
+) -> None:
+    global ADMIN_TOKEN, CGE_PATH, SESSIONS_ROOT, CGE_CLIENT, ADMISSION_GATE, ASSESSOR_ENTITY
     ADMIN_TOKEN = admin_token
     CGE_PATH = Path(cge_path)
     if sessions_root is not None:
         SESSIONS_ROOT = Path(sessions_root)
+    CGE_CLIENT = cge_client or CGELightClient(
+        org_id=os.getenv("HCB_ORG_ID", "StegVerse-Labs"),
+        mode=os.getenv("HCB_CGE_MODE", "embedded"),
+        endpoint=os.getenv("HCB_CGE_ENDPOINT") or None,
+        cge_path=str(CGE_PATH),
+    )
+    if admission_gate is not None:
+        ADMISSION_GATE = admission_gate
+    else:
+        constitution_path = CGE_PATH / "repo_constitution.txt"
+        constitution: dict[str, Any] = {}
+        if constitution_path.exists():
+            import yaml
+            constitution = yaml.safe_load(constitution_path.read_text(encoding="utf-8")) or {}
+        ADMISSION_GATE = AdmissionGate(CGE_CLIENT, constitution)
+    ASSESSOR_ENTITY = assessor_entity or EntityIdentity(
+        entity_id="human-llm-pair-assessor",
+        entity_type="automated_process",
+        org_id=os.getenv("HCB_ORG_ID", "StegVerse-Labs"),
+        owner_human=os.getenv("HCB_OWNER_HUMAN", "owner"),
+        owner_ai=os.getenv("HCB_OWNER_AI", "Beta_Orionis"),
+        capability_set=["human-llm-assessment", "admission", "receipt"],
+        governance_scope="internal",
+    )
 
 
 def _auth(token: str | None) -> None:
@@ -82,7 +120,7 @@ def _canonical(value: Any) -> bytes:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 
 
-def _recommended_outcome(record: dict[str, Any]) -> str:
+def recommended_outcome(record: dict[str, Any]) -> str:
     tests = record["tests"]
     statuses = [test["status"] for test in tests.values()]
     if any(test["critical"] and test["status"] == "FAIL" for test in tests.values()):
@@ -108,17 +146,19 @@ def validate_assessment(record: dict[str, Any]) -> list[str]:
     tests = record.get("tests")
     if not isinstance(tests, dict):
         return ["tests must be an object"]
-    if set(tests) != REQUIRED_TESTS:
-        missing_tests = sorted(REQUIRED_TESTS - set(tests))
-        extra_tests = sorted(set(tests) - REQUIRED_TESTS)
-        if missing_tests:
-            errors.append(f"missing tests: {', '.join(missing_tests)}")
-        if extra_tests:
-            errors.append(f"unknown tests: {', '.join(extra_tests)}")
+    missing_tests = sorted(REQUIRED_TESTS - set(tests))
+    extra_tests = sorted(set(tests) - REQUIRED_TESTS)
+    if missing_tests:
+        errors.append(f"missing tests: {', '.join(missing_tests)}")
+    if extra_tests:
+        errors.append(f"unknown tests: {', '.join(extra_tests)}")
     for name, result in tests.items():
         if not isinstance(result, dict):
             errors.append(f"{name}: result must be an object")
             continue
+        for field in ("status", "score", "critical", "evidence"):
+            if field not in result:
+                errors.append(f"{name}: missing {field}")
         if result.get("status") not in VALID_OUTCOMES:
             errors.append(f"{name}: invalid status")
         score = result.get("score")
@@ -146,7 +186,7 @@ def validate_assessment(record: dict[str, Any]) -> list[str]:
         if invalid:
             errors.append(f"invalid error attribution: {', '.join(invalid)}")
     if not errors:
-        expected = _recommended_outcome(record)
+        expected = recommended_outcome(record)
         if record["overall_outcome"] != expected:
             errors.append(f"overall_outcome must be {expected}, got {record['overall_outcome']}")
     return errors
@@ -164,93 +204,62 @@ def _resolve_session(session_path: str) -> Path:
     return candidate
 
 
-def _append_receipt(payload: dict[str, Any], decision: str) -> dict[str, Any]:
-    ledger_path = CGE_PATH / "state" / "ledger.jsonl"
-    receipt_dir = CGE_PATH / "meta" / "receipts"
-    chain_path = CGE_PATH / "meta" / "receipt_chains.jsonl"
-    ledger_path.parent.mkdir(parents=True, exist_ok=True)
-    receipt_dir.mkdir(parents=True, exist_ok=True)
-    chain_path.parent.mkdir(parents=True, exist_ok=True)
-
-    previous_hash = "GENESIS"
-    previous_receipt_id = None
-    if ledger_path.exists():
-        lines = [line for line in ledger_path.read_text(encoding="utf-8").splitlines() if line.strip()]
-        if lines:
-            previous = json.loads(lines[-1])
-            previous_hash = previous.get("entry_hash", "GENESIS")
-            previous_receipt_id = previous.get("receipt_id")
-
-    receipt_id = f"hllm-{uuid4().hex}"
-    ledger_entry_id = f"entry-{uuid4().hex}"
-    timestamp = datetime.now(timezone.utc).isoformat()
-    entry_material = {
-        "ledger_entry_id": ledger_entry_id,
-        "receipt_id": receipt_id,
-        "timestamp": timestamp,
-        "mutation_class": "human_llm_pair_assessment",
-        "decision": decision,
-        "previous_hash": previous_hash,
-        "payload": payload,
-    }
-    entry_hash = hashlib.sha256(_canonical(entry_material)).hexdigest()
-    entry = {**entry_material, "entry_hash": entry_hash, "verified": True}
-    with ledger_path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(entry, sort_keys=True) + "\n")
-
-    receipt = {
-        "receipt_id": receipt_id,
-        "ledger_entry_id": ledger_entry_id,
-        "entry_hash": entry_hash,
-        "previous_hash": previous_hash,
-        "decision": decision,
-        "verified": True,
-        "timestamp": timestamp,
-        "payload_hash": hashlib.sha256(_canonical(payload)).hexdigest(),
-    }
-    (receipt_dir / "latest_receipt.json").write_text(json.dumps(receipt, indent=2), encoding="utf-8")
-    with chain_path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps({
-            "chain_id": payload["trace_id"],
-            "receipt_id": receipt_id,
-            "previous_receipt_id": previous_receipt_id,
-            "entry_hash": entry_hash,
-            "previous_hash": previous_hash,
-        }, sort_keys=True) + "\n")
-    return receipt
+def _structural_decision(errors: list[str], outcome: str) -> str:
+    if errors or outcome in {"FAIL", "INDETERMINATE"}:
+        return "deny"
+    if outcome == "PARTIAL":
+        return "defer"
+    return "allow"
 
 
-@router.post("/assessments", response_model=AssessmentResult)
-async def submit_assessment(body: AssessmentSubmission, x_admin_token: str | None = Header(default=None)):
-    _auth(x_admin_token)
-    session_dir = _resolve_session(body.session_path)
-    assessment = json.loads(json.dumps(body.assessment))
+async def govern_assessment(
+    assessment: dict[str, Any],
+    session_dir: Path,
+    reviewer_action: str | None = None,
+    reviewer_entity_id: str | None = None,
+) -> AssessmentResult:
+    if ADMISSION_GATE is None or ASSESSOR_ENTITY is None:
+        configure(ADMIN_TOKEN, CGE_PATH)
     errors = validate_assessment(assessment)
     outcome = assessment.get("overall_outcome", "INDETERMINATE") if not errors else "INDETERMINATE"
-    admission_decision = "allow" if not errors and outcome == "PASS" else "defer" if not errors and outcome == "PARTIAL" else "deny"
-    publication_allowed = admission_decision == "allow"
+    structural_decision = _structural_decision(errors, outcome)
     payload = {
         "type": "human_llm_pair_assessment",
         "assessment_id": assessment.get("assessment_id", "missing"),
         "trace_id": assessment.get("trace_id", "missing"),
         "session_path": str(session_dir),
         "outcome": outcome,
-        "admission_decision": admission_decision,
-        "publication_allowed": publication_allowed,
+        "structural_decision": structural_decision,
         "validation_errors": errors,
-        "reviewer_action": body.reviewer_action,
-        "reviewer_entity_id": body.reviewer_entity_id,
+        "reviewer_action": reviewer_action,
+        "reviewer_entity_id": reviewer_entity_id,
         "assessment_hash": hashlib.sha256(_canonical(assessment)).hexdigest(),
+        "assessment": assessment,
     }
-    receipt = _append_receipt(payload, admission_decision)
+    canonical = await ADMISSION_GATE.admit_proposal(
+        proposal=payload,
+        actor=ASSESSOR_ENTITY,
+        source="hybrid-collab-bridge/human-llm-interoperability",
+    )
+    decision = structural_decision
+    if structural_decision == "allow" and canonical.decision != "allow":
+        decision = canonical.decision
+    elif structural_decision == "defer" and canonical.decision == "deny":
+        decision = "deny"
+    publication_allowed = decision == "allow"
     artifact = {
         "assessment": assessment,
         "admission": {
-            "decision": admission_decision,
+            "decision": decision,
+            "structural_decision": structural_decision,
+            "canonical_decision": canonical.decision,
             "publication_allowed": publication_allowed,
             "errors": errors,
+            "reasoning": canonical.reasoning,
+            "bcat": canonical.bcat,
+            "gcat": canonical.gcat,
         },
-        "receipt": receipt,
+        "receipt": canonical.receipt,
     }
     artifact_path = session_dir / "04_human_llm_pair_assessment.json"
     artifact_path.write_text(json.dumps(artifact, indent=2), encoding="utf-8")
@@ -258,11 +267,26 @@ async def submit_assessment(body: AssessmentSubmission, x_admin_token: str | Non
         assessment_id=payload["assessment_id"],
         trace_id=payload["trace_id"],
         outcome=outcome,
-        admission_decision=admission_decision,
+        admission_decision=decision,
         publication_allowed=publication_allowed,
         errors=errors,
-        receipt=receipt,
+        bcat=canonical.bcat,
+        gcat=canonical.gcat,
+        receipt=canonical.receipt,
         session_artifact=str(artifact_path),
+    )
+
+
+@router.post("/assessments", response_model=AssessmentResult)
+async def submit_assessment(body: AssessmentSubmission, x_admin_token: str | None = Header(default=None)):
+    _auth(x_admin_token)
+    session_dir = _resolve_session(body.session_path)
+    assessment = json.loads(json.dumps(body.assessment))
+    return await govern_assessment(
+        assessment,
+        session_dir,
+        reviewer_action=body.reviewer_action,
+        reviewer_entity_id=body.reviewer_entity_id,
     )
 
 
