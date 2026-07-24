@@ -1,10 +1,11 @@
 """Admission gate: BCAT/GCAT evaluation before execution."""
 from __future__ import annotations
 from typing import Dict, Any, Literal
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .entity import EntityIdentity
 from .cge_client import CGELightClient
+from .governance_snapshot import build_governance_snapshot
 
 
 Decision = Literal["allow", "deny", "defer"]
@@ -19,6 +20,7 @@ class AdmissionResult:
     reasoning: str
     requires_human: bool = False
     requires_ai_quorum: bool = False
+    governance_snapshot: Dict[str, Any] = field(default_factory=dict)
 
 
 class AdmissionGate:
@@ -65,6 +67,15 @@ class AdmissionGate:
             bcat=bcat,
             gcat=gcat,
         )
+        snapshot = build_governance_snapshot(
+            proposal=proposal,
+            actor=actor.to_dict(),
+            source=source,
+            constitution=self.constitution,
+            ingest_result=ingest_result,
+            canonical_decision=decision,
+            cge_path=self.cge.cge_path,
+        )
 
         return AdmissionResult(
             decision=decision,
@@ -73,6 +84,7 @@ class AdmissionGate:
             gcat=gcat,
             reasoning=reasoning,
             requires_human=requires_human,
+            governance_snapshot=snapshot,
         )
 
     async def admit_consensus_merge(
@@ -81,13 +93,15 @@ class AdmissionGate:
         merge_output: Dict[str, Any],
         referee_actor: EntityIdentity,
     ) -> AdmissionResult:
+        proposal = {
+            "proposals_count": len(proposals),
+            "merge_output": merge_output,
+            "strategy": "consensus",
+        }
+        source = "hybrid-collab-bridge/consensus"
         ingest_result = await self.cge.ingest(
-            payload={
-                "proposals_count": len(proposals),
-                "merge_output": merge_output,
-                "strategy": "consensus",
-            },
-            source="hybrid-collab-bridge/consensus",
+            payload=proposal,
+            source=source,
             actor=referee_actor,
             mutation_class="derive",
         )
@@ -97,7 +111,7 @@ class AdmissionGate:
         admissible = ingest_result.get("admissible", False)
 
         if not admissible:
-            decision = "defer"
+            decision: Decision = "defer"
             requires_human = True
             reasoning = "Consensus merge near threshold; requires quorum review"
         else:
@@ -112,6 +126,15 @@ class AdmissionGate:
             bcat=bcat,
             gcat=gcat,
         )
+        snapshot = build_governance_snapshot(
+            proposal=proposal,
+            actor=referee_actor.to_dict(),
+            source=source,
+            constitution=self.constitution,
+            ingest_result=ingest_result,
+            canonical_decision=decision,
+            cge_path=self.cge.cge_path,
+        )
 
         return AdmissionResult(
             decision=decision,
@@ -120,6 +143,7 @@ class AdmissionGate:
             gcat=gcat,
             reasoning=reasoning,
             requires_human=requires_human,
+            governance_snapshot=snapshot,
         )
 
     def _is_deferrable(self, bcat: Dict, gcat: Dict) -> bool:
