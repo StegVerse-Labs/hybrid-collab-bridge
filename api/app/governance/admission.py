@@ -1,5 +1,7 @@
 """Admission gate: BCAT/GCAT evaluation before execution."""
 from __future__ import annotations
+import json
+from pathlib import Path
 from typing import Dict, Any, Literal
 from dataclasses import dataclass, field
 
@@ -28,6 +30,17 @@ class AdmissionGate:
         self.cge = cge_client
         self.constitution = constitution
         self.thresholds = constitution.get("threshold_profiles", {}).get("standard", {})
+
+    @staticmethod
+    def _persist_snapshot(proposal: Dict[str, Any], snapshot: Dict[str, Any]) -> None:
+        session_path = proposal.get("session_path")
+        if not isinstance(session_path, str) or not session_path:
+            return
+        session_dir = Path(session_path)
+        if not session_dir.exists() or not session_dir.is_dir():
+            return
+        path = session_dir / "08_commit_time_governance_snapshot.json"
+        path.write_text(json.dumps(snapshot, indent=2), encoding="utf-8")
 
     async def admit_proposal(
         self,
@@ -76,6 +89,7 @@ class AdmissionGate:
             canonical_decision=decision,
             cge_path=self.cge.cge_path,
         )
+        self._persist_snapshot(proposal, snapshot)
 
         return AdmissionResult(
             decision=decision,
