@@ -66,12 +66,22 @@ class CGELightClient:
         from cge.policy import evaluate_bcat, evaluate_gcat
 
         result = ingest_object(obj, source=obj["source"])
-        bcat = evaluate_bcat(result)
+        # Preserve the exact post-ingest object supplied to policy evaluation. This
+        # includes commit-time identifiers and timestamps and is therefore the only
+        # sufficient deterministic input for later BCAT/GCAT regeneration.
+        evaluation_input = json.loads(json.dumps(result))
+        bcat = evaluate_bcat(evaluation_input)
         gcat = evaluate_gcat(bcat)
 
         result["bcat"] = bcat
         result["gcat"] = gcat
         result["admissible"] = self._check_admissibility(bcat, gcat)
+        result["evaluation_input"] = evaluation_input
+        result["evaluator"] = {
+            "mode": "embedded",
+            "bcat_callable": "cge.policy.evaluate_bcat",
+            "gcat_callable": "cge.policy.evaluate_gcat",
+        }
         return result
 
     async def _ingest_remote(self, obj: Dict[str, Any]) -> Dict[str, Any]:
@@ -82,7 +92,14 @@ class CGELightClient:
                 headers={"X-ORG-ID": self.org_id},
             )
             r.raise_for_status()
-            return r.json()
+            result = r.json()
+            if isinstance(result, dict):
+                result.setdefault("evaluator", {
+                    "mode": "remote",
+                    "endpoint": self.endpoint,
+                    "regeneration_supported": bool(result.get("evaluation_input")),
+                })
+            return result
 
     def _check_admissibility(self, bcat: Dict, gcat: Dict) -> bool:
         constitution_path = self.cge_path / "repo_constitution.txt"
