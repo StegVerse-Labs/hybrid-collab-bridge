@@ -3,7 +3,7 @@
 The hook is deliberately fail-closed. A caller may supply a complete
 `interoperability_assessment` object in the run request. When none is supplied,
 the bridge emits an automatically constructed baseline whose semantic tests are
-INDETERMINATE because a fluent output alone cannot prove preserved meaning,
+INDETERMINATE because fluent output alone cannot prove preserved meaning,
 comprehension, or evaluative control.
 """
 from __future__ import annotations
@@ -17,37 +17,29 @@ from fastapi import FastAPI, Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
-from .human_llm_interoperability import (
-    AssessmentSubmission,
-    REQUIRED_TESTS,
-    submit_assessment,
-)
+from .human_llm_interoperability import AssessmentSubmission, REQUIRED_TESTS, submit_assessment
 
 _INSTALLED_ATTR = "_human_llm_run_hook_installed"
 
 
 def _baseline_assessment(request_payload: dict[str, Any], run_payload: dict[str, Any]) -> dict[str, Any]:
-    """Construct evidence-bounded assessment when no full assessment is supplied."""
     trace_id = str(run_payload.get("chain_id") or request_payload.get("slug") or uuid4().hex)
     consequence = str(request_payload.get("claim_consequence", "low")).lower()
-    tests: dict[str, Any] = {}
     critical = {
         "meaning_preservation",
         "boundary_control",
         "audit_gap_control",
         "review_comprehension",
     }
-    for name in REQUIRED_TESTS:
-        tests[name] = {
+    tests = {
+        name: {
             "status": "INDETERMINATE",
             "score": 0.0,
             "critical": name in critical,
-            "evidence": [
-                "Automatically attached after /v1/run; no independent test evidence was supplied."
-            ],
+            "evidence": ["Automatically attached after /v1/run; no independent test evidence was supplied."],
         }
-
-    human_present = bool(request_payload.get("human_gate", False))
+        for name in REQUIRED_TESTS
+    }
     return {
         "assessment_id": f"auto-{uuid4().hex}",
         "trace_id": trace_id,
@@ -55,13 +47,13 @@ def _baseline_assessment(request_payload: dict[str, Any], run_payload: dict[str,
         "claim_consequence": consequence if consequence in {"low", "moderate", "high", "critical"} else "low",
         "tests": tests,
         "review": {
-            "human_present": human_present,
+            "human_present": bool(request_payload.get("human_gate", False)),
             "comprehension_demonstrated": False,
             "objections_considered": False,
         },
         "overall_outcome": "INDETERMINATE",
         "error_attribution": [],
-        "generation_mode": "automatic_evidence_bounded_baseline",
+        "notes": "Automatic evidence-bounded baseline; independent interoperability evidence was not supplied.",
     }
 
 
@@ -93,7 +85,6 @@ class HumanLLMRunAssessmentMiddleware(BaseHTTPMiddleware):
             media_type=response.media_type,
             background=response.background,
         )
-
         if response.status_code >= 400:
             return rebuilt
         try:
@@ -116,7 +107,7 @@ class HumanLLMRunAssessmentMiddleware(BaseHTTPMiddleware):
                 x_admin_token=request.headers.get("x-admin-token"),
             )
             run_payload["interoperability"] = result.model_dump()
-        except Exception as exc:  # fail closed without erasing the governed run result
+        except Exception as exc:
             run_payload["interoperability"] = {
                 "outcome": "INDETERMINATE",
                 "admission_decision": "deny",
@@ -133,7 +124,6 @@ class HumanLLMRunAssessmentMiddleware(BaseHTTPMiddleware):
 
 
 def install_run_assessment_hook(app: FastAPI) -> bool:
-    """Install exactly once and return whether installation occurred."""
     if getattr(app.state, _INSTALLED_ATTR, False):
         return False
     app.add_middleware(HumanLLMRunAssessmentMiddleware)
