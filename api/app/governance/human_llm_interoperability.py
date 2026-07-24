@@ -1,8 +1,8 @@
 """Governed Human–LLM pair assessment runtime and API.
 
 The human/model pair and its trace are evaluated as one interoperability unit.
-Structural admission is fail-closed and is then passed through the bridge's
-canonical BCAT/GCAT AdmissionGate and CGELightClient receipt path.
+Structural admission is fail-closed, schema-enforced, and then passed through
+the bridge's canonical BCAT/GCAT AdmissionGate and CGELightClient receipt path.
 """
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 from .admission import AdmissionGate
 from .cge_client import CGELightClient
 from .entity import EntityIdentity
+from .human_llm_evidence import persist_mediated_receipts, validate_schema
 
 router = APIRouter(prefix="/v1/interoperability", tags=["human-llm-interoperability"])
 
@@ -48,6 +49,10 @@ VALID_ATTRIBUTIONS = {
     "translation_originated",
     "boundary_originated",
     "amplification_originated",
+    "continuity_originated",
+    "mediation_originated",
+    "provenance_originated",
+    "agency_inflation",
 }
 HIGH_CONSEQUENCE = {"high", "critical"}
 
@@ -70,6 +75,7 @@ class AssessmentResult(BaseModel):
     gcat: dict[str, Any] = Field(default_factory=dict)
     receipt: dict[str, Any]
     session_artifact: str
+    mediated_receipts: dict[str, Any] | None = None
 
 
 def configure(
@@ -138,14 +144,16 @@ def recommended_outcome(record: dict[str, Any]) -> str:
 
 
 def validate_assessment(record: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
+    errors = validate_schema(record)
     required = {"assessment_id", "trace_id", "timestamp", "tests", "review", "overall_outcome", "error_attribution"}
     missing = sorted(required - record.keys())
     if missing:
-        return [f"missing required fields: {', '.join(missing)}"]
+        errors.append(f"missing required fields: {', '.join(missing)}")
+        return errors
     tests = record.get("tests")
     if not isinstance(tests, dict):
-        return ["tests must be an object"]
+        errors.append("tests must be an object")
+        return errors
     missing_tests = sorted(REQUIRED_TESTS - set(tests))
     extra_tests = sorted(set(tests) - REQUIRED_TESTS)
     if missing_tests:
@@ -156,9 +164,6 @@ def validate_assessment(record: dict[str, Any]) -> list[str]:
         if not isinstance(result, dict):
             errors.append(f"{name}: result must be an object")
             continue
-        for field in ("status", "score", "critical", "evidence"):
-            if field not in result:
-                errors.append(f"{name}: missing {field}")
         if result.get("status") not in VALID_OUTCOMES:
             errors.append(f"{name}: invalid status")
         score = result.get("score")
@@ -189,7 +194,7 @@ def validate_assessment(record: dict[str, Any]) -> list[str]:
         expected = recommended_outcome(record)
         if record["overall_outcome"] != expected:
             errors.append(f"overall_outcome must be {expected}, got {record['overall_outcome']}")
-    return errors
+    return list(dict.fromkeys(errors))
 
 
 def _resolve_session(session_path: str) -> Path:
@@ -223,6 +228,15 @@ async def govern_assessment(
     errors = validate_assessment(assessment)
     outcome = assessment.get("overall_outcome", "INDETERMINATE") if not errors else "INDETERMINATE"
     structural_decision = _structural_decision(errors, outcome)
+    mediated_receipts = None
+    if not errors:
+        try:
+            mediated_receipts = persist_mediated_receipts(assessment, session_dir)
+        except (OSError, ValueError) as exc:
+            errors.append(f"mediated receipt persistence failed: {exc}")
+            outcome = "INDETERMINATE"
+            structural_decision = "deny"
+
     payload = {
         "type": "human_llm_pair_assessment",
         "assessment_id": assessment.get("assessment_id", "missing"),
@@ -234,6 +248,7 @@ async def govern_assessment(
         "reviewer_action": reviewer_action,
         "reviewer_entity_id": reviewer_entity_id,
         "assessment_hash": hashlib.sha256(_canonical(assessment)).hexdigest(),
+        "mediated_receipts": mediated_receipts,
         "assessment": assessment,
     }
     canonical = await ADMISSION_GATE.admit_proposal(
@@ -259,6 +274,7 @@ async def govern_assessment(
             "bcat": canonical.bcat,
             "gcat": canonical.gcat,
         },
+        "mediated_receipts": mediated_receipts,
         "receipt": canonical.receipt,
     }
     artifact_path = session_dir / "04_human_llm_pair_assessment.json"
@@ -274,6 +290,7 @@ async def govern_assessment(
         gcat=canonical.gcat,
         receipt=canonical.receipt,
         session_artifact=str(artifact_path),
+        mediated_receipts=mediated_receipts,
     )
 
 
