@@ -1,0 +1,37 @@
+{
+  "schema_version": "SIH-v1",
+  "handoff_id": "SIH-CONECTRR-001",
+  "originating_layer": "Conectrr discovery",
+  "intent": "Surface a coordination opportunity for independent downstream evaluation.",
+  "evidence_references": [
+    {
+      "reference": "CON-TRACE-001",
+      "claim_supported": "The opportunity was surfaced under the smallest interoperable handoff principle."
+    }
+  ],
+  "reasoning_summary": "The originating layer identified a potentially useful coordination opportunity from the available evidence but did not decide whether later action is authorized or admissible.",
+  "uncertainty": {
+    "level": "medium",
+    "basis": "Downstream consent, authority, policy fit, and execution conditions have not been evaluated."
+  },
+  "unresolved_dependencies": [
+    "participant consent",
+    "downstream authority determination",
+    "admissibility review",
+    "commitment decision",
+    "execution approval"
+  ],
+  "provenance": {
+    "recorded_at": "2026-07-25T13:38:12Z",
+    "actor": "Conectrr discovery layer",
+    "source_system": "Conectrr",
+    "trace_reference": "CON-TRACE-001"
+  },
+  "withheld_claims": {
+    "consent": "UNRESOLVED",
+    "authority": "UNRESOLVED",
+    "admissibility": "UNRESOLVED",
+    "commitment": "UNRESOLVED",
+    "execution_status": "UNRESOLVED"
+  }
+}
