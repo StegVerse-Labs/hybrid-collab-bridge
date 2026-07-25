@@ -4,6 +4,17 @@
 
 # hybrid-collab-bridge v1.0.0
 
+## Position in the StegVerse LLM Communications Stack
+
+- **Stack ID:** `STEGVERSE-LLM-COMMS-STACK-v1`
+- **Component ID:** `hybrid-collab-bridge`
+- **Bounded role:** Internal multi-model collaboration adapter for governed expert coordination, synthesis, admission, trace creation, and collaboration receipts.
+- **Consumes:** Governed collaboration requests, provider capabilities, policy and admission inputs, and evidence references.
+- **Produces:** Expert traces, synthesis candidates, admission results, collaboration receipts, and governed return payloads.
+- **Does not own:** General provider brokerage, model hosting, communication-source normalization, continuity truth, identity, commit-time execution authority, publication authority, or Master Records custody.
+
+Canonical stack reference: [`docs/LLM_COMMUNICATIONS_STACK_POSITION.md`](docs/LLM_COMMUNICATIONS_STACK_POSITION.md)
+
 A **governed internal ecosystem adapter**: API orchestration + BCAT/GCAT admission + CGE-monitored traces.
 
 - **Internal-only**: Second LLM adapter within the StegVerse ecosystem (user-facing SDK is adapter #1)
