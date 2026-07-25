@@ -88,6 +88,7 @@ def test_snapshot_integrity_and_regeneration(monkeypatch):
     assert verify_snapshot_integrity(snapshot)["verified"] is True
     replay = regenerate_bcat_gcat(snapshot)
     assert replay["verified"] is True
+    assert replay["checks"]["evaluator_source_verified"] is True
     assert replay["regenerated"]["canonical_decision"] == "allow"
 
 
@@ -109,3 +110,14 @@ def test_policy_threshold_tamper_is_detected(monkeypatch):
     assert replay["verified"] is False
     assert replay["checks"]["snapshot_hash_verified"] is False
     assert replay["checks"]["admissibility_regenerated"] is False
+
+
+def test_evaluator_source_evidence_tamper_is_detected(monkeypatch):
+    _install_fake_cge_policy(monkeypatch)
+    snapshot = copy.deepcopy(_snapshot())
+    snapshot["evaluator_source"]["evaluate_bcat"]["source_hash"] = "0" * 64
+    replay = regenerate_bcat_gcat(snapshot)
+    assert replay["verified"] is False
+    assert replay["checks"]["snapshot_hash_verified"] is False
+    assert replay["checks"]["evaluator_source_hash_verified"] is False
+    assert replay["checks"]["evaluator_source_verified"] is False
