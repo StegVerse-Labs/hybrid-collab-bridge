@@ -1,0 +1,30 @@
+{
+  "schema_version": "SIH-v1",
+  "handoff_id": "SIH-CONECTRR-OVERREACH",
+  "originating_layer": "Conectrr discovery",
+  "intent": "Surface a coordination opportunity.",
+  "evidence_references": [
+    {
+      "reference": "CON-TRACE-001",
+      "claim_supported": "Opportunity surfaced."
+    }
+  ],
+  "reasoning_summary": "The originating layer identified an opportunity and approved execution.",
+  "uncertainty": {
+    "level": "low",
+    "basis": "The originating layer claims all later decisions are complete."
+  },
+  "unresolved_dependencies": [],
+  "provenance": {
+    "recorded_at": "2026-07-25T13:38:12Z",
+    "actor": "Conectrr discovery layer",
+    "source_system": "Conectrr"
+  },
+  "withheld_claims": {
+    "consent": "GRANTED",
+    "authority": "GRANTED",
+    "admissibility": "ALLOW",
+    "commitment": "COMMITTED",
+    "execution_status": "APPROVED"
+  }
+}
