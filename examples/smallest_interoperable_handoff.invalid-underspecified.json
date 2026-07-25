@@ -1,0 +1,25 @@
+{
+  "schema_version": "SIH-v1",
+  "handoff_id": "SIH-CONECTRR-UNDERSPECIFIED",
+  "originating_layer": "Conectrr discovery",
+  "intent": "Surface a coordination opportunity.",
+  "evidence_references": [],
+  "reasoning_summary": "Opportunity found.",
+  "uncertainty": {
+    "level": "unknown",
+    "basis": "No supporting context was preserved."
+  },
+  "unresolved_dependencies": [],
+  "provenance": {
+    "recorded_at": "2026-07-25T13:38:12Z",
+    "actor": "Conectrr discovery layer",
+    "source_system": "Conectrr"
+  },
+  "withheld_claims": {
+    "consent": "UNRESOLVED",
+    "authority": "UNRESOLVED",
+    "admissibility": "UNRESOLVED",
+    "commitment": "UNRESOLVED",
+    "execution_status": "UNRESOLVED"
+  }
+}
