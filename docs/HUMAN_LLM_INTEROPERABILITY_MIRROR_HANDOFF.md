@@ -1,15 +1,35 @@
 # Human–LLM Interoperability Mirror Handoff
 
-Status: ACTIVE — MEDIATED-COMPOSITION ESCALATION AND RECEIPT CHAINING BUILT
+Status: ACTIVE — MEDIATED-COMPOSITION ESCALATION, RECEIPT CHAINING, AND SMALLEST INTEROPERABLE HANDOFF BUILT
 Repository: StegVerse-Labs/hybrid-collab-bridge
 Goal: Convert the Human–LLM Interoperability investigation into a governed, executable evaluation layer for human–model pairs and mediated multi-entity communication.
-Last updated: 2026-07-23
+Last updated: 2026-07-25
 
 ## Source-of-truth thesis
 
 Fluent output is not evidence that the human–model pair preserved meaning, understood the result, detected error, or retained evaluative control. The unit under evaluation is the pair and its interaction trace, not the human or model in isolation.
 
 Humans may also form a stateful interoperability layer between otherwise isolated models or entities. Such a pathway must not be elevated from influence to communication, interoperability, governed composition, or collective agency without evidence appropriate to each level.
+
+## Smallest interoperable handoff implementation
+
+The Conectrr exchange is now represented by `evidence/conectrr/CON-TRACE-001.json`. The external convergence established a deliberately narrow architectural contract: an originating coordination layer may communicate intent, evidence references, reasoning summary, uncertainty, unresolved dependencies, and provenance sufficient for independent downstream reconstruction, while withholding all claims to consent, authority, admissibility, commitment, and execution status.
+
+The implemented contract includes:
+
+- `schemas/smallest_interoperable_handoff.schema.json`
+- `examples/smallest_interoperable_handoff.valid.json`
+- `examples/smallest_interoperable_handoff.invalid-overreach.json`
+- `examples/smallest_interoperable_handoff.invalid-underspecified.json`
+- `tools/validate_smallest_interoperable_handoff.py`
+- `tests/test_smallest_interoperable_handoff.py`
+
+The deterministic validator rejects both forms of boundary failure:
+
+1. overreach, when the originating layer claims a later consent, authority, admissibility, commitment, or execution decision; and
+2. under-specification, when evidence bindings or unresolved downstream dependencies are absent.
+
+No authority is transferred by the trace, contract, fixtures, validator, or external exchange.
 
 ## Activation delivered
 
@@ -39,6 +59,7 @@ The repository now contains:
 22. Assessment-bound, participant-sequenced SHA-256 receipt chains with genesis and prior-hash linkage.
 23. Receipt-chain tests covering participant order, payload hashing, mutation sensitivity, and pair-only traces.
 24. CI path coverage and execution steps for receipt generation and receipt tests.
+25. Smallest interoperable handoff trace, schema, deterministic validator, valid fixture, and bidirectional rejection fixtures.
 
 ## Runtime proof path
 
@@ -56,6 +77,7 @@ The repository now contains:
 12. Append the resulting chain head to the governed ledger path.
 13. Attach the assessment, admission result, and receipts to the governed session.
 14. Retrieve the attached assessment and receipts by assessment ID and session path.
+15. Validate every smallest interoperable handoff before downstream evaluation.
 
 Current transitional API path:
 
@@ -78,6 +100,9 @@ The duplicated namespace is temporary because `main.py` currently registers only
 - Communication is not interoperability.
 - Interoperability is not governed composition.
 - Coupling is not joint agency, shared cognition, or collective identity.
+- Discovery is not consent.
+- Recommendation is not authority.
+- Handoff sufficiency is not admissibility.
 
 ## Mediated-composition architecture
 
@@ -144,25 +169,33 @@ This chain proves record ordering and detects mutation. It does not by itself pr
 - `docs/GOVERNED_MEDIATED_TRANSITION_COMPOSITION.md`
 - `docs/HUMAN_LLM_INTEROPERABILITY_MIRROR_HANDOFF.md`
 - `schemas/human_llm_pair_assessment.schema.json`
+- `schemas/smallest_interoperable_handoff.schema.json`
+- `evidence/conectrr/CON-TRACE-001.json`
 - `examples/human_llm_pair_assessments.jsonl`
+- `examples/smallest_interoperable_handoff.valid.json`
+- `examples/smallest_interoperable_handoff.invalid-overreach.json`
+- `examples/smallest_interoperable_handoff.invalid-underspecified.json`
 - `tools/validate_human_llm_pair_assessments.py`
+- `tools/validate_smallest_interoperable_handoff.py`
 - `tools/build_mediated_transition_receipts.py`
 - `api/app/governance/human_llm_interoperability.py`
 - `tests/test_human_llm_pair_assessments.py`
 - `tests/test_human_llm_interoperability_runtime.py`
 - `tests/test_mediated_transition_receipts.py`
+- `tests/test_smallest_interoperable_handoff.py`
 - `.github/workflows/human-llm-interoperability.yml`
 
-## Current commit tranche
+## Current implementation tranche
 
-- Schema extension: `479688e5a2ed553eebedbc9e4c050d4eb01029e2`
-- Validator enforcement: `789e797c808cff4bc42ba4057e985b891869638b`
-- Escalation and agency tests: `7707dc423cb80e2cfc226538ba75f1ba59db14a5`
-- Receipt builder: `93bd241cf1dab1ba86c5911fc943f68d1cd61e7d`
-- Receipt tests: `902d4bed4670a66dfafe5337796e2d815fdb2225`
-- CI receipt integration: `24da7ff65820770213f3c51af099b7a303d89f51`
+- Conectrr trace: `0388dc287d2df7a2ec62a3c28e9cf9fd5c160668`
+- Handoff schema: `3e460da59613ab1dec29686c036305ef3462684a`
+- Valid fixture: `d276652ac2069ec8924d60b693f18c1853733d5b`
+- Overreach fixture: `041746822010ca756f2ec03e306c6c75b154f7ac`
+- Under-specification fixture: `2e91d73cb5fa86d702a46b5709fc2b5dfadd6a93`
+- Deterministic validator: `9d4b650d3480674566ed0166b2d3a36451d8f9b4`
+- Contract tests: `6251c296de213793c41d0d9c00518a08f2e91025`
 
-The files were committed directly. A successful CI or local execution result has not yet been observed in this session, so runtime validation of this tranche remains pending.
+Files were committed directly. Repository-hosted CI observation remains separate from implementation completion.
 
 ## Remaining architecture and integration work
 
@@ -190,4 +223,4 @@ The files were committed directly. A successful CI or local execution result has
 
 This conversation can be archived when all unique concepts and active obligations are represented by this handoff, committed files, issues, receipts, or other durable records. Repository incompleteness alone is not a reason to retain the conversation.
 
-The mathematical architecture, identified weaknesses, required controls, implementation state, commit identifiers, unverified test status, receipt-chain contract, and next integration sequence are now durably represented. No additional part of this conversation is required to continue the work.
+The Conectrr convergence record, smallest interoperable handoff contract, bidirectional failure fixtures, validator, tests, prior mediated-composition architecture, implementation commit identifiers, remaining integrations, and authority boundaries are durably represented. No additional part of this conversation is required to continue the work.
