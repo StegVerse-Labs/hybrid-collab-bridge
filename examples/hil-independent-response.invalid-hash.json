@@ -1,0 +1,13 @@
+{
+  "schema_version": "HIL-INDEPENDENT-RESPONSE-v1",
+  "submission_id": "HIL-RESP-INVALID-HASH",
+  "submission_type": "independent_response_packet",
+  "response_date": "2026-07-26",
+  "canonical_input": {"title": "Humans as the Interoperability Layer", "version": "v1.0", "status": "canonical experiment input", "file": "HIL_Canonical_Paper_v1_0.pdf", "sha256": "not-a-sha256", "size_bytes": 85084, "source_review_artifact_sha256_declared_in_paper": "52102cccb9ba9016c76434a64e22031b6a8c3edd3b8806e7b664e609216b2946"},
+  "respondent": {"model": "test", "provider": "test", "participant_name": null, "participant_identifier": null, "session_identifier": null},
+  "determination": {"central_claim": "test", "support_level": "test", "structurally_demonstrated": ["test"], "testable_hypothesis": "test", "speculative_claims": ["test"], "strongest_observation": "test", "weakest_claim": "test"},
+  "ambiguities": ["test"], "additional_mechanisms": {"test": "test"}, "proposed_empirical_test": ["test"],
+  "self_participation": {"narrow_structural_participation": true, "reason": "test", "does_not_establish": ["test"]},
+  "carry_forward": ["test"],
+  "submission_record": {"independent_disagreement_preserved": true, "canonical_input_altered": false, "external_sources_used": false, "submission_status": "complete", "intake_status": "recorded_as_repository_evidence_not_yet_validated_or_accepted_for_publication", "participant_attribution": null, "publication_authority": false, "master_record_appended": false}
+}
