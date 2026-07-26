@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stegverse.org/schemas/hil-independent-response-v1.json",
+  "title": "HIL independent response packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "submission_id",
+    "submission_type",
+    "response_date",
+    "canonical_input",
+    "respondent",
+    "determination",
+    "ambiguities",
+    "additional_mechanisms",
+    "proposed_empirical_test",
+    "self_participation",
+    "carry_forward",
+    "submission_record"
+  ],
+  "properties": {
+    "schema_version": { "const": "HIL-INDEPENDENT-RESPONSE-v1" },
+    "submission_id": { "type": "string", "pattern": "^HIL-RESP-[A-Z0-9-]+$" },
+    "submission_type": { "const": "independent_response_packet" },
+    "response_date": { "type": "string", "format": "date" },
+    "canonical_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "version", "status", "file", "sha256", "size_bytes", "source_review_artifact_sha256_declared_in_paper"],
+      "properties": {
+        "title": { "const": "Humans as the Interoperability Layer" },
+        "version": { "type": "string" },
+        "status": { "type": "string" },
+        "file": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "size_bytes": { "type": "integer", "minimum": 1 },
+        "source_review_artifact_sha256_declared_in_paper": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "respondent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "provider", "participant_name", "participant_identifier", "session_identifier"],
+      "properties": {
+        "model": { "type": "string", "minLength": 1 },
+        "provider": { "type": "string", "minLength": 1 },
+        "participant_name": { "type": ["string", "null"] },
+        "participant_identifier": { "type": ["string", "null"] },
+        "session_identifier": { "type": ["string", "null"] }
+      }
+    },
+    "determination": {
+      "type": "object",
+      "required": ["central_claim", "support_level", "structurally_demonstrated", "testable_hypothesis", "speculative_claims", "strongest_observation", "weakest_claim"]
+    },
+    "ambiguities": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "additional_mechanisms": { "type": "object", "minProperties": 1 },
+    "proposed_empirical_test": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "self_participation": {
+      "type": "object",
+      "required": ["narrow_structural_participation", "reason", "does_not_establish"]
+    },
+    "carry_forward": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "submission_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["independent_disagreement_preserved", "canonical_input_altered", "external_sources_used", "submission_status", "intake_status", "participant_attribution", "publication_authority", "master_record_appended"],
+      "properties": {
+        "independent_disagreement_preserved": { "const": true },
+        "canonical_input_altered": { "const": false },
+        "external_sources_used": { "type": "boolean" },
+        "submission_status": { "enum": ["complete", "incomplete"] },
+        "intake_status": { "type": "string", "minLength": 1 },
+        "participant_attribution": { "type": ["string", "null"] },
+        "publication_authority": { "type": "boolean" },
+        "master_record_appended": { "type": "boolean" }
+      }
+    }
+  }
+}
