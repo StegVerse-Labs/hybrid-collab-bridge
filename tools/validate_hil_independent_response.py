@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+"""Validate HIL independent-response packets fail-closed."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+try:
+    import jsonschema
+except ImportError as exc:  # pragma: no cover
+    raise SystemExit("jsonschema is required: pip install jsonschema") from exc
+
+
+def load_json(path: Path) -> Any:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"unable to read valid JSON from {path}: {exc}") from exc
+
+
+def validate_packet(packet_path: Path, schema_path: Path) -> list[str]:
+    packet = load_json(packet_path)
+    schema = load_json(schema_path)
+    validator = jsonschema.Draft202012Validator(schema)
+    errors = sorted(validator.iter_errors(packet), key=lambda item: list(item.path))
+    return [f"{'/'.join(map(str, error.path)) or '<root>'}: {error.message}" for error in errors]
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("packet", type=Path)
+    parser.add_argument(
+        "--schema",
+        type=Path,
+        default=Path("schemas/hil_independent_response.schema.json"),
+    )
+    args = parser.parse_args()
+
+    try:
+        errors = validate_packet(args.packet, args.schema)
+    except ValueError as exc:
+        print(f"DENY: {exc}", file=sys.stderr)
+        return 2
+
+    if errors:
+        print("DENY: independent response packet failed validation", file=sys.stderr)
+        for error in errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+
+    print(f"PASS: {args.packet}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
