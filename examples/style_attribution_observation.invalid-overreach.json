@@ -1,0 +1,29 @@
+{
+  "observation_id": "STYLE-OBS-002",
+  "trace_id": "HIL-TRACE-0001",
+  "artifact_refs": ["evidence/hil/HIL-TRACE-0001-significance-style-continuation.json"],
+  "observed_features": [
+    {"feature": "double-spaced paragraphs", "measurement": true, "evidence_ref": "HIL-TRACE-0001#style"}
+  ],
+  "candidate_causes": [
+    {"cause": "model_conditioned_style", "confidence": 0.99, "evidence_refs": []}
+  ],
+  "accommodation": {
+    "asserted": false,
+    "direction": "none",
+    "identity_retention": 1.0,
+    "understanding_gain": 0.0,
+    "evidence_refs": []
+  },
+  "attribution_claim": {
+    "level": "verified",
+    "target": "specific unnamed LLM",
+    "confidence": 1.0,
+    "basis": ["paragraph spacing"]
+  },
+  "evidence_limits": ["No provenance records were inspected."],
+  "admissibility": {
+    "decision": "allow",
+    "reason_codes": ["bounded_descriptive_observation"]
+  }
+}

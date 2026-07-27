@@ -1,0 +1,36 @@
+{
+  "observation_id": "STYLE-OBS-001",
+  "trace_id": "HIL-TRACE-0001",
+  "artifact_refs": ["evidence/hil/HIL-TRACE-0001-significance-style-continuation.json"],
+  "observed_features": [
+    {"feature": "short-paragraph cadence", "measurement": "recurrent", "evidence_ref": "HIL-TRACE-0001#style"},
+    {"feature": "contrast framing", "measurement": true, "evidence_ref": "HIL-TRACE-0001#style"}
+  ],
+  "candidate_causes": [
+    {"cause": "platform_convention", "confidence": 0.62, "evidence_refs": ["HIL-TRACE-0001#platform"]},
+    {"cause": "interactional_accommodation", "confidence": 0.58, "evidence_refs": ["HIL-TRACE-0001#accommodation"]},
+    {"cause": "model_conditioned_style", "confidence": 0.41, "evidence_refs": []}
+  ],
+  "accommodation": {
+    "asserted": true,
+    "direction": "bidirectional",
+    "identity_retention": 0.82,
+    "understanding_gain": 0.76,
+    "evidence_refs": ["HIL-TRACE-0001#accommodation"]
+  },
+  "attribution_claim": {
+    "level": "descriptive",
+    "target": "shared rhetorical trajectory",
+    "confidence": 0.7,
+    "basis": ["observable cadence", "observable contrast structure"]
+  },
+  "evidence_limits": [
+    "No model identity is verified.",
+    "Platform authorship metadata is not independently authenticated.",
+    "Observed similarity does not establish common origin."
+  ],
+  "admissibility": {
+    "decision": "allow",
+    "reason_codes": ["bounded_descriptive_observation"]
+  }
+}

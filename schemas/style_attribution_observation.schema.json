@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stegverse.org/schemas/style_attribution_observation.schema.json",
+  "title": "Style Attribution Observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["observation_id", "trace_id", "artifact_refs", "observed_features", "candidate_causes", "accommodation", "attribution_claim", "evidence_limits", "admissibility"],
+  "properties": {
+    "observation_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "artifact_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "observed_features": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["feature", "measurement", "evidence_ref"], "properties": {"feature": {"type": "string", "minLength": 1}, "measurement": {"type": ["number", "string", "boolean"]}, "evidence_ref": {"type": "string", "minLength": 1}}}},
+    "candidate_causes": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["cause", "confidence", "evidence_refs"], "properties": {"cause": {"enum": ["model_conditioned_style", "prompt_pattern", "platform_convention", "human_revision", "interactional_accommodation", "shared_training_or_corpus", "unknown"]}, "confidence": {"type": "number", "minimum": 0, "maximum": 1}, "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}}}},
+    "accommodation": {"type": "object", "additionalProperties": false, "required": ["asserted", "direction", "identity_retention", "understanding_gain", "evidence_refs"], "properties": {"asserted": {"type": "boolean"}, "direction": {"enum": ["none", "human_to_model", "model_to_human", "bidirectional", "indeterminate"]}, "identity_retention": {"type": "number", "minimum": 0, "maximum": 1}, "understanding_gain": {"type": "number", "minimum": 0, "maximum": 1}, "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}}},
+    "attribution_claim": {"type": "object", "additionalProperties": false, "required": ["level", "target", "confidence", "basis"], "properties": {"level": {"enum": ["none", "descriptive", "probabilistic", "verified"]}, "target": {"type": "string"}, "confidence": {"type": "number", "minimum": 0, "maximum": 1}, "basis": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}}},
+    "evidence_limits": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "admissibility": {"type": "object", "additionalProperties": false, "required": ["decision", "reason_codes"], "properties": {"decision": {"enum": ["allow", "defer", "deny", "quarantine"]}, "reason_codes": {"type": "array", "minItems": 1, "items": {"enum": ["bounded_descriptive_observation", "probabilistic_attribution_supported", "verified_provenance_present", "style_attribution_overreach", "missing_null_models", "missing_accommodation_evidence", "insufficient_trace", "categorical_origin_bias"]}, "uniqueItems": true}}}
+  },
+  "allOf": [{"if": {"properties": {"attribution_claim": {"properties": {"level": {"const": "verified"}}}}}, "then": {"properties": {"admissibility": {"properties": {"reason_codes": {"contains": {"const": "verified_provenance_present"}}}}}}}]
+}
