@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stegverse.org/schemas/style_generation_receipt.schema.json",
+  "title": "Style Generation Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["receipt_id", "sample_id", "provider", "model_family", "model_version", "prompt_hash", "output_hash", "generated_at", "provenance_level", "human_revision", "platform_context", "signature"],
+  "properties": {
+    "receipt_id": {"type": "string", "minLength": 1},
+    "sample_id": {"type": "string", "minLength": 1},
+    "provider": {"type": "string", "minLength": 1},
+    "model_family": {"type": "string", "minLength": 1},
+    "model_version": {"type": "string", "minLength": 1},
+    "prompt_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "output_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "provenance_level": {"enum": ["asserted", "provider_recorded", "cryptographically_bound"]},
+    "human_revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applied", "revision_hash"],
+      "properties": {
+        "applied": {"type": "boolean"},
+        "revision_hash": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "platform_context": {"type": "string", "minLength": 1},
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "signer_id", "key_ref", "value"],
+      "properties": {
+        "algorithm": {"enum": ["none", "hmac-sha256", "ed25519"]},
+        "signer_id": {"type": "string"},
+        "key_ref": {"type": "string"},
+        "value": {"type": "string"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"provenance_level": {"const": "cryptographically_bound"}}},
+      "then": {"properties": {"signature": {"properties": {"algorithm": {"not": {"const": "none"}}, "value": {"minLength": 1}, "signer_id": {"minLength": 1}, "key_ref": {"minLength": 1}}}}}
+    }
+  ]
+}
