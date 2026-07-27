@@ -3,44 +3,13 @@ name: Human-LLM Interoperability
 on:
   push:
     paths:
-      - "api/app/__init__.py"
-      - "api/app/main.py"
-      - "api/app/governance/__init__.py"
-      - "api/app/governance/admission.py"
-      - "api/app/governance/cge_client.py"
-      - "api/app/governance/dashboard.py"
-      - "api/app/governance/governance_snapshot.py"
-      - "api/app/governance/human_llm_evidence.py"
-      - "api/app/governance/human_llm_interoperability.py"
-      - "api/app/governance/human_llm_replay.py"
-      - "api/app/governance/human_llm_run_hook.py"
-      - "api/app/governance/receipt_signing.py"
-      - "schemas/human_llm_pair_assessment.schema.json"
-      - "schemas/hil_independent_response.schema.json"
-      - "schemas/style_attribution_observation.schema.json"
-      - "examples/human_llm_pair_assessments.jsonl"
-      - "examples/hil-independent-response.*.json"
-      - "examples/style_attribution_observation.*.json"
-      - "examples/style_attribution_corpus.jsonl"
+      - "api/app/**"
+      - "schemas/**"
+      - "examples/**"
       - "evidence/hil-independent-responses/*.json"
       - "evidence/hil/*.json"
-      - "tools/validate_human_llm_pair_assessments.py"
-      - "tools/validate_hil_independent_response.py"
-      - "tools/validate_style_attribution_observations.py"
-      - "tools/evaluate_style_attribution_corpus.py"
-      - "tools/build_mediated_transition_receipts.py"
-      - "tests/test_application_startup.py"
-      - "tests/test_governance_snapshot.py"
-      - "tests/test_hil_independent_response.py"
-      - "tests/test_human_llm_pair_assessments.py"
-      - "tests/test_human_llm_evidence.py"
-      - "tests/test_human_llm_interoperability_runtime.py"
-      - "tests/test_human_llm_replay.py"
-      - "tests/test_human_llm_run_hook.py"
-      - "tests/test_mediated_transition_receipts.py"
-      - "tests/test_receipt_signing.py"
-      - "tests/test_style_attribution_observations.py"
-      - "tests/test_style_attribution_corpus.py"
+      - "tools/**"
+      - "tests/**"
       - ".github/workflows/human-llm-interoperability.yml"
   pull_request:
     paths:
@@ -64,6 +33,9 @@ jobs:
       HCB_RECEIPT_SIGNING_KEY: ci-only-human-llm-receipt-signing-key
       HCB_RECEIPT_SIGNER_ID: ci-human-llm-assessor
       HCB_RECEIPT_SIGNING_KEY_REF: ci:ephemeral:human-llm-receipts
+      HCB_STYLE_RECEIPT_KEY: ci-only-style-generation-key
+      HCB_STYLE_RECEIPT_SIGNER_ID: ci-style-generation-recorder
+      HCB_STYLE_RECEIPT_KEY_REF: ci:ephemeral:style-generation-receipts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -85,7 +57,21 @@ jobs:
             echo "invalid overreach fixture unexpectedly passed"
             exit 1
           fi
+      - name: Exercise style generation receipt builder and validator
+        run: |
+          printf 'Explain individual significance.\n' > /tmp/style-prompt.txt
+          printf 'Significance begins when an entity assigns value.\n' > /tmp/style-output.txt
+          python tools/build_style_generation_receipt.py \
+            --sample-id CI-SAMPLE-001 \
+            --provider controlled-ci \
+            --model-family controlled-fixture \
+            --model-version v1 \
+            --prompt /tmp/style-prompt.txt \
+            --output /tmp/style-output.txt \
+            --platform-context github-actions \
+            --out /tmp/style-generation-receipt.json
+          python tools/validate_style_generation_receipts.py /tmp/style-generation-receipt.json
       - name: Build and verify authenticated mediated transition receipts
         run: python tools/build_mediated_transition_receipts.py examples/human_llm_pair_assessments.jsonl /tmp/mediated-transition-receipts.jsonl
       - name: Run interoperability test suite
-        run: python -m pytest -q tests/test_application_startup.py tests/test_governance_snapshot.py tests/test_hil_independent_response.py tests/test_human_llm_pair_assessments.py tests/test_human_llm_evidence.py tests/test_human_llm_interoperability_runtime.py tests/test_human_llm_replay.py tests/test_human_llm_run_hook.py tests/test_mediated_transition_receipts.py tests/test_receipt_signing.py tests/test_style_attribution_observations.py tests/test_style_attribution_corpus.py
+        run: python -m pytest -q tests/test_application_startup.py tests/test_governance_snapshot.py tests/test_hil_independent_response.py tests/test_human_llm_pair_assessments.py tests/test_human_llm_evidence.py tests/test_human_llm_interoperability_runtime.py tests/test_human_llm_replay.py tests/test_human_llm_run_hook.py tests/test_mediated_transition_receipts.py tests/test_receipt_signing.py tests/test_style_attribution_observations.py tests/test_style_attribution_corpus.py tests/test_style_generation_receipts.py
