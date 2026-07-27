@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: stegverse-hil-style-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.style-api
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: HCB_STYLE_EXPERIMENT_ROOT
+        value: /var/data/style-experiments
+    disk:
+      name: style-experiment-data
+      mountPath: /var/data
+      sizeGB: 1
