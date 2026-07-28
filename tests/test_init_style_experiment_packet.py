@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -12,7 +13,7 @@ assert spec and spec.loader
 spec.loader.exec_module(module)
 
 
-def test_build_packet_preserves_claim_boundary_and_required_phases():
+def test_build_packet_preserves_claim_boundary_and_execution_sufficiency():
     packet = module.build_packet(
         "HIL-REAL-001",
         "human-001",
@@ -22,13 +23,13 @@ def test_build_packet_preserves_claim_boundary_and_required_phases():
     assert packet["claim_boundary"]["origin_attribution_prohibited"] is True
     assert packet["claim_boundary"]["causation_claim_prohibited"] is True
     assert packet["publication_posture"] == "private"
-    phases = {(sample["model_family"], sample["phase"]) for sample in packet["samples"]}
-    assert phases == {
-        ("family-a", "baseline"),
-        ("family-a", "followup"),
-        ("family-b", "baseline"),
-        ("family-b", "followup"),
-    }
+
+    counts = Counter((sample["model_family"], sample["phase"]) for sample in packet["samples"])
+    assert counts[("family-a", "baseline")] == module.BASELINE_SAMPLES_PER_FAMILY
+    assert counts[("family-b", "baseline")] == module.BASELINE_SAMPLES_PER_FAMILY
+    assert counts[("family-a", "followup")] == module.FOLLOWUP_SAMPLES_PER_FAMILY
+    assert counts[("family-b", "followup")] == module.FOLLOWUP_SAMPLES_PER_FAMILY
+    assert len({sample["sample_id"] for sample in packet["samples"]}) == len(packet["samples"])
 
 
 def test_parse_model_requires_provider_family_version():
