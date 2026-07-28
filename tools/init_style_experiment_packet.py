@@ -7,16 +7,28 @@ import json
 from pathlib import Path
 
 MAXIMUM_CLAIM = "observed association between interaction and classifier reliability"
+BASELINE_SAMPLES_PER_FAMILY = 2
+FOLLOWUP_SAMPLES_PER_FAMILY = 1
 
 
 def build_packet(experiment_id: str, human_id: str, models: list[tuple[str, str, str]]) -> dict:
     samples = []
     for provider, family, version in models:
-        for phase in ("baseline", "followup"):
-            sample_id = f"{family}-{phase}-001"
+        for index in range(1, BASELINE_SAMPLES_PER_FAMILY + 1):
+            sample_id = f"{family}-baseline-{index:03d}"
             samples.append({
                 "sample_id": sample_id,
-                "phase": phase,
+                "phase": "baseline",
+                "text_path": f"samples/{sample_id}.txt",
+                "receipt_path": f"receipts/{sample_id}.json",
+                "model_family": family,
+                "human_revision_applied": False,
+            })
+        for index in range(1, FOLLOWUP_SAMPLES_PER_FAMILY + 1):
+            sample_id = f"{family}-followup-{index:03d}"
+            samples.append({
+                "sample_id": sample_id,
+                "phase": "followup",
                 "text_path": f"samples/{sample_id}.txt",
                 "receipt_path": f"receipts/{sample_id}.json",
                 "model_family": family,
@@ -71,6 +83,8 @@ def main() -> int:
     (root / "README.md").write_text(
         "# Governed Style Experiment Packet\n\n"
         "This directory is an intake skeleton, not experimental evidence.\n\n"
+        f"Each model family requires {BASELINE_SAMPLES_PER_FAMILY} independent baseline outputs and "
+        f"{FOLLOWUP_SAMPLES_PER_FAMILY} follow-up output before execution planning can pass.\n\n"
         "Replace each empty sample file with the exact captured output, then create a matching "
         "cryptographically bound generation receipt. Do not change the claim boundary. Run "
         "`python tools/validate_style_experiment_intake.py packet.json` before evaluation or publication.\n",
