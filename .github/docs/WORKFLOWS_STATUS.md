@@ -1,8 +1,8 @@
 # Workflows Status
 
-_Last updated: **2026-07-28 16:31 UTC**_
+_Last updated: **2026-08-01 03:09 UTC**_
 
-- OK with workflow_dispatch: **25**
+- OK with workflow_dispatch: **26**
 - Valid but no dispatch button: **0**
 - Broken YAML: **0**
 
@@ -19,6 +19,7 @@ _Last updated: **2026-07-28 16:31 UTC**_
 | `connectivity_entity.yml` | ok |  |
 | `diagnostic.yml` | ok |  |
 | `docs-badge-sync.yml` | ok |  |
+| `hil-qualified-recognition-validate.yml` | ok |  |
 | `human-llm-interoperability.yml` | ok |  |
 | `install-internal-artifact-integrity.yml` | ok |  |
 | `install-run-boundary-cge-event.yml` | ok |  |
