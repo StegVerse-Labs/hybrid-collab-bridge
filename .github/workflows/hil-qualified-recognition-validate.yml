@@ -1,0 +1,69 @@
+name: HIL Qualified Recognition Validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'HIL_MIRROR_HANDOFF.md'
+      - 'docs/HIL_QUALIFIED_RECOGNITION_LAYER.md'
+      - 'schemas/hil-qualified-recognition.schema.json'
+      - 'evidence/hil/**'
+      - 'scripts/validate_hil_qualified_recognition.py'
+      - 'tests/fixtures/hil-qualified-recognition/**'
+      - '.github/workflows/hil-qualified-recognition-validate.yml'
+  pull_request:
+    paths:
+      - 'HIL_MIRROR_HANDOFF.md'
+      - 'docs/HIL_QUALIFIED_RECOGNITION_LAYER.md'
+      - 'schemas/hil-qualified-recognition.schema.json'
+      - 'evidence/hil/**'
+      - 'scripts/validate_hil_qualified_recognition.py'
+      - 'tests/fixtures/hil-qualified-recognition/**'
+      - '.github/workflows/hil-qualified-recognition-validate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate canonical candidate
+        run: |
+          python scripts/validate_hil_qualified_recognition.py \
+            evidence/hil/HIL-TRACE-0001-qualified-recognition-candidate.json \
+            --receipt-out evidence/hil/HIL-TRACE-0001-validation-receipt.json
+      - name: Validate positive fixture
+        run: |
+          python scripts/validate_hil_qualified_recognition.py \
+            tests/fixtures/hil-qualified-recognition/positive.json
+      - name: Reject negative fixtures
+        run: |
+          python scripts/validate_hil_qualified_recognition.py --expect-invalid \
+            tests/fixtures/hil-qualified-recognition/negative-missing-consent.json \
+            tests/fixtures/hil-qualified-recognition/negative-scope-overreach.json \
+            tests/fixtures/hil-qualified-recognition/negative-irreconstructable-causal-effect.json \
+            tests/fixtures/hil-qualified-recognition/negative-representative-authority.json
+      - name: Replay canonical candidate
+        run: |
+          python scripts/validate_hil_qualified_recognition.py \
+            evidence/hil/HIL-TRACE-0001-qualified-recognition-candidate.json \
+            --receipt-out /tmp/replay-1.json
+          python scripts/validate_hil_qualified_recognition.py \
+            evidence/hil/HIL-TRACE-0001-qualified-recognition-candidate.json \
+            --receipt-out /tmp/replay-2.json
+          cmp /tmp/replay-1.json /tmp/replay-2.json
+          cp /tmp/replay-1.json evidence/hil/HIL-TRACE-0001-replay-receipt.json
+      - name: Upload validation evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: hil-qualified-recognition-validation
+          path: |
+            evidence/hil/HIL-TRACE-0001-validation-receipt.json
+            evidence/hil/HIL-TRACE-0001-replay-receipt.json
+          if-no-files-found: error
