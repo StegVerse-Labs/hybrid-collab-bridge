@@ -1,0 +1,33 @@
+{
+  "receipt_id": "HIL-HOSTED-OBS-0001",
+  "goal_id": "HIL-QUALIFIED-RECOGNITION-ACTIVATION-001",
+  "observed_at": "2026-07-31T22:10:00-05:00",
+  "repository": "StegVerse-Labs/hybrid-collab-bridge",
+  "branch": "main",
+  "workflow_path": ".github/workflows/hil-qualified-recognition-validate.yml",
+  "workflow_commit": "14e255231c72c8b7e61da43c8db811d4061a4ed2",
+  "latest_coordination_commit": "634f6c5cd030fb9ce5b9b04a57c5ac481d5ea29c",
+  "observation": {
+    "commit_associated_runs_returned": 0,
+    "combined_statuses_returned": 0,
+    "terminal_conclusion_known": false,
+    "job_id_known": false,
+    "artifact_id_known": false,
+    "artifact_digest_known": false
+  },
+  "connector_boundary": "The available commit-run lookup exposes pull-request-triggered runs only. The workflow also triggers on push and workflow_dispatch, so an empty result does not prove that no hosted run occurred.",
+  "determination": "HOSTED_EVIDENCE_UNRESOLVED",
+  "authority_boundary": {
+    "claims_validation_success": false,
+    "claims_validation_failure": false,
+    "claims_admission": false,
+    "claims_activation": false
+  },
+  "next_required_evidence": [
+    "authoritative workflow run id",
+    "job id and terminal conclusion",
+    "step outcomes and logs",
+    "validation artifact id, digest, size, and expiry",
+    "exact hashes of validation and replay receipts"
+  ]
+}
