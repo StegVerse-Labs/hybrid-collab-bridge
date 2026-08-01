@@ -1,0 +1,68 @@
+{
+  "receipt_id": "HIL-QRE-0001",
+  "trace_id": "HIL-TRACE-0001",
+  "capability_id": "HIL-QRL-001",
+  "status": "pending_validation",
+  "contributor": {
+    "participant_ref": "public-participant-sara-katpar",
+    "identity_verification_posture": "platform_observed"
+  },
+  "contribution": {
+    "contribution_ref": "HIL-TRACE-0001:initiating-exchange",
+    "description": "A participant supplied observations and interpretive distinctions that helped continue an informal public exchange into a bounded research trace concerning significance, style attribution, communication accommodation, and human-AI interaction.",
+    "digest": null,
+    "evidence_refs": [
+      "evidence/hil/HIL-TRACE-0001-significance-style-continuation.json"
+    ]
+  },
+  "qualified_examination": {
+    "reconstruction_statement": "The contribution was examined as an individual, domain-relevant input rather than treated as representative of a demographic group. Its distinctions were reconstructed into trace observations and candidate empirical work.",
+    "qualification_basis": "Bounded analysis against the repository's governed collaboration, trace-creation, attribution, and continuation role; no claim of academic credential, employment authority, or identity adjudication is made.",
+    "evidence_refs": [
+      "README.md",
+      "evidence/hil/HIL-TRACE-0001-significance-style-continuation.json",
+      "docs/HIL_QUALIFIED_RECOGNITION_LAYER.md"
+    ]
+  },
+  "causal_effect": {
+    "result_ref": "evidence/hil/HIL-TRACE-0001-significance-style-continuation.json",
+    "material_effect": true,
+    "bounded_claim": "The participant exchange materially supplied concepts represented in the trace, including participant-relative significance, consent-aware attribution, interaction-to-research continuation, and communication-accommodation hypotheses. This does not establish authorship of unrelated StegVerse work or authority outside this trace.",
+    "reconstructable": true,
+    "evidence_refs": [
+      "evidence/hil/HIL-TRACE-0001-significance-style-continuation.json"
+    ]
+  },
+  "attribution": {
+    "preserved": true,
+    "attribution_ref": "public LinkedIn participant display name observed in supplied evidence"
+  },
+  "consent_posture": "observation_only",
+  "standing_transition": {
+    "prior": "observer",
+    "proposed": "contributor_candidate",
+    "scope": "HIL-TRACE-0001 and directly derived qualified-recognition review only"
+  },
+  "scope_boundary": {
+    "representative_authority_claimed": false,
+    "execution_authority_claimed": false,
+    "publication_authority_claimed": false,
+    "final_admissibility_claimed": false
+  },
+  "replay": {
+    "input_refs": [
+      "evidence/hil/HIL-TRACE-0001-significance-style-continuation.json",
+      "docs/HIL_QUALIFIED_RECOGNITION_LAYER.md",
+      "schemas/hil-qualified-recognition.schema.json"
+    ],
+    "deterministic_profile": "HIL-QRL-001-candidate-v1"
+  },
+  "admission": {
+    "state": "not_requested",
+    "decision_ref": null
+  },
+  "custody": {
+    "destination": null,
+    "receipt_ref": null
+  }
+}
