@@ -1,0 +1,14 @@
+{
+  "receipt_id":"HIL-QRE-NEG-SCOPE","trace_id":"HIL-TRACE-NEG-SCOPE","capability_id":"HIL-QRL-001","status":"pending_validation",
+  "contributor":{"participant_ref":"participant-neg","identity_verification_posture":"unverified"},
+  "contribution":{"contribution_ref":"neg:2","description":"Test contribution.","digest":null,"evidence_refs":["input"]},
+  "qualified_examination":{"reconstruction_statement":"Test reconstruction.","qualification_basis":"Test basis.","evidence_refs":["input"]},
+  "causal_effect":{"result_ref":"result","material_effect":true,"bounded_claim":"Bounded test claim.","reconstructable":true,"evidence_refs":["input"]},
+  "attribution":{"preserved":true,"attribution_ref":"participant-neg"},
+  "consent_posture":"research_use_allowed",
+  "standing_transition":{"prior":"observer","proposed":"contributor_candidate","scope":"test only"},
+  "scope_boundary":{"representative_authority_claimed":false,"execution_authority_claimed":true,"publication_authority_claimed":false,"final_admissibility_claimed":false},
+  "replay":{"input_refs":["input"],"deterministic_profile":"HIL-QRL-001-candidate-v1"},
+  "admission":{"state":"not_requested","decision_ref":null},
+  "custody":{"destination":null,"receipt_ref":null}
+}
