@@ -1,0 +1,56 @@
+{
+  "receipt_id": "HIL-QRE-TEST-POSITIVE",
+  "trace_id": "HIL-TRACE-TEST-POSITIVE",
+  "capability_id": "HIL-QRL-001",
+  "status": "pending_validation",
+  "contributor": {
+    "participant_ref": "participant-test-positive",
+    "identity_verification_posture": "self_asserted"
+  },
+  "contribution": {
+    "contribution_ref": "test:contribution:1",
+    "description": "A bounded contribution that materially changes a test trace.",
+    "digest": null,
+    "evidence_refs": ["tests/evidence/input.json"]
+  },
+  "qualified_examination": {
+    "reconstruction_statement": "The contribution was reconstructed and evaluated within the declared test scope.",
+    "qualification_basis": "Repository-bounded HIL trace review.",
+    "evidence_refs": ["tests/evidence/input.json"]
+  },
+  "causal_effect": {
+    "result_ref": "tests/evidence/result.json",
+    "material_effect": true,
+    "bounded_claim": "The contribution supplied one distinction represented in the result.",
+    "reconstructable": true,
+    "evidence_refs": ["tests/evidence/input.json", "tests/evidence/result.json"]
+  },
+  "attribution": {
+    "preserved": true,
+    "attribution_ref": "participant-test-positive"
+  },
+  "consent_posture": "research_use_allowed",
+  "standing_transition": {
+    "prior": "observer",
+    "proposed": "contributor_candidate",
+    "scope": "test trace only"
+  },
+  "scope_boundary": {
+    "representative_authority_claimed": false,
+    "execution_authority_claimed": false,
+    "publication_authority_claimed": false,
+    "final_admissibility_claimed": false
+  },
+  "replay": {
+    "input_refs": ["tests/evidence/input.json", "tests/evidence/result.json"],
+    "deterministic_profile": "HIL-QRL-001-candidate-v1"
+  },
+  "admission": {
+    "state": "not_requested",
+    "decision_ref": null
+  },
+  "custody": {
+    "destination": null,
+    "receipt_ref": null
+  }
+}
