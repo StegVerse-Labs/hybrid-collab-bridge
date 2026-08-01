@@ -1,0 +1,40 @@
+{
+  "request_id": "HIL-ADMISSION-REQUEST-0001",
+  "goal_id": "HIL-QUALIFIED-RECOGNITION-ACTIVATION-001",
+  "state": "blocked_pending_hosted_validation",
+  "source_repository": "StegVerse-Labs/hybrid-collab-bridge",
+  "source_branch": "main",
+  "candidate_receipt_ref": "evidence/hil/HIL-TRACE-0001-qualified-recognition-candidate.json",
+  "schema_ref": "schemas/hil-qualified-recognition.schema.json",
+  "contract_ref": "docs/HIL_QUALIFIED_RECOGNITION_LAYER.md",
+  "hosted_observation_ref": "evidence/hil/HIL-TRACE-0001-hosted-validation-observation.json",
+  "requested_decision": ["ALLOW", "DENY", "ERROR"],
+  "admission_scope": "Whether the bounded HIL qualified-recognition candidate may advance to admitted-standing receipt construction and custody preservation for HIL-TRACE-0001.",
+  "preconditions": {
+    "hosted_validation_success_required": true,
+    "byte_identical_replay_required": true,
+    "validation_receipt_hash_required": true,
+    "replay_receipt_hash_required": true,
+    "currently_satisfied": false
+  },
+  "prohibited_authority_grants": [
+    "identity adjudication",
+    "demographic representative authority",
+    "authorship transfer",
+    "execution authority",
+    "publication authority",
+    "final admissibility authority"
+  ],
+  "required_response_fields": [
+    "decision",
+    "decision_reason",
+    "policy_profile",
+    "input_hashes",
+    "decision_receipt_hash",
+    "authority_boundary",
+    "source_commit",
+    "timestamp"
+  ],
+  "destination_owner": "GCAT-BCAT-Engine admission worker",
+  "submission_posture": "NOT_SUBMITTED"
+}
