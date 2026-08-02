@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stegverse.org/schemas/attribution_trajectory_experiment.schema.json",
+  "title": "Attribution Trajectory Experiment",
+  "type": "object",
+  "required": [
+    "experiment_id",
+    "source_packet_hash",
+    "prompt_hash",
+    "trajectory_packet_hash",
+    "thresholds",
+    "observations",
+    "claimed_outcome"
+  ],
+  "properties": {
+    "experiment_id": {"type": "string", "minLength": 1},
+    "source_packet_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "prompt_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "trajectory_packet_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "thresholds": {
+      "type": "object",
+      "required": ["minimum_observations_per_condition", "minimum_evaluator_agreement", "maximum_contamination_risk", "trajectory_effect_threshold", "interchangeability_floor"],
+      "properties": {
+        "minimum_observations_per_condition": {"type": "integer", "minimum": 2},
+        "minimum_evaluator_agreement": {"type": "number", "minimum": 0, "maximum": 1},
+        "maximum_contamination_risk": {"type": "number", "minimum": 0, "maximum": 1},
+        "trajectory_effect_threshold": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "interchangeability_floor": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    },
+    "observations": {
+      "type": "array",
+      "minItems": 10,
+      "items": {
+        "type": "object",
+        "required": ["observation_id", "participant_id", "evaluator_id", "condition", "model_id", "environment_id", "scores", "evaluator_agreement", "contamination_risk"],
+        "properties": {
+          "observation_id": {"type": "string", "minLength": 1},
+          "participant_id": {"type": "string", "minLength": 1},
+          "evaluator_id": {"type": "string", "minLength": 1},
+          "condition": {"enum": ["same_access_no_trajectory", "partial_trajectory", "full_trajectory", "human_only_control", "shared_source_control"]},
+          "model_id": {"type": "string", "minLength": 1},
+          "environment_id": {"type": "string", "minLength": 1},
+          "scores": {
+            "type": "object",
+            "required": ["problem_recognition_fidelity", "governing_distinction_fidelity", "dependency_reconstruction", "rejected_alternative_reconstruction", "authority_boundary_fidelity", "final_structure_similarity"],
+            "properties": {
+              "problem_recognition_fidelity": {"type": "number", "minimum": 0, "maximum": 1},
+              "governing_distinction_fidelity": {"type": "number", "minimum": 0, "maximum": 1},
+              "dependency_reconstruction": {"type": "number", "minimum": 0, "maximum": 1},
+              "rejected_alternative_reconstruction": {"type": "number", "minimum": 0, "maximum": 1},
+              "authority_boundary_fidelity": {"type": "number", "minimum": 0, "maximum": 1},
+              "final_structure_similarity": {"type": "number", "minimum": 0, "maximum": 1}
+            },
+            "additionalProperties": false
+          },
+          "evaluator_agreement": {"type": "number", "minimum": 0, "maximum": 1},
+          "contamination_risk": {"type": "number", "minimum": 0, "maximum": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "claimed_outcome": {"enum": ["supports_interchangeability", "supports_trajectory_dependence", "indeterminate"]}
+  },
+  "additionalProperties": false
+}
