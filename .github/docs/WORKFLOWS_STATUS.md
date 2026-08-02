@@ -1,8 +1,8 @@
 # Workflows Status
 
-_Last updated: **2026-08-02 07:51 UTC**_
+_Last updated: **2026-08-02 09:07 UTC**_
 
-- OK with workflow_dispatch: **26**
+- OK with workflow_dispatch: **27**
 - Valid but no dispatch button: **0**
 - Broken YAML: **0**
 
@@ -12,6 +12,7 @@ _Last updated: **2026-08-02 07:51 UTC**_
 | `ai-entity-connectivity.yml` | ok |  |
 | `ai_agent.yml` | ok |  |
 | `ai_entity.yml` | ok |  |
+| `attribution-trajectory.yml` | ok |  |
 | `autopatch.yml` | ok |  |
 | `bridge-github-models.yml` | ok |  |
 | `bridge-openai.yml` | ok |  |
