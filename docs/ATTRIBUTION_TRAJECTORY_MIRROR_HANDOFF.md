@@ -1,6 +1,6 @@
 # Attribution Trajectory Mirror Handoff
 
-Status: ACTIVE — FIXTURES COMMITTED; HOSTED CI OBSERVATION REQUIRED
+Status: ACTIVE MACHINE-OWNED — PACKET AUTOMATION MERGED; CONTROLLED EVIDENCE PENDING
 Goal ID: `HIL-ATTRIBUTION-TRAJECTORY-001`
 Repository: `StegVerse-Labs/hybrid-collab-bridge`
 Branch: `main`
@@ -11,99 +11,127 @@ Updated: 2026-08-02
 
 Test whether equivalent access to a model and source packet reproduces a governing contribution without the originating conceptual trajectory, or whether restoration of that trajectory produces a material and independently measurable reconstruction effect.
 
-## Authoritative files
+## Originating session goal
 
-- `docs/HUMAN_LLM_INTEROPERABILITY_MIRROR_HANDOFF.md`
-- `docs/ATTRIBUTION_TRAJECTORY_EXPERIMENT.md`
-- `docs/ATTRIBUTION_TRAJECTORY_MIRROR_HANDOFF.md`
-- `state/attribution_trajectory_activation.json`
-- `schemas/attribution_trajectory_experiment.schema.json`
-- `tools/validate_attribution_trajectory_experiment.py`
-- `.github/workflows/human-llm-interoperability.yml`
+Move the AI-authorship and human-attribution discussion from terminology and assertion into a falsifiable experiment capable of producing evidence for interchangeability, trajectory dependence, or an indeterminate result.
 
-## Completed implementation
+## Canonical authority
 
-- Experimental specification: `docs/ATTRIBUTION_TRAJECTORY_EXPERIMENT.md`
-- Machine-readable schema: `schemas/attribution_trajectory_experiment.schema.json`
-- Deterministic outcome reconstruction: `tools/validate_attribution_trajectory_experiment.py`
-- Competing-hypothesis and failure tests: `tests/test_attribution_trajectory_experiment.py`
-- Canonical accepted fixture: `examples/attribution_trajectory_experiment.valid.json`
-  - commit `d580e088501162709e86d52faf098fd5032cc928`
-- Contamination rejection fixture: `examples/attribution_trajectory_experiment.invalid-contamination.json`
-  - commit `261735087941fb6aad8de7e35ed5221ecd02cff3`
-- CI steps for accepted-fixture validation, contaminated-fixture rejection, and the attribution test module:
-  - `.github/workflows/human-llm-interoperability.yml`
-  - commit `094646f059d6f95b46e60bce9b67f5afa55a0fb3`
-- Machine-owned execution state and release conditions:
-  - `state/attribution_trajectory_activation.json`
-  - commit `7d551b269e45c4ab4872249f4d9a7af05e208562`
+- Handoff: `docs/ATTRIBUTION_TRAJECTORY_MIRROR_HANDOFF.md`
+- Task registry: `state/attribution_trajectory_activation.json`
+- Consolidation record: `state/attribution_trajectory_session_consolidation.json`
+- Bounded validation workflow: `.github/workflows/attribution-trajectory.yml`
+- Experiment specification: `docs/ATTRIBUTION_TRAJECTORY_EXPERIMENT.md`
+- Schema: `schemas/attribution_trajectory_experiment.schema.json`
+- Outcome validator: `tools/validate_attribution_trajectory_experiment.py`
+- Packet initializer: `tools/init_attribution_trajectory_packet.py`
+- Packet verifier: `tools/verify_attribution_trajectory_packet.py`
 
-The validator does not trust `claimed_outcome`. It derives `supports_interchangeability`, `supports_trajectory_dependence`, or `indeterminate`, and is capable of producing evidence against either substantive assumption.
+## Completed and validated implementation
 
-## Validation state
+- Competing hypotheses, controls, scoring dimensions, thresholds, and falsification conditions are declared.
+- The validator derives `supports_interchangeability`, `supports_trajectory_dependence`, or `indeterminate` without trusting the claimed outcome.
+- Accepted and contamination-rejection fixtures are committed.
+- Packet initialization provides hash-bound input custody, all five conditions, deterministic participant/evaluator slots, duplicate prevention, and an initialization receipt.
+- Packet verification checks input hashes, required conditions, participant/evaluator separation, observation presence, result binding, and mutation.
+- PR `#12` was squash-merged into `main` at commit `1b1e2be28618d40a1d4da1fcc2c12ea5d98c9532`.
 
-- File presence and committed state: verified through GitHub contents and commit receipts.
-- Schema and validator integration: implemented.
-- Canonical fixture CI invocation: implemented.
-- Contamination failure CI invocation: implemented.
-- Hosted workflow success: not yet proven. The first combined-status inspection for commit `094646f059d6f95b46e60bce9b67f5afa55a0fb3` returned no status contexts.
-- Runtime experiment result: not yet produced.
+## Hosted validation evidence
 
-No universal authorship or trajectory-dependence claim is authorized from fixture data. Fixtures demonstrate deterministic behavior, not an empirical finding.
+Canonical bounded gate:
 
-## Machine-owned task execution
-
-The canonical queue is `state/attribution_trajectory_activation.json`. It defines `COMPLETE`, `BLOCKED`, `RETRY`, `REVIEW_REQUIRED`, and `FAILED`, exact paths, dependencies, release conditions, and the next executable task. Missing evidence may not be treated as success.
-
-Current next executable task:
-
-`AT-007` — observe the hosted Human-LLM Interoperability workflow associated with commit `094646f059d6f95b46e60bce9b67f5afa55a0fb3`; inspect its job steps and logs before changing the task to `COMPLETE`.
-
-## Incomplete work
-
-1. `AT-007` — `.github/workflows/human-llm-interoperability.yml`
-   - State: `REVIEW_REQUIRED`
-   - Release condition: hosted run succeeds and the two attribution fixture steps plus `tests/test_attribution_trajectory_experiment.py` are visibly successful.
-2. `AT-008` — `tools/init_attribution_trajectory_packet.py`
-   - State: `BLOCKED` by `AT-007` under the declared queue dependency.
-3. `AT-009` — `tools/verify_attribution_trajectory_packet.py`
-   - State: `BLOCKED` by `AT-008`.
-4. `AT-010` — `evidence/attribution-trajectory/ATTR-001/`
-   - State: `BLOCKED` until packet initialization and verification are complete.
-5. `AT-011` — bounded propagation to `StegVerse-Labs/Site`, `GCAT-BCAT-Engine/Publisher`, `StegVerse-Labs/admissibility-wiki`, and `StegVerse-Labs/stegguardian-wiki`
-   - State: `BLOCKED` until verified empirical evidence exists.
-
-## Validation commands
-
-```bash
-python tools/validate_attribution_trajectory_experiment.py examples/attribution_trajectory_experiment.valid.json
-if python tools/validate_attribution_trajectory_experiment.py examples/attribution_trajectory_experiment.invalid-contamination.json; then exit 1; fi
-python -m pytest -q tests/test_attribution_trajectory_experiment.py
+```text
+workflow: .github/workflows/attribution-trajectory.yml
+workflow commit: 9ddfef23151f79eee159b98d50bf188b462c9b7d
+run: 30741119975
+job: 91478632897
+conclusion: success
 ```
 
-The repository-hosted workflow executes these paths as part of the broader interoperability suite.
+Successful observed steps:
 
-## Cross-repository dependencies
+```text
+Validate accepted experiment fixture
+Confirm contaminated experiment fixture fails closed
+Run attribution experiment and packet tests
+Exercise packet initialization and verification
+```
 
-- Public presentation after Site handoff review: `StegVerse-Labs/Site`
-- Publication transport and release verification: `GCAT-BCAT-Engine/Publisher`
-- Admissibility vocabulary and evidence interpretation: `StegVerse-Labs/admissibility-wiki`
-- Guardian enforcement interpretation: `StegVerse-Labs/stegguardian-wiki`
+The broader `.github/workflows/human-llm-interoperability.yml` remains a separate repository-wide surface. Run `30740658133`, job `91477373561`, passed the attribution fixtures and mediated receipt build but failed on unrelated API typing and legacy replay-compatibility defects. Those failures are retained as repository validation debt and are not converted into success or treated as evidence against the bounded attribution implementation.
 
-No propagation is authorized before `ATTR-001` verifies and the bounded outcome is preserved with immutable evidence references.
+## Adjacent integration completed
+
+The MindForge intake was connected to this falsifiable test at:
+
+```text
+StegVerse-Labs/admissibility-wiki/docs/external-frameworks/mindforge.md
+commit: 43f27c2413d1b9dfb840476152f208b9974eb31e
+```
+
+That page preserves the no-overclaim boundary: an available test is not empirical proof, and MindForge remains artifact-package-required until reproducibility gates are satisfied.
+
+## Remaining machine-owned work
+
+### AT-010 — first controlled evidence bundle
+
+Location:
+
+`evidence/attribution-trajectory/ATTR-001/`
+
+Owner:
+
+`StegVerse-Labs/hybrid-collab-bridge`, governed by `state/attribution_trajectory_activation.json#AT-010`.
+
+Trigger:
+
+Authentic source, prompt, trajectory, assignment, observation, and evaluator records become available to the packet lane.
+
+Machine-executable path:
+
+```bash
+python tools/init_attribution_trajectory_packet.py --experiment-id ATTR-001 --source <source> --prompt <prompt> --trajectory <trajectory> --output evidence/attribution-trajectory/ATTR-001
+python tools/verify_attribution_trajectory_packet.py evidence/attribution-trajectory/ATTR-001
+```
+
+Release condition:
+
+All five conditions, required observations, independent evaluator coverage, contamination controls, hashes, and result bindings verify and produce a bounded outcome.
+
+Human-authority boundary:
+
+Automation may initialize, validate, reject, receipt, and route authentic contributions. It may not fabricate participant observations or evaluator judgments.
+
+### AT-011 — bounded propagation
+
+Destinations:
+
+- `StegVerse-Labs/Site`
+- `GCAT-BCAT-Engine/Publisher`
+- `StegVerse-Labs/admissibility-wiki`
+- `StegVerse-Labs/stegguardian-wiki`
+
+Owner:
+
+Cross-repository propagation lane recorded at `state/attribution_trajectory_activation.json#AT-011`.
+
+Release condition:
+
+`ATTR-001` verifies and its bounded outcome has immutable evidence references. Each destination handoff must be read before mutation. No propagation is currently claimed.
 
 ## Completion accounting
 
-Required deliverables for current repository goal: 11 task units (`AT-001`–`AT-011`).
+Denominator: 11 canonical task units, `AT-001` through `AT-011`.
 
-- Task completion: 6/11 = 54.5%.
-- Developed files: 8/10 required implementation files = 80%.
-- Validation completion: 2/4 levels = 50% (static/fixture paths implemented; hosted CI and controlled evidence pending).
-- Integration completion: 0/4 downstream destinations = 0%.
-- Goal activation: 6/11 = 54.5%, rounded down to 54% to avoid overstating completion.
-- Scaffolding or stubs: 0 among committed goal files.
-- Missing required files: 2 (`tools/init_attribution_trajectory_packet.py`, `tools/verify_attribution_trajectory_packet.py`).
+- Completed and validated task units: 9/11 = 81.8%.
+- Developed implementation files: 11/11 = 100%.
+- Scaffolding or stubs: 0.
+- Missing required implementation files: 0.
+- Validation levels: 4/5 — static, schema/contract, unit, and hosted bounded execution complete; authentic controlled evidence pending.
+- Downstream integrations: 0/4 for the eventual empirical result.
+- Session goals transferred or complete: 6/6.
 
-## Archive conditions
+## Session consolidation and archive posture
 
-This session is not archive-ready while hosted CI is unobserved, packet tooling is missing, controlled evidence is absent, and downstream propagation remains blocked. The repository handoff and task state preserve continuation, but active work remains.
+The originating session's unique requirements, implementation history, failed-run diagnoses, bounded validation evidence, merge evidence, MindForge integration, unresolved empirical work, propagation obligations, owners, and release conditions are durably preserved in this handoff and the two state records.
+
+The implementation and validation claim has been released as `MERGED`. No session-only information or execution authority remains. The conversation may be archived without impairing continued repository-native execution. The overall experiment goal remains active under machine ownership; session archival does not claim empirical completion or downstream propagation.
