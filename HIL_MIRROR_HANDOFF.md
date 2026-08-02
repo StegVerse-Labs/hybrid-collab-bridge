@@ -1,29 +1,44 @@
 # Human Interoperability Layer Mirror Handoff
 
-**Status:** ACTIVE — implementation and activation coordination authority  
-**Last updated:** 2026-07-31  
+**Status:** ACTIVE MACHINE-OWNED — implementation complete in part; activation evidence pending  
+**Last updated:** 2026-08-02  
 **Goal ID:** `HIL-QUALIFIED-RECOGNITION-ACTIVATION-001`
 
 ## Determination
 
-The Human Interoperability Layer is **being built**. The qualified-recognition / participant-continuation capability now has a committed contract, schema, candidate receipt, deterministic validator, positive/negative fixtures, and hosted validation workflow. It is not yet an activated governed layer because hosted validation evidence, admission, custody, and activation receipts remain unresolved.
+The Human Interoperability Layer qualified-recognition / participant-continuation capability is **being built**. It has a committed contract, schema, candidate receipt, deterministic validator, positive/negative fixtures, hosted validation workflow, bounded admission-request candidate, execution prompt, issue-based task surface, and session-consolidation record. It is not an activated governed layer because hosted validation evidence, replay receipts, admission, custody, activation, and publication propagation remain unresolved.
 
-Authoritative evidence:
+## Canonical continuation
+
+- Repository: `StegVerse-Labs/hybrid-collab-bridge`
+- Branch: `main`
+- Canonical handoff: `HIL_MIRROR_HANDOFF.md`
+- Durable task surface: issue `#11`, **Activate HIL qualified-recognition participant-continuation layer**
+- Next execution prompt: `docs/HIL_NEXT_EXECUTION_SESSION_PROMPT.md`
+- Session consolidation: `state/hil_qualified_recognition_session_consolidation.json`
+- Hosted workflow: `.github/workflows/hil-qualified-recognition-validate.yml`
+
+Future sessions must read this file, the consolidation record, and issue #11 before claiming or modifying this capability.
+
+## Authoritative evidence
 
 - `evidence/hil/HIL-TRACE-0001-significance-style-continuation.json`
 - `docs/HIL_QUALIFIED_RECOGNITION_LAYER.md`
 - `schemas/hil-qualified-recognition.schema.json`
 - `evidence/hil/HIL-TRACE-0001-qualified-recognition-candidate.json`
+- `evidence/hil/HIL-TRACE-0001-admission-request.json`
 - `scripts/validate_hil_qualified_recognition.py`
 - `tests/fixtures/hil-qualified-recognition/`
 - `.github/workflows/hil-qualified-recognition-validate.yml`
+- `docs/HIL_NEXT_EXECUTION_SESSION_PROMPT.md`
+- `state/hil_qualified_recognition_session_consolidation.json`
 - bounded bridge role in `README.md`
 
 ## Layer boundary
 
 This repository owns the governed collaboration and trace adapter for the layer. It may reconstruct a contribution, record qualified examination, preserve attribution and consent posture, calculate a candidate participant-standing transition, emit a receipt, validate bounded candidate structure, and request admission.
 
-It may not independently establish identity, transfer authorship, create execution authority, determine final admissibility, publish a claim, or replace Master Records custody.
+It may not independently establish identity, transfer authorship, create demographic representative authority, create execution authority, determine final admissibility, publish a claim, or replace Master Records custody.
 
 ## Committed implementation receipts
 
@@ -40,40 +55,40 @@ It may not independently establish identity, transfer authorship, create executi
 | `0d5090ebeb899d9c02b644938c8eed60df20d687` | committed irreconstructable-causal-effect negative fixture |
 | `01e16ef494ef9acec6824fe0fe86a0c9974d51bb` | committed unauthorized-representative-authority negative fixture |
 | `14e255231c72c8b7e61da43c8db811d4061a4ed2` | committed hosted validation and deterministic replay workflow |
+| `44c905ecc1386a54afdf1306b4fe98a7db8cf3b9` | recorded fail-closed hosted-observation boundary |
+| `321207f9c1f0614774d2cdfe09bd7a60f1f7eae2` | committed bounded admission-request candidate |
+| `baeb77c20bdf299d2e8f061f99eeae87d383af40` | committed reusable execution prompt |
+| `8f64c0dfd6d140dd4b149722cabd2f4f28c362cb` | consolidated this session into the canonical machine-owned workstream |
+
+## Task claims and collision control
+
+The originating chat-session claim is `RELEASED_MERGED`. No implementation, validation, integration, or propagation authority remains attached to the conversation.
+
+Active work is machine-owned through issue #11 and this handoff. New work must identify exact files or work packages, expected evidence, and release conditions before mutation. Missing hosted evidence must not be interpreted as success.
 
 ## Active work packages
 
-| Task | Owner destination | State | Completion |
-|---|---|---:|---:|
-| Define qualified-recognition contract | `StegVerse-Labs/hybrid-collab-bridge` | COMPLETE | 100% |
-| Add machine-readable schema | `StegVerse-Labs/hybrid-collab-bridge` | COMPLETE / HOSTED VALIDATION PENDING | 95% |
-| Add first candidate receipt | `StegVerse-Labs/hybrid-collab-bridge` | COMPLETE / HOSTED VALIDATION PENDING | 90% |
-| Add validator and positive/negative fixtures | `StegVerse-Labs/hybrid-collab-bridge` | IMPLEMENTED / HOSTED RUN PENDING | 90% |
-| Add deterministic replay receipt | `StegVerse-Labs/hybrid-collab-bridge` | WORKFLOW COMMITTED / RUN PENDING | 70% |
-| Connect admission decision to BCAT/GCAT/CGE | `StegVerse-Labs/hybrid-collab-bridge` + `GCAT-BCAT-Engine` | ACTIVE NEXT / BLOCKED ON GREEN HOSTED VALIDATION | 10% |
-| Preserve accepted receipt identity and custody | Master Records authority destination to be resolved | BLOCKED ON ADMISSION | 0% |
-| Publish explanatory surface | `StegVerse-Labs/Site` / `admissibility-wiki` | BLOCKED ON ACTIVATION | 0% |
+| Task ID | Task | Owner destination | Claim state | Release condition |
+|---|---|---|---|---|
+| `HIL-QRL-001` | Contract and bounded authority model | `StegVerse-Labs/hybrid-collab-bridge` | COMPLETE | n/a |
+| `HIL-QRL-002` | Schema, candidate, validator, fixtures | `StegVerse-Labs/hybrid-collab-bridge` | IMPLEMENTED / HOSTED EVIDENCE PENDING | Hosted run proves canonical acceptance and all negative rejections |
+| `HIL-QRL-003` | Deterministic replay receipt | workflow + issue #11 | MACHINE_OWNED | Two outputs are byte-identical and immutable receipts are committed |
+| `HIL-QRL-004` | Bounded admission decision | selected `GCAT-BCAT-Engine` authority | BLOCKED | Green hosted validation and replay receipts exist |
+| `HIL-QRL-005` | Receipt custody and standing history | authoritative Master Records repository | BLOCKED | Admitted receipt exists and destination handoff is resolved |
+| `HIL-QRL-006` | Governed activation receipt | `StegVerse-Labs/hybrid-collab-bridge` | BLOCKED | Validation, replay, admission, and custody evidence all exist |
+| `HIL-QRL-007` | Public and release propagation | Site, Publisher, admissibility-wiki, stegguardian-wiki | BLOCKED | Activation receipt exists |
 
-## Coordinated task boundaries
+## Automation
 
-### HIL implementation worker — `StegVerse-Labs/hybrid-collab-bridge`
+`.github/workflows/hil-qualified-recognition-validate.yml` is the repository-native automation owner for canonical validation, positive-fixture acceptance, negative-fixture rejection, byte-identical replay comparison, and artifact upload.
 
-1. Resolve the hosted run produced by commit `14e255231c72c8b7e61da43c8db811d4061a4ed2`.
-2. Record run ID, job ID, terminal conclusion, step outcomes, logs, artifact ID, artifact digest, and receipt hashes.
-3. Repair only a defect proven by hosted logs.
-4. Preserve validation and replay receipts as committed evidence after one green run.
+Trigger: `push`, `pull_request`, or `workflow_dispatch` affecting HIL qualified-recognition paths.
 
-### Admission worker — `GCAT-BCAT-Engine`
+Deterministic outputs: validation receipt and replay receipt.
 
-Begins only after green hosted validation. It must consume the candidate receipt and validation receipt, return a bounded `ALLOW`, `DENY`, or `ERROR` decision, and explicitly grant no identity, representative, execution, publication, or final-admissibility authority.
+Persistent state: this handoff, issue #11, and `state/hil_qualified_recognition_session_consolidation.json`.
 
-### Custody worker — Master Records authority
-
-Begins only after an admitted receipt exists. It must preserve exact bytes, hashes, source commit, admission decision, custody event, supersession posture, and standing history. The authoritative destination repository must be resolved from its own mirror handoff before mutation.
-
-### Publication workers
-
-`StegVerse-Labs/Site`, `GCAT-BCAT-Engine/Publisher`, `admissibility-wiki`, and `stegguardian-wiki` remain blocked until activation evidence exists. Publication must distinguish observed contribution, candidate recognition, admitted standing, and authority boundaries.
+Fail-closed rule: absent run, job, log, artifact, receipt, admission, or custody evidence remains unresolved and cannot become success by inference.
 
 ## Activation criteria
 
@@ -88,24 +103,31 @@ The layer is activated only when all are true:
 7. replay proves the same inputs produce byte-identical bounded validation output;
 8. publication surfaces clearly distinguish observation, candidate standing, admitted standing, and authority.
 
-## Immediate execution order
+## Immediate machine-owned execution order
 
-1. Observe and resolve the hosted validation run for commit `14e255231c72c8b7e61da43c8db811d4061a4ed2`.
-2. Commit terminal validation and replay receipts with immutable run and artifact references.
-3. Build the bounded admission request and connect it to BCAT/GCAT/CGE.
-4. Resolve the Master Records destination from its authoritative handoff and preserve admitted receipt custody.
-5. Issue an activation receipt only when every criterion is evidenced.
-6. Route publication and release verification to Site, Publisher, admissibility-wiki, and stegguardian-wiki.
+1. Resolve a hosted validation run for `.github/workflows/hil-qualified-recognition-validate.yml` and record run ID, job ID, terminal conclusion, step outcomes, logs, artifact ID, digest, size, expiry, and receipt hashes in issue #11 and committed evidence.
+2. Repair only defects proven by hosted logs.
+3. Commit immutable validation and replay receipts.
+4. Submit the bounded admission request to the selected GCAT/BCAT/CGE authority and preserve its `ALLOW`, `DENY`, or `ERROR` decision.
+5. Resolve the Master Records destination from its own mirror handoff and preserve exact bytes, hashes, source commit, decision, custody event, supersession posture, and standing history.
+6. Issue an activation receipt only after every criterion is evidenced.
+7. Read each destination handoff before propagating to Site, Publisher, admissibility-wiki, and stegguardian-wiki.
 
-## Remaining installation destinations
+## Completion accounting
 
-- `StegVerse-Labs/hybrid-collab-bridge`: hosted run evidence, committed replay receipt, admission adapter, activation receipt.
-- `GCAT-BCAT-Engine`: bounded admission decision and receipt.
-- Master Records authority: accepted receipt identity, hashes, custody, and standing history.
-- `StegVerse-Labs/Site`: public explanatory surface after admission.
-- `admissibility-wiki`: public governed determination after activation.
-- Release-time verification: `GCAT-BCAT-Engine/Publisher` and `stegguardian-wiki`.
+Denominator: seven canonical work packages, `HIL-QRL-001` through `HIL-QRL-007`.
 
-## Archive posture
+- Task completion: 2/7 = 28% complete; five packages remain evidence-bound or blocked.
+- Developed implementation files: 10/12 = 83%; activation receipt and custody integration artifact remain missing.
+- Scaffolding or stubs: 0 canonical HIL files are classified as stubs.
+- Validation levels: 3/6 complete — static structure, deterministic local validator design, and fixture coverage; hosted run, immutable artifact inspection, and governed activation remain incomplete.
+- Integration: 0/3 complete — admission, custody, and activation/publication integration remain unresolved.
+- Session consolidation: 8/8 session goals complete or transferred.
 
-This session is **not archive-ready**. Hosted validation, replay evidence, admission integration, custody, activation, and publication tasks remain active and are now explicitly coordinated here. Future sessions must read this file before modifying HIL qualified-recognition work.
+## Session consolidation and archive posture
+
+MERGED INTO: `StegVerse-Labs/hybrid-collab-bridge/HIL_MIRROR_HANDOFF.md`, issue `#11`, and `state/hil_qualified_recognition_session_consolidation.json`.
+
+All unique requirements from the originating session are now committed: the qualified-recognition contract, bounded authority model, candidate standing transition, consent and attribution requirements, prohibition on demographic representative authority, validator and negative cases, replay requirement, admission boundary, custody obligation, activation gate, publication obligations, and exact machine-observable release conditions.
+
+The overall layer remains active and unactivated under machine ownership. The originating conversation owns no unique information, claim, or execution authority and may be archived without impairing continuation.
