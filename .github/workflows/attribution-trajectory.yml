@@ -1,0 +1,59 @@
+name: Attribution Trajectory Gate
+
+on:
+  push:
+    paths:
+      - "docs/ATTRIBUTION_TRAJECTORY_*.md"
+      - "schemas/attribution_trajectory_experiment.schema.json"
+      - "examples/attribution_trajectory_experiment*.json"
+      - "tools/*attribution_trajectory*.py"
+      - "tests/test_attribution_trajectory*.py"
+      - "state/attribution_trajectory*.json"
+      - ".github/workflows/attribution-trajectory.yml"
+  pull_request:
+    paths:
+      - "docs/ATTRIBUTION_TRAJECTORY_*.md"
+      - "schemas/attribution_trajectory_experiment.schema.json"
+      - "examples/attribution_trajectory_experiment*.json"
+      - "tools/*attribution_trajectory*.py"
+      - "tests/test_attribution_trajectory*.py"
+      - "state/attribution_trajectory*.json"
+      - ".github/workflows/attribution-trajectory.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  attribution-trajectory-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install bounded test dependencies
+        run: python -m pip install --upgrade pip pytest jsonschema
+      - name: Validate accepted experiment fixture
+        run: python tools/validate_attribution_trajectory_experiment.py examples/attribution_trajectory_experiment.valid.json
+      - name: Confirm contaminated experiment fixture fails closed
+        run: |
+          if python tools/validate_attribution_trajectory_experiment.py examples/attribution_trajectory_experiment.invalid-contamination.json; then
+            echo "contaminated fixture unexpectedly passed"
+            exit 1
+          fi
+      - name: Run attribution experiment and packet tests
+        run: python -m pytest -q tests/test_attribution_trajectory_experiment.py tests/test_attribution_trajectory_packet.py
+      - name: Exercise packet initialization and verification
+        run: |
+          work="$(mktemp -d)"
+          printf 'bounded source packet\n' > "$work/source.txt"
+          printf 'nominal question\n' > "$work/prompt.txt"
+          printf 'originating conceptual trajectory\n' > "$work/trajectory.txt"
+          python tools/init_attribution_trajectory_packet.py \
+            --experiment-id ATTR-CI-001 \
+            --source "$work/source.txt" \
+            --prompt "$work/prompt.txt" \
+            --trajectory "$work/trajectory.txt" \
+            --output "$work/packet"
+          python tools/verify_attribution_trajectory_packet.py "$work/packet"
