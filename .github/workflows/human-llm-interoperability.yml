@@ -36,6 +36,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     env:
+      PYTHONPATH: "."
       HCB_RECEIPT_SIGNING_KEY: ci-only-human-llm-receipt-signing-key
       HCB_RECEIPT_SIGNER_ID: ci-human-llm-assessor
       HCB_RECEIPT_SIGNING_KEY_REF: ci:ephemeral:human-llm-receipts
