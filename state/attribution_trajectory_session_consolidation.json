@@ -1,0 +1,59 @@
+{
+  "goal_id": "HIL-ATTRIBUTION-TRAJECTORY-001",
+  "originating_session_goal": "Test whether equivalent model access reproduces a governing contribution without reconstructing its originating conceptual trajectory.",
+  "canonical_continuation": {
+    "repository": "StegVerse-Labs/hybrid-collab-bridge",
+    "branch": "feature/attribution-packet-automation",
+    "handoff": "docs/ATTRIBUTION_TRAJECTORY_MIRROR_HANDOFF.md",
+    "task_registry": "state/attribution_trajectory_activation.json"
+  },
+  "claim": {
+    "task_ids": ["AT-008", "AT-009"],
+    "claim_state": "CLAIMED_FOR_IMPLEMENTATION",
+    "execution_lane": "feature/attribution-packet-automation",
+    "files": [
+      "tools/init_attribution_trajectory_packet.py",
+      "tools/verify_attribution_trajectory_packet.py",
+      "tests/test_attribution_trajectory_packet.py",
+      ".github/workflows/human-llm-interoperability.yml"
+    ],
+    "created_at": "2026-08-02T08:42:00Z",
+    "release_condition": "Pull request merged after hosted Human-LLM Interoperability workflow succeeds and packet tests are visible in job evidence.",
+    "collision_boundary": "No other lane should modify the listed packet automation files until this claim is released, superseded, or expires.",
+    "expected_evidence": ["pull request", "workflow run", "job steps", "merge commit"]
+  },
+  "session_goals": [
+    {
+      "id": "SG-001",
+      "goal": "Define a falsifiable attribution and trajectory-dependence experiment.",
+      "state": "COMPLETE",
+      "evidence": "docs/ATTRIBUTION_TRAJECTORY_EXPERIMENT.md"
+    },
+    {
+      "id": "SG-002",
+      "goal": "Implement deterministic schema, validator, fixtures, and competing-hypothesis tests.",
+      "state": "COMPLETE",
+      "evidence": "schemas/attribution_trajectory_experiment.schema.json"
+    },
+    {
+      "id": "SG-003",
+      "goal": "Automate packet initialization, mutation detection, identity separation, and result binding.",
+      "state": "CLAIMED_FOR_IMPLEMENTATION",
+      "evidence": "feature/attribution-packet-automation"
+    },
+    {
+      "id": "SG-004",
+      "goal": "Execute the first controlled evidence bundle and derive a bounded result.",
+      "state": "BLOCKED",
+      "release_condition": "AT-008 and AT-009 merge and verify."
+    },
+    {
+      "id": "SG-005",
+      "goal": "Propagate verified findings to Site, Publisher, admissibility-wiki, and stegguardian-wiki without overclaim.",
+      "state": "BLOCKED",
+      "release_condition": "ATTR-001 verifies with immutable evidence references."
+    }
+  ],
+  "session_state": "ACTIVE_DISTINCT_IMPLEMENTATION_ROLE",
+  "archive_condition": "All unique requirements are merged into the canonical handoff and registry; this implementation claim is released or transferred; no session-only execution authority remains."
+}
