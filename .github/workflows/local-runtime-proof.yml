@@ -8,7 +8,9 @@ on:
       - "api/app/governance/discovery.py"
       - "api/tests/test_local_runtime.py"
       - "api/tests/test_local_model.py"
+      - "api/tests/test_discovery.py"
       - "scripts/local_runtime_proof.py"
+      - "scripts/develop_local_model.py"
       - ".github/workflows/local-runtime-proof.yml"
       - "docs/LOCAL_RUNTIME_MODEL_MIRROR_HANDOFF.md"
   pull_request:
@@ -18,7 +20,9 @@ on:
       - "api/app/governance/discovery.py"
       - "api/tests/test_local_runtime.py"
       - "api/tests/test_local_model.py"
+      - "api/tests/test_discovery.py"
       - "scripts/local_runtime_proof.py"
+      - "scripts/develop_local_model.py"
       - ".github/workflows/local-runtime-proof.yml"
       - "docs/LOCAL_RUNTIME_MODEL_MIRROR_HANDOFF.md"
   workflow_dispatch:
@@ -39,12 +43,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r api/requirements.txt pytest
-      - name: Compile local runtime and model implementation
-        run: python -m compileall api/app/providers/local_runtime.py api/app/providers/local_model.py scripts/local_runtime_proof.py
-      - name: Run deterministic local runtime and model tests
+      - name: Compile local runtime, model, and discovery implementation
+        run: python -m compileall api/app/providers/local_runtime.py api/app/providers/local_model.py api/app/governance/discovery.py scripts/local_runtime_proof.py scripts/develop_local_model.py
+      - name: Run deterministic local runtime, model, and discovery tests
         run: |
           cd api
-          python -m pytest -q tests/test_local_runtime.py tests/test_local_model.py
+          python -m pytest -q tests/test_local_runtime.py tests/test_local_model.py tests/test_discovery.py
       - name: Exercise dry-run proof surface
         run: python scripts/local_runtime_proof.py --dry-run > local-runtime-dry-run.json
       - name: Assert CI does not claim physical-host activation
