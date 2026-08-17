@@ -1,109 +1,176 @@
 # Local Runtime and Model Mirror Handoff
 
-**Status:** ACTIVE — UNIQUE IMPLEMENTATION CLAIM  
+**Status:** MERGED INTO CANONICAL WORKSTREAM  
 **Goal ID:** `LOCAL-RUNTIME-MODEL-ACTIVATION-001`  
-**Originating session goal:** Replace the descriptive “select a local model/runtime” step with an actual local-runtime discovery, launch, and proof path analogous to the sovereign heartbeat; formally develop the local model path; use StegVerse rather than Render; keep all non-TV/TVC secrets and tokens out of this capability.
+**Originating session goal:** Replace the descriptive “select a local model/runtime” step with an executable local discovery/launch/proof path analogous to the sovereign heartbeat; formally develop the model locally; use StegVerse rather than Render; use no NON-TV/TVC secrets or tokens.
 
-## Canonical owner and branch
+## Canonical continuation
 
-- Organization: `StegVerse-Labs`
-- Repository: `hybrid-collab-bridge`
-- Branch: `main`
-- Canonical handoff: `docs/LOCAL_RUNTIME_MODEL_MIRROR_HANDOFF.md`
-- Existing provider-discovery surface: `api/app/providers/discovery.py`
-- Existing Ollama adapter: `api/app/providers/ollama_text.py`
-- Existing discovery tests: `api/tests/test_discovery.py`
+The ownership inventory performed after this bridge-scoped claim was created found that the originating goal was already completed and released by the canonical sovereign model repository. This bridge must not duplicate that implementation.
 
-This handoff is scoped to local model/runtime discovery, launch orchestration, runtime proof, model selection policy, and durable evidence. It does **not** supersede `HIL_MIRROR_HANDOFF.md` or claim HIL qualified-recognition activation work.
+```text
+model/runtime owner:
+  StegVerse-002/micro-node-runtime#22
+  StegVerse-002/micro-node-runtime/MICRO_NODE_RUNTIME_MIRROR_HANDOFF.md
+  StegVerse-002/micro-node-runtime/docs/SOVEREIGN_LOCAL_MODEL_RUNTIME_MIRROR_HANDOFF.md
 
-## Governing boundaries
+live carrier / activation owner:
+  StegVerse-Labs/.github#60
+  StegVerse-Labs/.github/handoffs/SHWP-DURABLE-RUNTIME-ACTIVATION.json
 
-1. Do not use Render for this capability.
-2. Local runtimes must not require provider secrets or tokens.
-3. Any cloud/provider credential authority remains outside this path and must be governed by TV/TVC.
-4. GitHub Actions may validate code but is not runtime/control-plane authority.
-5. Local runtime discovery or availability does not grant StegGate execution authority.
-6. The runtime path must fail closed when proof is absent or inconsistent.
-7. HIL machine-owned paths are collision boundaries and are not modified by this claim.
+route authority:
+  StegVerse-Labs/TVC
+  StegVerse-Labs/TVC/tasks/TVC-SOVEREIGN-LOCAL-MODEL-ROUTE-002.json
+  StegVerse-Labs/TVC/docs/SOVEREIGN_LOCAL_MODEL_ROUTE_MIRROR_HANDOFF.md
 
-## Active implementation claim
+transport:
+  StegVerse-org/LLM-adapter#18
+
+custody / reconstruction:
+  master-records/orchestration
+```
+
+Canonical facts recovered from those live handoffs:
+
+- `SOVEREIGN-LOCAL-MODEL-001` repository-local implementation is `COMPLETE_RELEASED`.
+- The former descriptive local-runtime selection step is already superseded by executable local discovery, launch, inference, measured usage, and proof.
+- `stegverse-reference-lm-v1` is formally developed locally from repository-owned data and provides the guaranteed zero-external-dependency path; optional qualifying Ollama/llama.cpp models may be discovered by the canonical runtime.
+- Canonical source validation run `31339534741` is successful; the source issue `micro-node-runtime#22` is closed completed.
+- Live product-scale route activation remains `MACHINE_OWNED`; manual/session execution is forbidden.
+- Credential requirement for the repository-local model is `NONE`; TV/TVC remains credential authority.
+- GitHub Actions, Render, hosted inference, GitHub tokens, and NON-TV/TVC credentials have no production authority.
+
+## Bridge role after convergence
+
+`StegVerse-Labs/hybrid-collab-bridge` is only a **non-authorizing discovery/consumer compatibility surface** for this capability.
+
+Authoritative bridge files:
+
+```text
+api/app/governance/discovery.py
+api/app/providers/discovery.py        # compatibility re-export only
+api/tests/test_discovery.py
+```
+
+The bridge now:
+
+1. does not inspect provider API-key environment variables;
+2. describes cloud capability as requiring a governed TV/TVC route;
+3. maps local/Ollama/llama.cpp/vLLM queries to the canonical sovereign local-model workstream instead of launching a competing runtime;
+4. marks the local route `machine_owned` and disabled in bridge-local configuration;
+5. names `StegVerse-002/micro-node-runtime#22`, `.github#60`, the TVC task, LLM-adapter, and Master Records as the continuation chain;
+6. performs no arbitrary LAN probing;
+7. grants no route, credential, execution, model, wallet, or custody authority.
+
+## Superseded bridge implementation
+
+A temporary bridge-local implementation claim was opened before the canonical ownership chain was recovered. Once `TVC` and `micro-node-runtime` handoffs were read, that claim was determined to overlap canonical authority and was released.
+
+```text
+claimant: current-session-local-runtime-model
+prior_role: CLAIMED_FOR_IMPLEMENTATION
+claim_created_at: 2026-08-17T15:28:00-05:00
+claim_state: RELEASED_SUPERSEDED
+release_reason: canonical SOVEREIGN-LOCAL-MODEL-001 implementation was already COMPLETE_RELEASED and live activation was MACHINE_OWNED
+```
+
+The following bridge-local duplicate authority surfaces were removed rather than retained as competing implementations:
+
+```text
+api/app/providers/local_model.py
+api/app/providers/local_runtime.py
+api/tests/test_local_model.py
+api/tests/test_local_runtime.py
+scripts/develop_local_model.py
+scripts/local_runtime_proof.py
+.github/workflows/local-runtime-proof.yml
+```
+
+The temporary deterministic workflow run `32066762799` did complete successfully with 16/16 focused tests and produced artifact `9300182255`, SHA-256 `a79d3bacd2651ec03cd16ecd026263c0da78befbd11369d55fb6ffb8fa63b0bb`; that evidence is preserved as historical proof that the temporary code behaved as designed. It is **not** canonical model/runtime evidence and grants no activation claim.
+
+## Current bridge claim state
 
 ```text
 task_id: LOCAL-RUNTIME-MODEL-ACTIVATION-001
-claimant: current-session-local-runtime-model
-role: CLAIMED_FOR_IMPLEMENTATION
-claimed_at: 2026-08-17T15:28:00-05:00
-claim_scope:
-  - docs/LOCAL_RUNTIME_MODEL_MIRROR_HANDOFF.md
-  - api/app/providers/local_runtime.py
-  - api/tests/test_local_runtime.py
-  - scripts/local_runtime_proof.py
-  - .github/workflows/local-runtime-proof.yml
-collision_boundaries:
-  - HIL_MIRROR_HANDOFF.md and HIL issue #11 machine-owned implementation
-  - StegCore canonical admissibility evaluator
-release_condition:
-  - implementation files committed
-  - deterministic tests/workflow installed
-  - hosted validation evidence inspected when available
-  - handoff updated with evidence and unresolved physical-host activation boundary
+current_owner: canonical continuation chain above
+bridge_implementation_claim: RELEASED_SUPERSEDED
+bridge_validation_role: discovery-boundary compatibility only
+bridge_integration_state: MERGED_INTO_CANONICAL_WORKSTREAM
+bridge_issue: #13 -> superseded/duplicate closure required
+machine_owned_tasks:
+  - StegVerse-Labs/.github#60 / SHWP-DURABLE-RUNTIME-ACTIVATION
+  - StegVerse-Labs/TVC/tasks/TVC-SOVEREIGN-LOCAL-MODEL-ROUTE-002.json
 ```
 
-## Current state at claim creation
+## Machine-observable activation blocker
 
-The repository already has descriptive/local probing logic in `api/app/providers/discovery.py` and an Ollama adapter. The existing discovery code can detect local servers, but it does not provide a canonical launch plan, bounded launch execution, normalized runtime/model inventory, proof receipt, proof validator, or durable local-runtime activation contract. The descriptive Ollama instructions therefore remain insufficient for the session goal.
+```text
+condition: HB30_STATE_TRANSITION_NOT_YET_OBSERVED / RESIDENT_V12_HEARTBEAT_ROUTE_EXECUTION_NOT_YET_OBSERVED
+owner: StegVerse-Labs/.github#60 / SHWP-DURABLE-RUNTIME-ACTIVATION / G18
+release_condition:
+  control/heartbeat-state.json remains immutable at legacy HB29;
+  v12 carrier advances to HB30 or later;
+  independent WorkerCoordinator observes the carrier state;
+  continuity/reconstruction and no-duplicate-claim/fence predicates pass;
+  canonical micro-node local-model proof is consumed by TVC;
+  TVC emits ROUTE_ADMITTED with credential_requirement NONE and github_token_required false;
+  released LLM-adapter consumes exactly that endpoint;
+  same-execution provider-usage and transition reconstruction PASS in Master Records.
+human_action_required: false
+manual_session_execution_allowed: false
+```
 
-## Required deliverables
+## Validation
 
-1. `api/app/providers/local_runtime.py` — canonical runtime definitions, safe discovery, model inventory, bounded launch plan/execution, readiness probing, deterministic proof receipt creation and validation.
-2. `api/tests/test_local_runtime.py` — deterministic tests using injected/mock command and HTTP surfaces; no real provider secrets.
-3. `scripts/local_runtime_proof.py` — operator/machine entry point that emits a JSON proof receipt and returns nonzero when proof cannot be established.
-4. `.github/workflows/local-runtime-proof.yml` — credential-clean static/deterministic validation lane; must not masquerade as physical-host activation.
-5. Update `api/app/providers/discovery.py` to consume the canonical local-runtime discovery layer rather than maintaining a competing local runtime description.
-6. Durable proof receipt only when a real local host executes the proof entry point successfully.
-7. Formal local-model profile contract identifying selected runtime, selected model, model digest/identity when exposed by the runtime, endpoint, capabilities, and proof hash without credential material.
-
-## Validation plan
+Canonical sovereign model/runtime validation is owned by `StegVerse-002/micro-node-runtime` and is already released. Bridge validation is limited to compatibility and credential/authority boundaries:
 
 ```bash
-python -m pytest api/tests/test_local_runtime.py -q
-python scripts/local_runtime_proof.py --dry-run
-python -m pytest api/tests/test_discovery.py -q
+cd api
+python -m pytest -q tests/test_discovery.py
 ```
 
-Hosted validation may prove deterministic implementation behavior only. A physical-host activation receipt requires a host that actually exposes or can launch a supported local runtime.
+Repository-wide CI may additionally validate bridge compatibility, but CI success is never runtime activation.
 
-## Cross-repository dependencies and propagation
+## Cross-repository propagation
 
-- `StegVerse-Labs/StegCore`: canonical admissibility remains authoritative; local runtime identity must not create a parallel evaluator.
-- `StegVerse-Labs/.github`: sovereign heartbeat/carrier ownership remains separate; future physical-host runtime supervision may integrate there after this local runtime contract is validated.
-- `StegVerse-Labs/Site`, `GCAT-BCAT-Engine/Publisher`, `StegVerse-Labs/admissibility-wiki`, `StegVerse-002/stegguardian-wiki`: propagation only after an activated and versioned local-runtime contract exists and each destination handoff is read.
+No Site, Publisher, admissibility-wiki, or stegguardian-wiki activation propagation is authorized from model/runtime source completion alone. Canonical handoffs authorize propagation only after live governed activation and release evidence exists.
 
-## Session consolidation inventory
+## Session-specific requirements durably transferred
 
-Transferred into this handoff:
-- local-runtime discovery/launch/proof goal;
-- formal local-model development requirement;
-- StegVerse-not-Render constraint;
-- TV/TVC-only credential authority constraint;
-- no false activation from source or CI;
-- collision prevention with machine-owned HIL and canonical StegCore authority;
-- requirement for durable receipts and explicit physical-host activation boundary.
+- executable rather than descriptive local-runtime path -> already complete in `micro-node-runtime#22`;
+- formal local model development -> already complete in `micro-node-runtime#22`;
+- StegVerse instead of Render -> canonical handoffs prohibit external production dependency;
+- TV/TVC-only credential authority -> canonical TVC task and this bridge discovery boundary;
+- no GitHub-token production model authority -> canonical micro-node/TVC/.github handoffs;
+- no false activation from CI/source merge -> preserved here and canonical handoffs;
+- no duplicate heartbeat/model/runtime/TVC route/transport/custody authority -> enforced by consolidation/removal above.
 
-Adjacent trade-readiness and nine-lane cost work remain separate canonical workstreams and must not be silently counted as complete here.
+MERGED INTO:
 
-## Completion accounting at claim creation
+```text
+StegVerse-002/micro-node-runtime/docs/SOVEREIGN_LOCAL_MODEL_RUNTIME_MIRROR_HANDOFF.md
+-> StegVerse-Labs/.github/handoffs/SHWP-DURABLE-RUNTIME-ACTIVATION.json
+-> StegVerse-Labs/TVC/tasks/TVC-SOVEREIGN-LOCAL-MODEL-ROUTE-002.json
+-> StegVerse-org/LLM-adapter#18
+-> master-records/orchestration
+```
 
-Denominator: 7 required deliverables above.
+## Completion accounting for this bridge slice
 
-- Task completion: 1/7 (handoff/claim established).
-- Developed files: 1/5 implementation/control files present in final form for this workstream (handoff only); the four executable/test/workflow files are missing.
-- Scaffolding/stubs: existing descriptive discovery logic is treated as partial legacy implementation, not completion.
-- Validation: 0/4 required validation levels complete for this new workstream.
-- Integration: 0/2 (existing discovery integration; future sovereign host supervision integration).
-- Goal activation: 0% until real local-host proof exists.
-- Session consolidation: local-runtime/model requirements transferred; adjacent goals remain active elsewhere.
+Denominator: 3 nonduplicative bridge surfaces (`governance/discovery.py`, compatibility re-export, discovery tests) plus 1 consolidation record (this handoff).
 
-## Archive condition
+```text
+task completion: 4/4 bridge-slice requirements implemented
+required bridge developed surfaces: 4
+bridge developed surfaces: 4
+scaffolding/stubs: 0
+missing bridge files: 0
+focused bridge validation: pending after consolidation commit
+integration with canonical ownership semantics: 1/1 installed
+live local-model activation: not owned by this bridge; MACHINE_OWNED upstream
+session consolidation for local-runtime/model goal: COMPLETE_TRANSFERRED
+```
 
-This session is not archive-ready while this implementation claim is active or while unique local-runtime/model requirements have not been implemented, validated, or transferred to a durable machine-owned continuation path.
+## Archive dependency
+
+The local-runtime/model **implementation goal no longer requires this session**; its implementation is complete and its live activation continuation is durably machine-owned. This session still cannot be archived while other unique session goals (including nine-lane cost continuation and trade-readiness/consolidation work) remain untransferred or incomplete.
