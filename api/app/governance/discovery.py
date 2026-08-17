@@ -1,21 +1,24 @@
-"""StegVerse provider discovery with canonical local-runtime and TV/TVC boundaries.
+"""StegVerse provider discovery with canonical TV/TVC authority boundaries.
 
-Local inference discovery is credential-free and delegated to
-``app.providers.local_runtime``. Cloud credential discovery never reads provider
-API keys from this process: TV/TVC is the credential authority and must provide
-a governed route/attestation outside this module.
+This bridge is a discovery/consumer surface. It does not discover provider
+secrets, launch sovereign model processes, create model proofs, or admit local
+routes. Those authorities are already canonical elsewhere:
+
+- model/runtime: StegVerse-002/micro-node-runtime#22
+- live carrier: StegVerse-Labs/.github#60 / SHWP-DURABLE-RUNTIME-ACTIVATION
+- route authority: StegVerse-Labs/TVC / TVC-SOVEREIGN-LOCAL-MODEL-ROUTE-002
+- transport: StegVerse-org/LLM-adapter#18
+- custody/reconstruction: master-records/orchestration
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
-from ..providers.local_runtime import LocalRuntimeManager
-
 
 @dataclass
 class DiscoveryResult:
-    """Result of a provider discovery attempt."""
+    """Result of a provider discovery query without granting route authority."""
 
     provider_id: str
     provider_name: str
@@ -31,7 +34,7 @@ class DiscoveryResult:
 
 
 class ProviderDiscoveryEngine:
-    """Discover providers without becoming a credential or execution authority."""
+    """Describe available provider classes without becoming credential/runtime authority."""
 
     CLOUD_PROVIDERS: Dict[str, Dict[str, Any]] = {
         "openai": {"name": "OpenAI", "type": "openai_text", "cost_tier": "premium"},
@@ -43,9 +46,8 @@ class ProviderDiscoveryEngine:
         "perplexity": {"name": "Perplexity", "type": "perplexity_text", "cost_tier": "standard"},
     }
 
-    def __init__(self, local_manager: LocalRuntimeManager | None = None) -> None:
+    def __init__(self) -> None:
         self.discovered: List[DiscoveryResult] = []
-        self.local_manager = local_manager or LocalRuntimeManager()
 
     async def scan_all(self) -> List[DiscoveryResult]:
         results: List[DiscoveryResult] = []
@@ -56,68 +58,19 @@ class ProviderDiscoveryEngine:
         return results
 
     async def scan_local(self) -> List[DiscoveryResult]:
-        """Use the canonical loopback runtime inventory and launch policy."""
-        results: List[DiscoveryResult] = []
-        for observation in await self.local_manager.discover():
-            plan = self.local_manager.launch_plan(observation.runtime_id)
-            model_names = [model.name for model in observation.models]
-            if observation.status == "ready":
-                status = "available"
-                reason = f"Verified local runtime with {len(model_names)} model(s) at {observation.endpoint}"
-            elif observation.executable_present:
-                status = "discoverable"
-                reason = observation.error or "Runtime executable is installed but not ready"
-            else:
-                continue
+        """Expose the canonical sovereign local-model route as machine-owned.
 
-            instructions = [
-                "Local runtime path is credential-free; no provider token is required.",
-                f"Runtime endpoint: {observation.endpoint}",
-                f"Launch policy: {plan.reason}",
-                f"Proof command: python scripts/local_runtime_proof.py --runtime {observation.runtime_id}",
-            ]
-            if plan.safe_to_auto_launch:
-                instructions.append(
-                    f"Bounded launch + proof: python scripts/local_runtime_proof.py --runtime {observation.runtime_id} --launch"
-                )
-            if model_names:
-                instructions.append("Models: " + ", ".join(model_names[:10]))
-
-            results.append(
-                DiscoveryResult(
-                    provider_id=observation.runtime_id,
-                    provider_name=observation.display_name,
-                    provider_type=observation.provider_type,
-                    status=status,
-                    reason=reason,
-                    connection_method="local",
-                    instructions=instructions,
-                    config_template={
-                        "name": observation.runtime_id,
-                        "type": observation.provider_type,
-                        "enabled": observation.status == "ready",
-                        "endpoint": observation.endpoint,
-                        "models": model_names,
-                        "proof_required": True,
-                        "credential_authority": "none-local",
-                    },
-                    requires_network=False,
-                    requires_api_key=False,
-                    estimated_cost_tier="free",
-                )
-            )
-        return results
+        Physical discovery/launch/proof is intentionally not repeated in this
+        bridge. The canonical micro-node runtime and heartbeat own that work.
+        """
+        return [self._sovereign_local_result()]
 
     async def scan_environment(self) -> List[DiscoveryResult]:
-        """Describe cloud capability without inspecting provider secrets.
-
-        The method name remains for API compatibility. It intentionally performs
-        no environment-secret discovery; TV/TVC is the sole credential authority.
-        """
+        """Describe cloud capability without inspecting environment secrets."""
         return [self._cloud_result(provider_id, info) for provider_id, info in self.CLOUD_PROVIDERS.items()]
 
     async def scan_network(self) -> List[DiscoveryResult]:
-        """Do not probe arbitrary LAN hosts without a governed peer registry."""
+        """Do not probe arbitrary LAN hosts outside the canonical route path."""
         return []
 
     def query_provider(self, query: str) -> DiscoveryResult:
@@ -126,37 +79,18 @@ class ProviderDiscoveryEngine:
             if query_lower in (provider_id, info["name"].lower(), info["type"].lower()):
                 return self._cloud_result(provider_id, info)
 
-        if query_lower in {"ollama", "local", "on-premise", "self-hosted"}:
-            plan = self.local_manager.launch_plan("ollama")
-            instructions = [
-                "Canonical local runtime: Ollama loopback at http://127.0.0.1:11434.",
-                "No provider API key or token is used by this path.",
-                "Discover/prove: python scripts/local_runtime_proof.py --runtime ollama",
-                "Formal StegVerse model development requires an already-installed local base model; downloads are not performed by the bridge.",
-            ]
-            if plan.safe_to_auto_launch:
-                instructions.append("Launch + prove: python scripts/local_runtime_proof.py --runtime ollama --launch")
-            else:
-                instructions.append(f"Launch blocked until host condition changes: {plan.reason}")
-            return DiscoveryResult(
-                provider_id="ollama",
-                provider_name="Ollama",
-                provider_type="ollama_text",
-                status="discoverable",
-                reason="Canonical credential-free local runtime path is installed",
-                connection_method="local",
-                instructions=instructions,
-                config_template={
-                    "name": "ollama",
-                    "type": "ollama_text",
-                    "enabled": False,
-                    "proof_required": True,
-                    "credential_authority": "none-local",
-                },
-                requires_network=False,
-                requires_api_key=False,
-                estimated_cost_tier="free",
-            )
+        if query_lower in {
+            "ollama",
+            "llamacpp",
+            "llama.cpp",
+            "vllm",
+            "local",
+            "local model",
+            "on-premise",
+            "self-hosted",
+            "sovereign local model",
+        }:
+            return self._sovereign_local_result()
 
         if any(keyword in query_lower for keyword in ("api", "openai", "compatible", "endpoint")):
             return DiscoveryResult(
@@ -164,18 +98,19 @@ class ProviderDiscoveryEngine:
                 provider_name=f"Custom: {query}",
                 provider_type="openai_text",
                 status="discoverable",
-                reason="Potential OpenAI-compatible route requires governed configuration",
+                reason="Potential OpenAI-compatible capability requires a governed TV/TVC route",
                 connection_method="tv_tvc",
                 instructions=[
-                    "Register endpoint metadata through the governed StegVerse configuration path.",
+                    "Register endpoint metadata through the governed StegVerse route path.",
                     "Any credential must be resolved by TV/TVC; do not place provider secrets in this bridge.",
-                    "Connection availability is not execution authority.",
+                    "Discovery does not grant route or execution authority.",
                 ],
                 config_template={
                     "name": "custom",
                     "type": "openai_text",
                     "enabled": False,
                     "credential_authority": "TV/TVC",
+                    "route_authority": "StegVerse-Labs/TVC",
                 },
                 requires_network=True,
                 requires_api_key=True,
@@ -191,12 +126,43 @@ class ProviderDiscoveryEngine:
             connection_method="none",
             instructions=[
                 "Do not infer or install an unrecognized provider automatically.",
-                "Add a governed provider contract before use.",
+                "Add or consume a governed provider contract before use.",
             ],
             config_template={},
             requires_network=True,
             requires_api_key=True,
             estimated_cost_tier="unknown",
+        )
+
+    def _sovereign_local_result(self) -> DiscoveryResult:
+        return DiscoveryResult(
+            provider_id="stegverse_sovereign_local_model",
+            provider_name="StegVerse Sovereign Local Model",
+            provider_type="sovereign_local_model",
+            status="machine_owned",
+            reason="Implementation is complete/released; live route activation is owned by the sovereign heartbeat and TVC",
+            connection_method="tvc_route",
+            instructions=[
+                "Canonical model/runtime: StegVerse-002/micro-node-runtime#22.",
+                "Canonical live carrier: StegVerse-Labs/.github#60 / SHWP-DURABLE-RUNTIME-ACTIVATION.",
+                "Canonical route task: StegVerse-Labs/TVC/tasks/TVC-SOVEREIGN-LOCAL-MODEL-ROUTE-002.json.",
+                "Transport: StegVerse-org/LLM-adapter#18; custody/reconstruction: master-records/orchestration.",
+                "Credential requirement for the repository-local model is NONE; TV/TVC remains credential authority.",
+                "This bridge must not launch, select, prove, or admit a competing local runtime.",
+            ],
+            config_template={
+                "name": "stegverse-sovereign-local-model",
+                "type": "sovereign_local_model",
+                "enabled": False,
+                "credential_authority": "TV/TVC",
+                "credential_requirement": "NONE",
+                "route_authority": "StegVerse-Labs/TVC",
+                "canonical_model_owner": "StegVerse-002/micro-node-runtime#22",
+                "machine_owned_activation": True,
+            },
+            requires_network=False,
+            requires_api_key=False,
+            estimated_cost_tier="free",
         )
 
     def _cloud_result(self, provider_id: str, info: Dict[str, Any]) -> DiscoveryResult:
