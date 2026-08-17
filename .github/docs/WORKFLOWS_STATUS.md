@@ -1,8 +1,8 @@
 # Workflows Status
 
-_Last updated: **2026-08-02 09:07 UTC**_
+_Last updated: **2026-08-17 20:32 UTC**_
 
-- OK with workflow_dispatch: **27**
+- OK with workflow_dispatch: **28**
 - Valid but no dispatch button: **0**
 - Broken YAML: **0**
 
@@ -24,6 +24,7 @@ _Last updated: **2026-08-02 09:07 UTC**_
 | `human-llm-interoperability.yml` | ok |  |
 | `install-internal-artifact-integrity.yml` | ok |  |
 | `install-run-boundary-cge-event.yml` | ok |  |
+| `local-runtime-proof.yml` | ok |  |
 | `normalize-badges.yml` | ok |  |
 | `reconcile-delegation-outbox.yml` | ok |  |
 | `reconcile-internal-adapter.yml` | ok |  |
