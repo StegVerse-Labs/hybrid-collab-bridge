@@ -1,6 +1,5 @@
-import json
+import asyncio
 
-import httpx
 import pytest
 
 from app.providers.local_runtime import LocalRuntimeManager, LocalRuntimeProof
@@ -29,8 +28,7 @@ class FakeClient:
         return self.responses[url]
 
 
-@pytest.mark.asyncio
-async def test_ollama_discovery_and_proof_are_credential_free():
+def test_ollama_discovery_and_proof_are_credential_free():
     responses = {
         "http://127.0.0.1:11434/api/tags": FakeResponse(
             200,
@@ -52,12 +50,12 @@ async def test_ollama_discovery_and_proof_are_credential_free():
         client_factory=lambda: FakeClient(responses),
     )
 
-    observations = await manager.discover()
+    observations = asyncio.run(manager.discover())
     ollama = next(item for item in observations if item.runtime_id == "ollama")
     assert ollama.status == "ready"
     assert ollama.models[0].name == "stegverse-local:latest"
 
-    proof = await manager.prove("ollama", "stegverse-local:latest")
+    proof = asyncio.run(manager.prove("ollama", "stegverse-local:latest"))
     assert proof.runtime_ready is True
     assert proof.credential_material_present is False
     assert proof.model_profile.credential_required is False
@@ -84,8 +82,7 @@ def test_missing_executable_fails_closed():
     assert "not found" in plan.reason
 
 
-@pytest.mark.asyncio
-async def test_proof_requires_model_inventory():
+def test_proof_requires_model_inventory():
     responses = {
         "http://127.0.0.1:11434/api/tags": FakeResponse(200, {"models": []}),
         "http://127.0.0.1:8080/v1/models": FakeResponse(200, {"data": []}),
@@ -96,7 +93,7 @@ async def test_proof_requires_model_inventory():
         client_factory=lambda: FakeClient(responses),
     )
     with pytest.raises(RuntimeError):
-        await manager.prove("ollama")
+        asyncio.run(manager.prove("ollama"))
 
 
 def test_tampered_proof_is_rejected():
