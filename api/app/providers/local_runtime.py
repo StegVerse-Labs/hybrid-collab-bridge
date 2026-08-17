@@ -1,7 +1,7 @@
 """Canonical StegVerse local-runtime discovery, launch planning, and proof.
 
-This module is intentionally credential-free.  It discovers only loopback local
-inference runtimes and never reads provider API keys.  Runtime availability is
+This module is intentionally credential-free. It discovers only loopback local
+inference runtimes and never reads provider API keys. Runtime availability is
 not execution authority; callers must separately traverse the canonical
 StegGate/admissibility path before any governed consequence.
 """
@@ -185,8 +185,6 @@ class LocalRuntimeManager:
     def launch_plan(self, runtime_id: str) -> LaunchPlan:
         spec = self._spec(runtime_id)
         executable_present = bool(self.command_finder(spec.executable))
-        # Ollama has a complete no-model-argument server launch. llama.cpp and
-        # vLLM require a model/config choice, so auto-launch remains fail-closed.
         safe = runtime_id == "ollama" and executable_present
         if safe:
             reason = "bounded credential-free launch command available"
@@ -249,9 +247,10 @@ class LocalRuntimeManager:
             **profile_body,
             identity_hash=_sha256(profile_body),
         )
-        proof_body = {
+        observed_at = datetime.now(timezone.utc).isoformat()
+        proof_hash_body = {
             "schema": PROOF_SCHEMA,
-            "observed_at": datetime.now(timezone.utc).isoformat(),
+            "observed_at": observed_at,
             "runtime_id": runtime_id,
             "endpoint": spec.probe_url,
             "http_status": int(observation.http_status),
@@ -260,7 +259,18 @@ class LocalRuntimeManager:
             "credential_material_present": False,
             "runtime_ready": True,
         }
-        return LocalRuntimeProof(**proof_body, proof_hash=_sha256(proof_body))
+        return LocalRuntimeProof(
+            schema=PROOF_SCHEMA,
+            observed_at=observed_at,
+            runtime_id=runtime_id,
+            endpoint=spec.probe_url,
+            http_status=int(observation.http_status),
+            latency_ms=float(observation.latency_ms or 0.0),
+            model_profile=profile,
+            credential_material_present=False,
+            runtime_ready=True,
+            proof_hash=_sha256(proof_hash_body),
+        )
 
     @staticmethod
     def validate_proof(proof: LocalRuntimeProof) -> bool:
