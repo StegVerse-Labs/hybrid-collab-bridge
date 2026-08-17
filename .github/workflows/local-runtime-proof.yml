@@ -1,0 +1,60 @@
+name: local-runtime-proof
+
+on:
+  push:
+    paths:
+      - "api/app/providers/local_runtime.py"
+      - "api/app/governance/discovery.py"
+      - "api/tests/test_local_runtime.py"
+      - "scripts/local_runtime_proof.py"
+      - ".github/workflows/local-runtime-proof.yml"
+      - "docs/LOCAL_RUNTIME_MODEL_MIRROR_HANDOFF.md"
+  pull_request:
+    paths:
+      - "api/app/providers/local_runtime.py"
+      - "api/app/governance/discovery.py"
+      - "api/tests/test_local_runtime.py"
+      - "scripts/local_runtime_proof.py"
+      - ".github/workflows/local-runtime-proof.yml"
+      - "docs/LOCAL_RUNTIME_MODEL_MIRROR_HANDOFF.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install credential-free test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r api/requirements.txt pytest
+      - name: Compile local runtime implementation
+        run: python -m compileall api/app/providers/local_runtime.py scripts/local_runtime_proof.py
+      - name: Run deterministic local runtime tests
+        run: |
+          cd api
+          python -m pytest -q tests/test_local_runtime.py
+      - name: Exercise dry-run proof surface
+        run: python scripts/local_runtime_proof.py --dry-run > local-runtime-dry-run.json
+      - name: Assert CI does not claim physical-host activation
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path('local-runtime-dry-run.json').read_text())
+          assert payload['mode'] == 'DRY_RUN_NO_ACTIVATION_CLAIM'
+          PY
+      - name: Upload deterministic contract evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-runtime-deterministic-contract
+          path: local-runtime-dry-run.json
+          if-no-files-found: error
+          retention-days: 14
