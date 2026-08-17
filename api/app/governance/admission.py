@@ -1,4 +1,9 @@
-"""Admission gate: BCAT/GCAT evaluation before execution."""
+"""Admission gate: BCAT/GCAT evaluation before execution.
+
+The CGE result remains the upstream/canonical admissibility input. A bridge-local
+constitution may only make that result stricter: it can downgrade an upstream
+allow to defer/deny, but it can never upgrade an upstream denial to allow.
+"""
 from __future__ import annotations
 import json
 from pathlib import Path
@@ -42,6 +47,24 @@ class AdmissionGate:
         path = session_dir / "08_commit_time_governance_snapshot.json"
         path.write_text(json.dumps(snapshot, indent=2), encoding="utf-8")
 
+    def _meets_local_thresholds(self, bcat: Dict[str, Any], gcat: Dict[str, Any]) -> bool:
+        """Return whether the configured bridge overlay is satisfied.
+
+        This is a restrictive consumer-side check only. The upstream CGE
+        admissibility result is still required independently and is never
+        upgraded by this method.
+        """
+        if not self.thresholds:
+            return True
+        checks = [
+            bcat.get("observability", 0) >= self.thresholds.get("observability_min", 0.6),
+            bcat.get("context_stability", 0) >= self.thresholds.get("context_stability_min", 0.5),
+            bcat.get("authority_clarity", 0) >= self.thresholds.get("authority_clarity_min", 0.5),
+            bcat.get("reversibility_margin", 0) >= self.thresholds.get("reversibility_margin_min", 0.3),
+            bcat.get("risk", 1.0) <= self.thresholds.get("risk_max", 0.7),
+        ]
+        return all(checks)
+
     async def admit_proposal(
         self,
         proposal: Dict[str, Any],
@@ -57,21 +80,29 @@ class AdmissionGate:
 
         bcat = ingest_result.get("bcat", {})
         gcat = ingest_result.get("gcat", {})
-        admissible = ingest_result.get("admissible", False)
+        upstream_admissible = bool(ingest_result.get("admissible", False))
+        local_thresholds_met = self._meets_local_thresholds(bcat, gcat)
+        admissible = upstream_admissible and local_thresholds_met
 
         if not admissible:
             if self._is_deferrable(bcat, gcat):
                 decision: Decision = "defer"
                 requires_human = True
-                reasoning = "BCAT/GCAT near threshold; requires human review"
+                if upstream_admissible:
+                    reasoning = "Upstream admissible; bridge constitution near threshold; requires human review"
+                else:
+                    reasoning = "BCAT/GCAT near threshold; requires human review"
             else:
                 decision = "deny"
                 requires_human = False
-                reasoning = "BCAT/GCAT below threshold; denied"
+                if upstream_admissible:
+                    reasoning = "Upstream admissible; bridge constitution is stricter and was not satisfied"
+                else:
+                    reasoning = "BCAT/GCAT below threshold; denied"
         else:
             decision = "allow"
             requires_human = False
-            reasoning = "BCAT/GCAT admissible; auto-approved"
+            reasoning = "Upstream admissible and bridge restrictive thresholds satisfied"
 
         receipt = await self.cge.append_ledger(
             mutation_class="approve" if decision == "allow" else "reject",
@@ -85,7 +116,15 @@ class AdmissionGate:
             actor=actor.to_dict(),
             source=source,
             constitution=self.constitution,
-            ingest_result=ingest_result,
+            ingest_result={
+                **ingest_result,
+                "bridge_restrictive_overlay": {
+                    "upstream_admissible": upstream_admissible,
+                    "local_thresholds_met": local_thresholds_met,
+                    "effective_admissible": admissible,
+                    "may_upgrade_upstream_denial": False,
+                },
+            },
             canonical_decision=decision,
             cge_path=self.cge.cge_path,
         )
@@ -122,16 +161,18 @@ class AdmissionGate:
 
         bcat = ingest_result.get("bcat", {})
         gcat = ingest_result.get("gcat", {})
-        admissible = ingest_result.get("admissible", False)
+        upstream_admissible = bool(ingest_result.get("admissible", False))
+        local_thresholds_met = self._meets_local_thresholds(bcat, gcat)
+        admissible = upstream_admissible and local_thresholds_met
 
         if not admissible:
             decision: Decision = "defer"
             requires_human = True
-            reasoning = "Consensus merge near threshold; requires quorum review"
+            reasoning = "Consensus merge not admitted by upstream-plus-restrictive-overlay; requires quorum review"
         else:
             decision = "allow"
             requires_human = False
-            reasoning = "Consensus merge admissible"
+            reasoning = "Consensus merge admitted by upstream and restrictive overlay"
 
         receipt = await self.cge.append_ledger(
             mutation_class="derive" if decision == "allow" else "reject",
@@ -145,7 +186,15 @@ class AdmissionGate:
             actor=referee_actor.to_dict(),
             source=source,
             constitution=self.constitution,
-            ingest_result=ingest_result,
+            ingest_result={
+                **ingest_result,
+                "bridge_restrictive_overlay": {
+                    "upstream_admissible": upstream_admissible,
+                    "local_thresholds_met": local_thresholds_met,
+                    "effective_admissible": admissible,
+                    "may_upgrade_upstream_denial": False,
+                },
+            },
             canonical_decision=decision,
             cge_path=self.cge.cge_path,
         )
