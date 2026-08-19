@@ -1,157 +1,19 @@
-name: StegVerse AI Entity (Bridge)
+name: StegVerse AI Entity Bridge [CONTAINED — STEGVERSE PRIMARY / TV-TVC AUTHORITY]
 
 on:
-  workflow_dispatch:
-    inputs:
-      target_repo:
-        description: "Full repo name (e.g. StegVerse/StegCore)"
-        required: false
-      pr_number:
-        description: "PR number (optional)"
-        required: false
-      instructions:
-        description: "Optional instructions"
-        required: false
-  issue_comment:
-    types: [created]
-  repository_dispatch:
-    types: [stegverse-ai-review]
+  workflow_dispatch: {}
 
 permissions:
   contents: read
-  pull-requests: write
-  issues: write
 
 jobs:
-  ai_entity:
-    if: github.event_name != 'issue_comment' || contains(github.event.comment.body, '/run-bridge')
+  contained:
     runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ secrets.GH_STEGVERSE_AI_TOKEN }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
     steps:
-      - name: Ping
-        run: |
-          echo "Dispatch: ${{ github.event_name }}"
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install tools
+      - name: Block legacy entity credential/mutation path
+        shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get update -y
-          sudo apt-get install -y jq gh
-
-      - name: Resolve inputs
-        id: ctx
-        run: |
-          set -euo pipefail
-          EVENT_NAME="${{ github.event_name }}"
-          TARGET_REPO=""
-          PR_NUMBER=""
-          INSTR=""
-
-          if [ "$EVENT_NAME" = "issue_comment" ]; then
-            BODY=$(jq -r '.comment.body // ""' "$GITHUB_EVENT_PATH")
-            TARGET_REPO=$(printf '%s\n' "$BODY" | sed -n 's/.*repo=\([^ ]*\).*/\1/p')
-            PR_NUMBER=$(printf '%s\n' "$BODY" | sed -n 's/.*pr=\([0-9][0-9]*\).*/\1/p')
-            INSTR=$(printf '%s\n' "$BODY" | sed -n 's/.*note="\([^"]*\)".*/\1/p')
-          elif [ "$EVENT_NAME" = "repository_dispatch" ]; then
-            TARGET_REPO=$(jq -r '.client_payload.target_repo // ""' "$GITHUB_EVENT_PATH")
-            PR_NUMBER=$(jq -r '.client_payload.pr_number // ""' "$GITHUB_EVENT_PATH")
-            INSTR=$(jq -r '.client_payload.instructions // ""' "$GITHUB_EVENT_PATH")
-          else
-            TARGET_REPO=$(jq -r '.inputs.target_repo // ""' "$GITHUB_EVENT_PATH")
-            PR_NUMBER=$(jq -r '.inputs.pr_number // ""' "$GITHUB_EVENT_PATH")
-            INSTR=$(jq -r '.inputs.instructions // ""' "$GITHUB_EVENT_PATH")
-          fi
-
-          if [ -z "$INSTR" ] || [ "$INSTR" = "null" ]; then
-            INSTR="Act as StegVerse-AI-001. If a PR is provided, review it. Otherwise, produce a concise repository summary. Treat all model output as advisory only."
-          fi
-
-          {
-            echo "target_repo=$TARGET_REPO"
-            echo "pr_number=$PR_NUMBER"
-            echo "instructions<<CTX_EOF"
-            echo "$INSTR"
-            echo "CTX_EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Prepare diff context
-        run: |
-          set -euo pipefail
-          TARGET_REPO='${{ steps.ctx.outputs.target_repo }}'
-          PR_NUMBER='${{ steps.ctx.outputs.pr_number }}'
-          : > context.txt
-
-          if [ -n "$TARGET_REPO" ] && [ "$TARGET_REPO" != "null" ] && [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
-            if gh pr view "$PR_NUMBER" --repo "$TARGET_REPO" >/dev/null 2>&1; then
-              gh pr diff "$PR_NUMBER" --repo "$TARGET_REPO" | head -c 24000 > context.txt || true
-            fi
-          fi
-
-          if [ ! -s context.txt ] && [ -n "$TARGET_REPO" ] && [ "$TARGET_REPO" != "null" ]; then
-            gh repo view "$TARGET_REPO" --json nameWithOwner,description,defaultBranchRef | jq -r tostring > context.txt
-          fi
-
-          if [ ! -s context.txt ]; then
-            printf '%s\n' "No repo/PR provided. Running bridge self-check." > context.txt
-          fi
-
-      - name: Call OpenAI API
-        run: |
-          set -euo pipefail
-          TARGET_REPO='${{ steps.ctx.outputs.target_repo }}'
-          PR_NUMBER='${{ steps.ctx.outputs.pr_number }}'
-          INSTR='${{ steps.ctx.outputs.instructions }}'
-          SYSTEM_PROMPT=$'You are "StegVerse-AI-001" operating from the Hybrid Collaboration Bridge.\n\nGuardian rules:\n- Follow StegVerse Guardian principles: security, transparency, verifiability, and non-abuse.\n- Only act on data explicitly provided in this request.\n- Never request, reveal, infer, or print secrets, credentials, tokens, deploy hooks, or private internal architecture not included in context.\n- Treat your output as advisory. Human maintainers are final authority.\n\nReturn exactly these sections:\n1. Summary\n2. Findings\n3. Concrete suggestions\n4. Receipt'
-
-          jq -n \
-            --arg model "gpt-4o" \
-            --arg sys "$SYSTEM_PROMPT" \
-            --arg repo "${TARGET_REPO:-none}" \
-            --arg pr "${PR_NUMBER:-none}" \
-            --rawfile context context.txt \
-            --arg ins "$INSTR" \
-            '{
-              model: $model,
-              messages: [
-                {role: "system", content: $sys},
-                {role: "user", content: ("Target repository: " + $repo)},
-                {role: "user", content: ("PR number: " + $pr)},
-                {role: "user", content: "Context follows:"},
-                {role: "user", content: $context},
-                {role: "user", content: ("Instructions: " + $ins)}
-              ],
-              max_tokens: 900,
-              temperature: 0.2
-            }' > request.json
-
-          curl -sS https://api.openai.com/v1/chat/completions \
-            -H "Authorization: Bearer $OPENAI_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d @request.json > response.json
-
-          jq -r '.choices[0].message.content // .error.message // "No response from OpenAI API."' response.json > ai_comment.md
-
-      - name: Post comment to PR or log
-        run: |
-          set -euo pipefail
-          TARGET_REPO='${{ steps.ctx.outputs.target_repo }}'
-          PR_NUMBER='${{ steps.ctx.outputs.pr_number }}'
-          echo "----- AI OUTPUT -----"
-          cat ai_comment.md
-          echo "---------------------"
-
-          if [ -n "$TARGET_REPO" ] && [ "$TARGET_REPO" != "null" ] && [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
-            gh pr comment "$PR_NUMBER" --repo "$TARGET_REPO" --body-file ai_comment.md || true
-          elif [ "${{ github.event_name }}" = "issue_comment" ]; then
-            gh issue comment "${{ github.event.issue.number }}" --body-file ai_comment.md || true
-          else
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "StegVerse-AI-001 report" --body-file ai_comment.md || true
-          fi
+          echo "::error::This legacy entity workflow is contained because it combined generic GitHub and direct provider credentials with repository-dispatch input, cross-repository context access, and comment/issue mutation."
+          echo "Replacement must use StegVerse-native execution first, explicit TV/TVC-admitted fallback only when required, and retain advisory/no-execution-authority semantics."
+          exit 1
