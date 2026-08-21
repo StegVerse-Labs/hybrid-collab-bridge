@@ -34,9 +34,7 @@ jobs:
       - name: Install test dependency
         run: python -m pip install pytest
       - name: Test token-gated transport
-        run: |
-          cd api
-          python -m pytest -q tests/test_delegation_transport.py
+        run: python -m pytest -q api/tests/test_delegation_transport.py
       - name: Transport governed candidates when authority exists
         run: python scripts/transport_delegation_outbox.py
       - name: Commit transport state
