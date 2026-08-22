@@ -39,7 +39,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install dependencies
-        run: python -m pip install -r api/requirements.txt
+        run: python -m pip install -r api/requirements.txt pytest
       - name: Reconcile declared runtime contracts
         run: python scripts/reconcile_internal_adapter.py
       - name: Compile governed runtime and delegation contract
