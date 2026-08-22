@@ -2,149 +2,46 @@ name: ai_entity
 
 on:
   workflow_dispatch:
-    inputs:
-      target_repo:
-        description: "Repository to review, e.g. StegVerse-Labs/hybrid-collab-bridge"
-        required: false
-        default: ""
-      pr_number:
-        description: "Optional PR number"
-        required: false
-        default: ""
-      extra_instructions:
-        description: "Optional extra instructions"
-        required: false
-        default: ""
   pull_request:
 
 permissions:
   contents: read
   pull-requests: read
-  issues: write
-  models: read
 
 jobs:
   ai-entity:
     runs-on: ubuntu-latest
-
-    env:
-      GH_TOKEN: ${{ github.token }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Prepare diff context
-        id: context
+      - name: Prepare bounded PR context
         shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          EVENT_REPO: ${{ github.repository }}
-          INPUT_TARGET_REPO: ${{ inputs.target_repo }}
-          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
-          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          set -e
-
-          TARGET_REPO="${INPUT_TARGET_REPO:-$EVENT_REPO}"
-          PR_NUMBER="${INPUT_PR_NUMBER:-}"
-
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-            PR_NUMBER="$EVENT_PR_NUMBER"
+          set -euo pipefail
+          : > context.diff
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git diff --unified=3 "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | head -c 24000 > context.diff || true
           fi
 
-          : > context.txt
-
-          if [ -n "$TARGET_REPO" ] && [ "$TARGET_REPO" != "null" ] && [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
-            if gh pr view "$PR_NUMBER" --repo "$TARGET_REPO" >/dev/null 2>&1; then
-              gh pr diff "$PR_NUMBER" --repo "$TARGET_REPO" | head -c 24000 > context.txt || true
-            fi
-          fi
-
-          if [ ! -s context.txt ] && [ -n "$TARGET_REPO" ] && [ "$TARGET_REPO" != "null" ]; then
-            gh repo view "$TARGET_REPO" --json nameWithOwner,description,defaultBranchRef | jq -r tostring > context.txt
-          fi
-
-          if [ ! -s context.txt ]; then
-            printf '%s\n' "No repo/PR provided. Running bridge self-check." > context.txt
-          fi
-
-          {
-            echo "target_repo=$TARGET_REPO"
-            echo "pr_number=$PR_NUMBER"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Call ChatGPT via GitHub Models
-        id: ai
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          REPO: ${{ steps.context.outputs.target_repo }}
-          EVENT_NAME: ${{ github.event_name }}
-          EXTRA_INSTR: ${{ inputs.extra_instructions }}
+      - name: Run deterministic advisory fallback
         run: |
-          set -e
+          python scripts/deterministic_advisory_fallback.py \
+            --label "ai_entity" \
+            --context context.diff \
+            --summary ai-entity-advisory.md \
+            --receipt ai-entity-advisory.json
 
-          DIFF_CONTENT="$(cat context.txt)"
-          SYSTEM_PROMPT="You are StegVerse-AI-001. Review the supplied repository or PR context. Return concise, actionable findings. Prioritize execution-boundary failures, credential failures, syntax failures, missing imports, and verification steps."
+      - name: Publish job summary
+        run: cat ai-entity-advisory.md >> "$GITHUB_STEP_SUMMARY"
 
-          jq -n \
-            --arg model "openai/gpt-4o-mini" \
-            --arg system "$SYSTEM_PROMPT" \
-            --arg repo "$REPO" \
-            --arg event "$EVENT_NAME" \
-            --arg extra "$EXTRA_INSTR" \
-            --arg diff "$DIFF_CONTENT" \
-            '{
-              model: $model,
-              messages: [
-                {"role": "system", "content": $system},
-                {"role": "user", "content": ("Repository: " + $repo)},
-                {"role": "user", "content": ("Event: " + $event)},
-                {"role": "user", "content": ("Extra instructions: " + $extra)},
-                {"role": "user", "content": ("Diff snippet or repository context, possibly truncated:\n\n" + $diff)}
-              ],
-              max_tokens: 900,
-              temperature: 0.2
-            }' > request.json
-
-          curl -sS \
-            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-            -H "Content-Type: application/json" \
-            https://models.github.ai/inference/chat/completions \
-            -d @request.json > response.json
-
-          if jq -e '.error' response.json >/dev/null 2>&1; then
-            cat response.json
-            exit 1
-          fi
-
-          AI_COMMENT="$(jq -r '.choices[0].message.content // "No response from model."' response.json)"
-
-          {
-            echo "ai_comments<<EOF"
-            echo "$AI_COMMENT"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Post comment to PR or log
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ steps.context.outputs.target_repo }}
-          PR_NUMBER: ${{ steps.context.outputs.pr_number }}
-          AI_COMMENT: ${{ steps.ai.outputs.ai_comments }}
-          EVENT_NAME: ${{ github.event_name }}
-        run: |
-          set -e
-
-          if [ "$EVENT_NAME" = "pull_request" ] && [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
-            gh api \
-              "repos/${REPO}/issues/${PR_NUMBER}/comments" \
-              -f body="$AI_COMMENT"
-          else
-            echo "StegVerse-AI-001 response:"
-            echo "----------------------------------------"
-            echo "$AI_COMMENT"
-            echo "----------------------------------------"
-          fi
+      - name: Upload non-authorizing advisory receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-entity-deterministic-advisory-${{ github.run_id }}
+          path: |
+            ai-entity-advisory.md
+            ai-entity-advisory.json
+          if-no-files-found: error
