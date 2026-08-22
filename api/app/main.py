@@ -30,6 +30,8 @@ from .models import (
     DiscoveryRequest, DiscoveryResponse, DiscoveryResultItem, ProviderConnectRequest,
 )
 from .governance.artifact_integrity import evaluate_artifact_integrity
+from .governance.run_boundary import build_integrity_ledger_payload, decide_run_boundary
+from .governance.repair_candidate import create_repair_candidate
 
 # -- Configuration -----------------------------------------------
 
@@ -231,11 +233,68 @@ async def run_collab(req: RunRequest, x_admin_token: str | None = Header(default
         receipt_for_ingest = json.loads(json.dumps(final_admission.receipt))
         receipt_for_ingest.setdefault("payload", {})["artifact_integrity"] = integrity_result.to_dict()
 
-    may_ingest = bool(final_admission.receipt) and (
-        final_admission.decision != "allow"
-        or (integrity_result is not None and integrity_result.passed)
+    boundary = decide_run_boundary(
+        provider_status=result["status"],
+        provider_decision=final_admission.decision,
+        integrity=integrity_result,
+        human_gate=req.human_gate,
     )
-    if may_ingest:
+
+    # Repair is declared automatically when integrity fails, but never executed.
+    repair_candidate = None
+    repair_event_receipt = None
+    if integrity_result is not None and boundary.status in {"NEEDS_REPAIR", "INTEGRITY_FAILED"}:
+        repair_candidate = create_repair_candidate(
+            run_id=result.get("chain_id") or str(session_dir),
+            artifact_id=(req.artifact_manifest.artifact_id if req.artifact_manifest else None),
+            integrity=integrity_result,
+        )
+        repair_event_receipt = await CGE.append_ledger(
+            mutation_class="observe",
+            actor=BRIDGE_ENTITY,
+            payload={
+                "type": "artifact_repair_candidate_declared",
+                **repair_candidate.to_dict(),
+                "execution_authority": False,
+                "downstream_admissibility": "PENDING",
+            },
+            bcat={
+                "observability": 1.0,
+                "context_stability": 1.0,
+                "authority_clarity": 1.0,
+                "trust_continuity": 1.0,
+                "reversibility_margin": 1.0,
+                "risk": 0.0,
+            },
+            gcat={"g": 0.25, "c": 0.25, "a": 0.25, "t": 0.25},
+        )
+
+    # Integrity evaluation is its own bounded CGE event. This receipt is
+    # monitoring evidence only and does not become a final receipt.
+    integrity_event_receipt = None
+    if integrity_result is not None:
+        integrity_payload = build_integrity_ledger_payload(
+            run_id=result.get("chain_id"),
+            artifact_id=(req.artifact_manifest.artifact_id if req.artifact_manifest else None),
+            integrity=integrity_result,
+            boundary=boundary,
+        )
+        integrity_event_receipt = await CGE.append_ledger(
+            mutation_class="observe",
+            actor=BRIDGE_ENTITY,
+            payload=integrity_payload,
+            bcat={
+                "observability": 1.0,
+                "context_stability": 1.0,
+                "authority_clarity": 1.0,
+                "trust_continuity": 1.0,
+                "reversibility_margin": 1.0,
+                "risk": 0.0,
+            },
+            gcat={"g": 0.25, "c": 0.25, "a": 0.25, "t": 0.25},
+        )
+
+    if boundary.may_ingest_accepted_result:
         asyncio.create_task(STEGDB.ingest_receipt(
             receipt=receipt_for_ingest,
             actor=BRIDGE_ENTITY,
@@ -252,6 +311,10 @@ async def run_collab(req: RunRequest, x_admin_token: str | None = Header(default
                 "reasoning": final_admission.reasoning,
             },
             "integrity": integrity_result.to_dict() if integrity_result else None,
+            "run_boundary": boundary.to_dict(),
+            "integrity_event_receipt": integrity_event_receipt,
+            "repair_candidate": repair_candidate.to_dict() if repair_candidate else None,
+            "repair_event_receipt": repair_event_receipt,
             "receipt": receipt_for_ingest,
             "chain_id": result.get("chain_id"),
         }
@@ -259,20 +322,8 @@ async def run_collab(req: RunRequest, x_admin_token: str | None = Header(default
     else:
         write_text(session_dir, "03_referee.md", final_text)
 
-    status = "OK"
-    requires_human = False
-    if result["status"] == "DENIED":
-        status = "ADMISSIBILITY_FAILED"
-    elif result["status"] == "DEFERRED":
-        status = "EXCEPTION_REVIEW"
-        requires_human = True
-    elif integrity_result and integrity_result.decision == "FAIL_CLOSED":
-        status = "INTEGRITY_FAILED"
-    elif integrity_result and integrity_result.decision == "NEEDS_REPAIR":
-        status = "NEEDS_REPAIR"
-    elif req.human_gate:
-        status = "EXCEPTION_REVIEW"
-        requires_human = True
+    status = boundary.status
+    requires_human = boundary.requires_human
 
     return JSONResponse(
         RunResponse(
@@ -293,7 +344,7 @@ async def run_collab(req: RunRequest, x_admin_token: str | None = Header(default
             integrity=integrity_evidence,
             chain_id=result.get("chain_id"),
             requires_human=requires_human,
-            reasoning=final_admission.reasoning,
+            reasoning=boundary.reasoning,
         ).model_dump()
     )
 
