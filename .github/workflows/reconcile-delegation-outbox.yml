@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install dependencies
-        run: python -m pip install -r api/requirements.txt
+        run: python -m pip install -r api/requirements.txt pytest
       - name: Validate candidate and outbox contracts
         run: |
           python -m py_compile scripts/reconcile_delegation_outbox.py
