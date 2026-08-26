@@ -40,6 +40,52 @@ Recent GitHub Actions screenshots showed live-run failures even though workflow 
    - Symptom: `syntax error: unexpected end of file` in the commit step.
    - Status: v2 badge workflow replacement normalized embedded Python and commit handling.
 
+## TV/TVC credential-model consistency correction — 2026-08-26
+
+Current source inspection found that the bridge's provider registry and `api/app/governance/tv_tvc.py` still implement a **consumer-side secret delivery model**:
+
+```text
+TVCClient -> EphemeralCredential.token -> bridge process
+bridge cache -> provider adapter token injection -> external provider
+optional file/env credential modes
+optional direct environment fallback
+```
+
+The provider classes also retain direct environment reads such as `OPENAI_API_KEY` and construct provider authorization headers in the bridge process.
+
+That source model is **not current production credential authority** under the governing TV/TVC policy. Current authority requires credential-bearing production processing to remain inside a TV/TVC-owned processing boundary; storage location does not confer authority and consumer repositories may receive only bounded non-secret results/receipts/capability outputs.
+
+Canonical governing evidence:
+
+```text
+StegVerse-Labs/TV/docs/TV_MIRROR_HANDOFF.md
+StegVerse-Labs/TV/policies/external_secret_processing_authority_policy.json
+StegVerse-Labs/TVC/docs/CREDENTIAL_MODEL_CONSISTENCY_MIRROR_HANDOFF.md
+StegVerse-Labs/TVC/docs/TVC_THIRD_PARTY_CREDENTIAL_INTR_SKAP_PROTOCOL.md
+StegVerse-Labs/TVC/coordination/credential-consumer-risk-scan.v1.json
+```
+
+Current classification:
+
+```text
+direct provider env-secret source: IMPLEMENTED_SOURCE / NOT AUTHORIZED AS CURRENT PRODUCTION CREDENTIAL PATH
+TVCClient token-return/cache model: CONTRADICTORY_WITH_CURRENT_PRODUCTION_PROCESSING_BOUNDARY
+live runtime use of those paths: NOT PROVEN BY THIS REVIEW
+bridge credential authority: NONE
+TV/TVC credential authority: PRESERVED
+provider output authority: NONE / advisory
+```
+
+Until the TV/TVC credential consistency audit closes and this repository is reconciled against it:
+
+- do not activate a provider by adding/reusing raw API secrets in this bridge;
+- do not treat `TVC_MODE=env`, local vault files, direct token return, token cache, or env fallback as a production credential path;
+- do not create a second credential broker or new Vault here;
+- credential-bearing external-provider execution must reuse the existing TV/TVC provider-operation / admitted-route architecture;
+- credential-free local/mock validation may continue.
+
+This correction does not invalidate historical workflow repair evidence and does not claim that any protected credential was exposed in a live run.
+
 ## Active Goal
 
 Stabilize the hybrid-collab-bridge workflows so the bridge can reliably:
