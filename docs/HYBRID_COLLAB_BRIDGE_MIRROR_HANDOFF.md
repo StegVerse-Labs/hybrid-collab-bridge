@@ -387,3 +387,31 @@ credential authority in HCB: NONE
 ```
 
 A fresh exact-head full workflow pass remains required before PR #20 merge.
+
+
+### Fourth replacement validation: obsolete package bootstrap fallback
+
+The third replacement Human-LLM validation narrowed to one failure:
+
+```text
+Human-LLM Interoperability 33044251328: FAILURE
+result: 122 passed / 1 failed
+remaining assertion: builtins.ADMIN_TOKEN still present after entrypoint import
+```
+
+Inspection identified two remaining legacy producers in api/app/__init__.py and api/app/governance/__init__.py. Both still installed the historical builtins ADMIN_TOKEN fallback even though api/app/main.py now resolves ADMIN_TOKEN before dashboard/router configuration.
+
+Repair:
+- removed the builtins fallback from api/app/__init__.py;
+- removed the builtins fallback from api/app/governance/__init__.py;
+- preserved the governance FastAPI /v1/run assessment hook unchanged;
+- no route, provider, credential, execution, or admission authority was added.
+
+Current state:
+```text
+issue #14 credential-boundary source: IMPLEMENTED
+bootstrap/global-token fallback retirement: IMPLEMENTED_ON_BRANCH
+fresh exact-head validation: PENDING
+merge: PENDING
+provider execution activation: NOT CLAIMED
+```
