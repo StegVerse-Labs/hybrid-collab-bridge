@@ -339,3 +339,17 @@ Human-LLM Interoperability 33041271726: FAILURE
 ```
 
 A replacement exact-head Human-LLM PASS remains required before merge.
+
+
+Second replacement validation narrowed the Human-LLM failure to one remaining prerequisite class:
+
+```text
+head before repair: 8b0cb9ca4104615704c8e9932f0c8cf7027f2e09
+Human-LLM Interoperability 33041533397: FAILURE
+result: 120 passed / 3 failed
+all failures: api/app/main.py NameError: List not defined
+replay snapshot failures: RESOLVED
+credential-boundary/API CI: PASS
+```
+
+The missing `List` typing import is repaired without changing authority, replay semantics, provider behavior, or issue-#14 scope. A fresh exact-head Human-LLM result remains required.
