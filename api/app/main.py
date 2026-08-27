@@ -49,6 +49,7 @@ else:
 REG = ProviderRegistry(cfg_path=str(cfg_path))
 
 ORG_ID = os.getenv("HCB_ORG_ID", "StegVerse-Labs")
+ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
 CGE_MODE = os.getenv("HCB_CGE_MODE", "embedded")
 CGE_ENDPOINT = os.getenv("HCB_CGE_ENDPOINT", None)
 CGE_PATH = os.getenv("HCB_CGE_PATH", None)
@@ -91,7 +92,7 @@ BRIDGE_ENTITY = EntityIdentity(
 )
 ENTITY_REG.register(BRIDGE_ENTITY)
 
-ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
+
 
 app = FastAPI(title="Hybrid Collab Bridge (Governed)", version="1.0.0")
 
