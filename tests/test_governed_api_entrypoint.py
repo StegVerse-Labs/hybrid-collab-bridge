@@ -12,7 +12,7 @@ def test_entrypoint_imports_primary_app_and_mounts_style_routes(monkeypatch):
         sys.modules.pop(name, None)
 
     module = importlib.import_module("api.app.entrypoint")
-    paths = {getattr(route, "path", None) for route in module.app.routes}
+    paths = set(module.app.openapi()["paths"])
 
     assert "/health" in paths
     assert "/v1/run" in paths
@@ -21,7 +21,12 @@ def test_entrypoint_imports_primary_app_and_mounts_style_routes(monkeypatch):
     assert not hasattr(builtins, "ADMIN_TOKEN")
 
 
-def test_entrypoint_does_not_duplicate_style_routes():
+def test_entrypoint_style_router_mount_is_idempotent():
     module = importlib.import_module("api.app.entrypoint")
-    paths = [getattr(route, "path", None) for route in module.app.routes]
-    assert paths.count("/v1/interoperability/style-experiments/accommodation") == 1
+    before = len(module.app.routes)
+    reloaded = importlib.reload(module)
+    after = len(reloaded.app.routes)
+
+    assert after == before
+    paths = set(reloaded.app.openapi()["paths"])
+    assert "/v1/interoperability/style-experiments/accommodation" in paths

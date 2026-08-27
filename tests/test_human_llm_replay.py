@@ -2,11 +2,41 @@
 from __future__ import annotations
 
 import json
+import sys
+import types
 from pathlib import Path
 
-from api.app.governance.human_llm_evidence import persist_mediated_receipts
+from api.app.governance.governance_snapshot import build_governance_snapshot
+from api.app.governance.human_llm_evidence import (
+    persist_mediated_receipts,
+    sha256_json,
+)
 from api.app.governance.human_llm_replay import replay_assessment
 from api.app.governance.receipt_signing import ReceiptSigner
+
+
+def _install_fake_cge_policy(monkeypatch) -> None:
+    cge = types.ModuleType("cge")
+    policy = types.ModuleType("cge.policy")
+
+    def evaluate_bcat(value):
+        payload = value.get("payload", {})
+        return {
+            "observability": payload.get("observability", 0.9),
+            "context_stability": 0.8,
+            "authority_clarity": 0.8,
+            "reversibility_margin": 0.8,
+            "risk": payload.get("risk", 0.1),
+        }
+
+    def evaluate_gcat(bcat):
+        return {"coherence": round(1.0 - bcat["risk"], 3)}
+
+    policy.evaluate_bcat = evaluate_bcat
+    policy.evaluate_gcat = evaluate_gcat
+    cge.policy = policy
+    monkeypatch.setitem(sys.modules, "cge", cge)
+    monkeypatch.setitem(sys.modules, "cge.policy", policy)
 
 
 def assessment_record() -> dict:
@@ -40,7 +70,64 @@ def assessment_record() -> dict:
     }
 
 
-def write_artifact(session_dir: Path, assessment: dict, decision: str = "allow") -> None:
+def _persist_governance_snapshot(
+    session_dir: Path,
+    assessment: dict,
+    monkeypatch,
+) -> tuple[dict, dict]:
+    _install_fake_cge_policy(monkeypatch)
+    from cge.policy import evaluate_bcat, evaluate_gcat
+
+    evaluation_input = {
+        "type": "ingest",
+        "source": "human-llm-replay-test",
+        "actor": {"entity_id": "assessor"},
+        "payload": {"observability": 0.9, "risk": 0.1},
+        "timestamp": 1,
+        "ingest_id": "fixed-replay-id",
+    }
+    bcat = evaluate_bcat(evaluation_input)
+    gcat = evaluate_gcat(bcat)
+    constitution = {
+        "threshold_profiles": {
+            "standard": {
+                "observability_min": 0.6,
+                "context_stability_min": 0.5,
+                "authority_clarity_min": 0.5,
+                "reversibility_margin_min": 0.3,
+                "risk_max": 0.7,
+            }
+        }
+    }
+    snapshot = build_governance_snapshot(
+        proposal={"assessment_hash": sha256_json(assessment)},
+        actor={"entity_id": "assessor"},
+        source="human-llm-replay-test",
+        constitution=constitution,
+        ingest_result={
+            "evaluation_input": evaluation_input,
+            "evaluator": {"mode": "embedded"},
+            "bcat": bcat,
+            "gcat": gcat,
+            "admissible": True,
+        },
+        canonical_decision="allow",
+        cge_path=Path("/tmp/cge"),
+    )
+    (session_dir / "08_commit_time_governance_snapshot.json").write_text(
+        json.dumps(snapshot, indent=2),
+        encoding="utf-8",
+    )
+    return bcat, gcat
+
+
+def write_artifact(
+    session_dir: Path,
+    assessment: dict,
+    monkeypatch,
+    decision: str = "allow",
+) -> None:
+    bcat, gcat = _persist_governance_snapshot(session_dir, assessment, monkeypatch)
     artifact = {
         "assessment": assessment,
         "admission": {
@@ -50,8 +137,8 @@ def write_artifact(session_dir: Path, assessment: dict, decision: str = "allow")
             "publication_allowed": decision == "allow",
             "errors": [],
             "reasoning": [],
-            "bcat": {},
-            "gcat": {},
+            "bcat": bcat,
+            "gcat": gcat,
         },
         "mediated_receipts": None,
         "receipt": {"verified": True},
@@ -61,32 +148,35 @@ def write_artifact(session_dir: Path, assessment: dict, decision: str = "allow")
     )
 
 
-def test_pair_replay_is_identical(tmp_path: Path):
-    write_artifact(tmp_path, assessment_record())
+def test_pair_replay_is_identical(tmp_path: Path, monkeypatch):
+    write_artifact(tmp_path, assessment_record(), monkeypatch)
     result = replay_assessment(tmp_path, "replay-001")
     assert result["replay_status"] == "IDENTICAL"
     assert result["reconstructable"] is True
     assert result["checks"]["schema_verified"] is True
+    assert result["checks"]["governance_snapshot_verified"] is True
+    assert result["checks"]["canonical_decision_regenerated"] is True
     assert Path(result["replay_artifact"]).exists()
 
 
-def test_replay_detects_stored_decision_tampering(tmp_path: Path):
-    write_artifact(tmp_path, assessment_record(), decision="deny")
+def test_replay_detects_stored_decision_tampering(tmp_path: Path, monkeypatch):
+    write_artifact(tmp_path, assessment_record(), monkeypatch, decision="deny")
     result = replay_assessment(tmp_path, "replay-001")
     assert result["replay_status"] == "MISMATCH"
-    assert result["checks"]["canonical_decision_reconciled"] is False
+    assert result["checks"]["canonical_decision_regenerated"] is True
+    assert result["checks"]["final_decision_verified"] is False
 
 
-def test_replay_detects_assessment_outcome_tampering(tmp_path: Path):
+def test_replay_detects_assessment_outcome_tampering(tmp_path: Path, monkeypatch):
     record = assessment_record()
     record["overall_outcome"] = "PARTIAL"
-    write_artifact(tmp_path, record)
+    write_artifact(tmp_path, record, monkeypatch)
     result = replay_assessment(tmp_path, "replay-001")
     assert result["replay_status"] == "MISMATCH"
     assert result["checks"]["outcome_verified"] is False
 
 
-def test_mediated_replay_verifies_authenticated_chain(tmp_path: Path):
+def test_mediated_replay_verifies_authenticated_chain(tmp_path: Path, monkeypatch):
     record = assessment_record()
     record["mediated_composition"] = {
         "claimed_level": "governed_composition",
@@ -104,13 +194,23 @@ def test_mediated_replay_verifies_authenticated_chain(tmp_path: Path):
             "observations": ["relay observed"],
             "stateful_intermediary": True,
         },
-        "intentionality": {"model-a": "unknown", "human-h": "deliberate", "model-b": "unknown"},
+        "intentionality": {
+            "model-a": "unknown",
+            "human-h": "deliberate",
+            "model-b": "unknown",
+        },
         "directional_rates": [
             {"from": "model-a", "to": "human-h", "unit": "messages_per_minute", "observed": 1, "limit": 5},
             {"from": "human-h", "to": "model-b", "unit": "messages_per_minute", "observed": 1, "limit": 5},
         ],
         "permitted_scopes": [
-            {"participant_id": value, "observe": ["text"], "express": ["text"], "interpret": ["text"], "execute": []}
+            {
+                "participant_id": value,
+                "observe": ["text"],
+                "express": ["text"],
+                "interpret": ["text"],
+                "execute": [],
+            }
             for value in ("model-a", "human-h", "model-b")
         ],
         "fidelity": {
@@ -131,7 +231,14 @@ def test_mediated_replay_verifies_authenticated_chain(tmp_path: Path):
             }
             for value in ("model-a", "human-h", "model-b")
         ],
-        "null_models": [{"name": "generic_language", "tested": True, "result": "rejected", "evidence": ["control"]}],
+        "null_models": [
+            {
+                "name": "generic_language",
+                "tested": True,
+                "result": "rejected",
+                "evidence": ["control"],
+            }
+        ],
         "adaptation_evidence": ["adaptation"],
         "controls": {
             "paraphrase": True,
@@ -146,6 +253,8 @@ def test_mediated_replay_verifies_authenticated_chain(tmp_path: Path):
     signer = ReceiptSigner("replay-signer", "test:key:1", b"replay-secret")
     reference = persist_mediated_receipts(record, tmp_path, signer=signer)
     assert reference is not None
+
+    bcat, gcat = _persist_governance_snapshot(tmp_path, record, monkeypatch)
     artifact = {
         "assessment": record,
         "admission": {
@@ -155,8 +264,8 @@ def test_mediated_replay_verifies_authenticated_chain(tmp_path: Path):
             "publication_allowed": True,
             "errors": [],
             "reasoning": [],
-            "bcat": {},
-            "gcat": {},
+            "bcat": bcat,
+            "gcat": gcat,
         },
         "mediated_receipts": reference,
         "receipt": {"verified": True},
@@ -186,12 +295,13 @@ def test_mediated_replay_verifies_authenticated_chain(tmp_path: Path):
 
     assert result["replay_status"] == "IDENTICAL"
     assert result["checks"]["receipt_chain_verified"] is True
+    assert result["checks"]["governance_snapshot_verified"] is True
 
 
-def test_mediated_replay_detects_receipt_tampering(tmp_path: Path):
+def test_mediated_replay_detects_receipt_tampering(tmp_path: Path, monkeypatch):
     record = assessment_record()
     record["mediated_composition"] = {"local_admissibility": []}
-    write_artifact(tmp_path, record)
+    write_artifact(tmp_path, record, monkeypatch)
     result = replay_assessment(tmp_path, "replay-001")
     assert result["replay_status"] == "MISMATCH"
     assert result["checks"]["receipt_chain_verified"] is False

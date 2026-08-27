@@ -1,199 +1,151 @@
-"""Tests for TV/TVC ephemeral secret management."""
-import pytest
-import os
-import time
-import tempfile
-import json
+"""Regression tests for the current TV/TVC consumer credential boundary."""
 from pathlib import Path
 
-import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "cge_light"))
+import pytest
 
-from app.governance.tv_tvc import TVCClient, TVProviderAdapter, EphemeralCredential
-from app.governance.entity import EntityIdentity
-
-
-class TestEphemeralCredential:
-    def test_creation(self):
-        cred = EphemeralCredential(
-            credential_id="cred-test",
-            provider_type="openai_text",
-            token="sk-test",
-            expires_at=time.time() + 3600,
-        )
-        assert cred.credential_id == "cred-test"
-        assert not cred.is_expired
-        assert cred.ttl_seconds > 0
-
-    def test_expiry(self):
-        cred = EphemeralCredential(
-            credential_id="cred-expired",
-            provider_type="openai_text",
-            token="sk-expired",
-            expires_at=time.time() - 1,
-        )
-        assert cred.is_expired
-        assert cred.ttl_seconds == 0
-
-    def test_ttl_precision(self):
-        cred = EphemeralCredential(
-            credential_id="cred-ttl",
-            provider_type="openai_text",
-            token="sk-ttl",
-            expires_at=time.time() + 300,
-        )
-        assert 295 <= cred.ttl_seconds <= 300
+from app.governance.tv_tvc import (
+    BLOCKED_REASON,
+    EphemeralCredential,
+    TVCClient,
+    TVProviderAdapter,
+)
+from app.providers.anthropic_text import AnthropicText
+from app.providers.deepseek_text import DeepSeekText
+from app.providers.gemini_text import GeminiText
+from app.providers.grok_text import GrokText
+from app.providers.kimi_text import KimiText
+from app.providers.openai_text import OpenAIText
+from app.providers.perplexity_text import PerplexityText
+from app.providers.mock_text import MockText
+from app.tasks import Task
 
 
-class TestTVCClient:
-    def test_init_direct_mode(self):
-        client = TVCClient(
-            mode="direct",
-            tvc_endpoint="https://tvc.test",
-            tvc_api_key="test-key",
-        )
-        assert client.mode == "direct"
-        assert client.endpoint == "https://tvc.test"
-
-    def test_init_file_mode(self):
-        client = TVCClient(mode="file")
-        assert client.mode == "file"
-
-    def test_init_env_mode(self):
-        client = TVCClient(mode="env")
-        assert client.mode == "env"
-
-    def test_cache_invalidation(self):
-        client = TVCClient(mode="env")
-        cred = EphemeralCredential(
-            credential_id="cred-cache",
-            provider_type="openai_text",
-            token="sk-cache",
-            expires_at=time.time() + 3600,
-        )
-        client._cache["cred-cache"] = cred
-        assert client._cache["cred-cache"] == cred
-
-        client.invalidate("cred-cache")
-        assert "cred-cache" not in client._cache
-
-    def test_invalidate_all(self):
-        client = TVCClient(mode="env")
-        for i in range(3):
-            client._cache[f"cred-{i}"] = EphemeralCredential(
-                credential_id=f"cred-{i}",
-                provider_type="openai_text",
-                token=f"sk-{i}",
-                expires_at=time.time() + 3600,
-            )
-        assert len(client._cache) == 3
-        client.invalidate_all()
-        assert len(client._cache) == 0
-
-    def test_get_cache_status(self):
-        client = TVCClient(mode="env")
-        client._cache["cred-1"] = EphemeralCredential(
-            credential_id="cred-1",
-            provider_type="openai_text",
-            token="sk-1",
-            expires_at=time.time() + 3600,
-        )
-        status = client.get_cache_status()
-        assert status["cached_count"] == 1
-        assert status["entries"][0]["credential_id"] == "cred-1"
-
-    @pytest.mark.asyncio
-    async def test_fetch_env_success(self):
-        os.environ["EPHEMERAL_OPENAI_KEY"] = "sk-ephemeral-test"
-        os.environ["EPHEMERAL_OPENAI_KEY_EXPIRES"] = str(time.time() + 900)
-
-        client = TVCClient(mode="env")
-        cred = client._fetch_env("cred-openai", "openai_text")
-
-        assert cred is not None
-        assert cred.token == "sk-ephemeral-test"
-        assert cred.provider_type == "openai_text"
-
-        del os.environ["EPHEMERAL_OPENAI_KEY"]
-        del os.environ["EPHEMERAL_OPENAI_KEY_EXPIRES"]
-
-    @pytest.mark.asyncio
-    async def test_fetch_env_missing(self):
-        # Ensure env var is not set
-        if "EPHEMERAL_OPENAI_KEY" in os.environ:
-            del os.environ["EPHEMERAL_OPENAI_KEY"]
-
-        client = TVCClient(mode="env")
-        cred = client._fetch_env("cred-openai", "openai_text")
-        assert cred is None
-
-    @pytest.mark.asyncio
-    async def test_fetch_file_success(self):
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            vault = {
-                "cred-test": {
-                    "token": "sk-file-test",
-                    "expires_at": time.time() + 3600,
-                    "scope": ["text-generate"],
-                }
-            }
-            json.dump(vault, f)
-            vault_path = f.name
-
-        os.environ["TV_VAULT_PATH"] = vault_path
-        client = TVCClient(mode="file")
-        cred = client._fetch_file("cred-test", "openai_text")
-
-        assert cred is not None
-        assert cred.token == "sk-file-test"
-
-        os.unlink(vault_path)
-        del os.environ["TV_VAULT_PATH"]
-
-    @pytest.mark.asyncio
-    async def test_fetch_file_missing(self):
-        client = TVCClient(mode="file")
-        cred = client._fetch_file("cred-nonexistent", "openai_text")
-        assert cred is None
+ROOT = Path(__file__).resolve().parents[2]
 
 
-class TestTVProviderAdapter:
-    def test_adapter_properties(self):
-        from app.providers.mock_text import MockText
+def test_compatibility_credential_carries_no_secret_material():
+    record = EphemeralCredential(
+        credential_id="cred-test",
+        provider_type="openai_text",
+    )
+    assert not hasattr(record, "token")
+    assert record.credential_material_present is False
+    assert record.is_expired is True
+    assert record.ttl_seconds == 0.0
 
-        mock = MockText("mock")
-        tvc = TVCClient(mode="env")
-        adapter = TVProviderAdapter(mock, tvc, "cred-mock")
 
-        assert adapter.name == "mock"
-        assert adapter.type == "mock_text"
-        assert adapter.supports("text-generate")
+@pytest.mark.asyncio
+async def test_tvc_client_never_returns_or_retains_credential_material():
+    client = TVCClient(
+        mode="env",
+        tvc_endpoint="https://example.invalid",
+        tvc_api_key="must-not-be-retained",
+    )
+    assert client.mode == "admitted-route-only"
+    assert client.api_key is None
+    assert await client.get_credential("cred-openai", "openai_text") is None
+    assert await client.get_credential_with_fallback(
+        "cred-openai",
+        "openai_text",
+        env_fallback="OPENAI_KEY",
+    ) is None
 
-    def test_token_injection_and_clear(self):
-        from app.providers.openai_text import OpenAIText
+    status = client.get_cache_status()
+    assert status["state"] == "BLOCKED"
+    assert status["reason"] == BLOCKED_REASON
+    assert status["cached_count"] == 0
+    assert status["credential_material_present"] is False
+    assert status["authority_effect"] is False
 
-        # Create a mock-like provider for testing
-        class FakeProvider:
-            def __init__(self):
-                self.name = "fake"
-                self.type = "fake_text"
-                self.capabilities = ["text-generate"]
-                self.headers = {"Authorization": "Bearer old"}
 
-            def supports(self, t):
-                return t in self.capabilities
+@pytest.mark.asyncio
+async def test_legacy_provider_adapter_fails_closed_without_secret_injection():
+    base = MockText("mock")
+    adapter = TVProviderAdapter(base, TVCClient(), "cred-mock")
+    task = Task("text-generate", "hello", {})
 
-            async def run(self, task):
-                return {"text": "ok"}
+    result = await adapter.run(task)
+    assert result["state"] == "BLOCKED"
+    assert result["error"] == BLOCKED_REASON
+    assert result["credential_material_present"] is False
+    assert result["provider_execution_performed"] is False
+    assert result["authority_effect"] is False
+    assert not hasattr(adapter, "_inject_token")
+    assert not hasattr(adapter, "_last_token")
 
-        fake = FakeProvider()
-        tvc = TVCClient(mode="env")
-        adapter = TVProviderAdapter(fake, tvc, "cred-fake")
 
-        # Inject token
-        adapter._inject_token("sk-new")
-        assert fake.headers["Authorization"] == "Bearer sk-new"
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "provider_cls",
+    [
+        OpenAIText,
+        AnthropicText,
+        GeminiText,
+        DeepSeekText,
+        GrokText,
+        KimiText,
+        PerplexityText,
+    ],
+)
+async def test_external_provider_adapters_are_non_credential_bearing_and_fail_closed(
+    provider_cls,
+):
+    provider = provider_cls("external")
+    result = await provider.run(Task("text-generate", "hello", {}))
 
-        # Clear token
-        adapter._clear_token()
-        assert adapter._last_token is None
+    assert result["state"] == "BLOCKED"
+    assert result["error"] == BLOCKED_REASON
+    assert result["credential_material_present"] is False
+    assert result["provider_execution_performed"] is False
+    assert result["authority_effect"] is False
+
+
+def test_retired_consumer_secret_sources_cannot_return():
+    governed = (ROOT / "api/app/governance/tv_tvc.py").read_text(encoding="utf-8")
+    registry = (ROOT / "api/app/registry.py").read_text(encoding="utf-8")
+
+    for forbidden in (
+        "/v1/vault/unseal",
+        "TV_VAULT_PATH",
+        "EPHEMERAL_OPENAI",
+        "EPHEMERAL_ANTHROPIC",
+        "EPHEMERAL_MOONSHOT",
+        "TVC_MODE",
+        "_fetch_env",
+        "_fetch_file",
+        "_inject_token",
+    ):
+        assert forbidden not in governed
+
+    for forbidden in (
+        "TVC_MODE",
+        "TVCClient",
+        "TVProviderAdapter",
+        "TVC fallback activated",
+    ):
+        assert forbidden not in registry
+
+
+def test_external_provider_sources_contain_no_direct_secret_or_network_use():
+    paths = (
+        "api/app/providers/openai_text.py",
+        "api/app/providers/anthropic_text.py",
+        "api/app/providers/gemini_text.py",
+        "api/app/providers/deepseek_text.py",
+        "api/app/providers/grok_text.py",
+        "api/app/providers/kimi_text.py",
+        "api/app/providers/perplexity_text.py",
+    )
+    forbidden = (
+        "API_KEY",
+        "x-api-key",
+        'headers={"Authorization"',
+        "httpx.AsyncClient",
+        "genai.configure",
+    )
+
+    for relative in paths:
+        text = (ROOT / relative).read_text(encoding="utf-8")
+        for marker in forbidden:
+            assert marker not in text, f"{relative} reintroduced {marker}"
+        assert "TVC_ADMITTED_PROVIDER_ROUTE_REQUIRED" in text or "openai_text import OpenAIText" in text
