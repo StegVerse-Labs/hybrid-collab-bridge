@@ -317,3 +317,25 @@ activation: NOT CLAIMED
 ```
 
 This repair intentionally does **not** create a new provider broker, Vault, credential exchange, or execution authority. Future external-provider output must enter through an already-admitted TV/TVC provider-operation route and remain advisory/evidence-only under the bridge authority boundary.
+
+
+### Exact-head validation drift exposed by PR #20
+
+The first exact-head PR #20 pass proved the issue-#14 credential boundary in `hybrid-bridge-ci` and Test Readiness, but the broader Human-LLM workflow exposed two unrelated deterministic regressions:
+- `api/app/main.py` used `Dict` at runtime without importing it;
+- `tests/test_human_llm_replay.py` still built pre-snapshot artifacts and asserted obsolete replay key `canonical_decision_reconciled`.
+
+The replay implementation itself is not weakened. Tests are being updated to persist a valid `08_commit_time_governance_snapshot.json`, regenerate BCAT/GCAT/canonical decision through the same snapshot contract, and require `governance_snapshot_verified` plus `canonical_decision_regenerated`. Stored final-decision tampering remains required to fail.
+
+First-pass evidence:
+```text
+PR #20 head: 3b37711054944c487a0d03ecba93604ba34885f5
+hybrid-bridge-ci 33041271735: SUCCESS
+  api-tests 98415195780: SUCCESS
+Test Readiness 33041271744: SUCCESS
+Human-LLM Interoperability 33041271726: FAILURE
+  117 passed / 6 failed
+  failure class: deterministic validation drift outside credential-boundary tests
+```
+
+A replacement exact-head Human-LLM PASS remains required before merge.
