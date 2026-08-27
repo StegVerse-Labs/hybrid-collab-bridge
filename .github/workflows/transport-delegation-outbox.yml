@@ -1,9 +1,7 @@
-name: transport-delegation-outbox
+name: transport-delegation-outbox-validation-only
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "31 * * * *"
   push:
     paths:
       - outbox/ecosystem-delegation/**
@@ -12,40 +10,38 @@ on:
       - .github/workflows/transport-delegation-outbox.yml
 
 permissions:
-  contents: write
-
-concurrency:
-  group: transport-delegation-outbox
-  cancel-in-progress: false
+  contents: read
 
 jobs:
-  transport:
+  validate_transport_boundary:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      STEGVERSE_TRANSPORT_TOKEN: ${{ secrets.STEGVERSE_TRANSPORT_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - name: Install test dependency
         run: python -m pip install pytest
-      - name: Test token-gated transport
+      - name: Test fail-closed TVC transport boundary
         run: python -m pytest -q api/tests/test_delegation_transport.py
-      - name: Transport governed candidates when authority exists
-        run: python scripts/transport_delegation_outbox.py
-      - name: Commit transport state
+      - name: Emit non-secret blocked transport observation
         run: |
-          if git diff --quiet -- state/delegation_transport.json; then
-            echo "Delegation transport state unchanged."
-            exit 0
-          fi
-          git config user.name "StegVerse Bot"
-          git config user.email "stegverse-bot@users.noreply.github.com"
-          git add state/delegation_transport.json
-          git commit -m "Record governed delegation transport state"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          rm -f state/delegation_transport.json
+          python scripts/transport_delegation_outbox.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          state = json.loads(Path("state/delegation_transport.json").read_text())
+          assert state["status"] == "TVC_ADMITTED_TRANSPORT_REQUIRED"
+          assert state["credential_material_present"] is False
+          assert state["transport_performed"] is False
+          assert state["authority_effect"] == "NONE"
+          PY
+      - name: Upload non-secret transport observation
+        uses: actions/upload-artifact@v4
+        with:
+          name: hcb-delegation-transport-boundary
+          path: state/delegation_transport.json
+          if-no-files-found: error
+          retention-days: 30
