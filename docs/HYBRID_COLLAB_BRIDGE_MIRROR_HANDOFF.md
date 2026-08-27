@@ -415,3 +415,37 @@ fresh exact-head validation: PENDING
 merge: PENDING
 provider execution activation: NOT CLAIMED
 ```
+
+
+### PR #20 exact-head hosted validation achieved
+
+Exact validated head before this evidence-only handoff update:
+```text
+3f59a5754ae24baf45834b00cb5091011f4682bd
+```
+
+Terminal hosted results:
+```text
+hybrid-bridge-ci 33044414911: SUCCESS
+Human-LLM Interoperability 33044414881: SUCCESS
+Test Readiness 33044414909: SUCCESS
+StegVerse AI Entity (ChatGPT) 33044414907: SUCCESS
+ai_entity 33044414883: SUCCESS
+stegverse-claude 33044414913: SUCCESS
+```
+
+Validation meaning:
+- consumer-side provider credential return/cache/file/env/direct handling is source-retired and regression-tested;
+- seven external credential-bearing adapters fail closed without direct provider execution;
+- local/mock validation remains available;
+- Human-LLM replay now validates through the commit-time governance snapshot contract;
+- primary API startup and style route exposure are validated without the legacy builtins fallback.
+
+State transition:
+```text
+issue #14 source replacement: VALIDATED
+merge: PENDING
+admitted TV/TVC provider-operation route integration: OPEN / SEPARATE OWNER
+external provider runtime activation: NOT OBSERVED
+provider credential authority in HCB: NONE
+```
