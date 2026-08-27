@@ -444,8 +444,36 @@ Validation meaning:
 State transition:
 ```text
 issue #14 source replacement: VALIDATED
-merge: PENDING
+merge: MERGED
+merge_sha: cb184c127ce0436c9904fb4bc78cb21633316e2f
 admitted TV/TVC provider-operation route integration: OPEN / SEPARATE OWNER
 external provider runtime activation: NOT OBSERVED
 provider credential authority in HCB: NONE
 ```
+
+
+### PR #20 merge reconciliation
+
+Live repository inspection confirms the validated issue-#14 repair is merged to main:
+
+```text
+PR #20
+validated exact head: 3f59a5754ae24baf45834b00cb5091011f4682bd
+final branch head before merge: abce799a278f3c2e06338990c3d08a971b95a918
+merge: cb184c127ce0436c9904fb4bc78cb21633316e2f
+merged_at: 2026-08-27T06:03:43Z
+```
+
+The branch is now behind main by the merge commit and has no unmerged delta. Therefore the issue-#14 source replacement state is:
+
+```text
+IMPLEMENTED: YES
+VALIDATED: YES
+MERGED: YES
+DEPLOYED external provider route: NO
+ACTIVATED external provider execution: NO
+OBSERVED admitted TV/TVC provider operation: NO
+COMPLETE overall bridge provider integration: NO
+```
+
+The remaining boundary is not another consumer-side credential repair. It is an admitted TV/TVC provider-operation route owned outside HCB that returns bounded non-secret output/evidence while preserving HCB advisory authority.
