@@ -1,19 +1,12 @@
 """Governance package bootstrap.
 
-This module is imported before the application object is constructed. It
-provides the environment-derived ADMIN_TOKEN fallback required by legacy
-startup order and installs the automatic /v1/run assessment middleware on the
-bridge application as soon as FastAPI constructs it.
+This module installs the automatic /v1/run assessment middleware on the bridge
+application as soon as FastAPI constructs it. Application configuration is owned
+by api.app.main and is not mirrored through process-global builtins.
 """
 from __future__ import annotations
 
-import builtins
-import os
-
 from fastapi import FastAPI
-
-if not hasattr(builtins, "ADMIN_TOKEN"):
-    builtins.ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
 
 _ORIGINAL_FASTAPI_INIT = FastAPI.__init__
 _PATCH_FLAG = "_stegverse_governance_bootstrap_patched"
