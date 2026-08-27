@@ -353,3 +353,37 @@ credential-boundary/API CI: PASS
 ```
 
 The missing `List` typing import is repaired without changing authority, replay semantics, provider behavior, or issue-#14 scope. A fresh exact-head Human-LLM result remains required.
+
+
+### Third replacement validation: route/startup repair
+
+The next exact-head Human-LLM run narrowed the remaining validation drift to FastAPI route-introspection and startup-order behavior:
+
+```text
+head before repair: c4899202a81c4dc01b4df008c785cd95650ea3ea
+Human-LLM Interoperability 33041619986: FAILURE
+result: 120 passed / 3 failed
+remaining class:
+  FastAPI included-router representation no longer guarantees flat route.path
+  main.py used ADMIN_TOKEN before assigning it
+```
+
+The source already nests the Human-LLM assessment/replay routers under dashboard.router, which the primary app includes. This repair does not add new authority or new endpoint semantics.
+
+Implemented repair:
+- ADMIN_TOKEN is assigned before dashboard configuration in api/app/main.py;
+- the process-global builtins compatibility shim is removed from api/app/entrypoint.py;
+- the existing style router is mounted idempotently using app.state;
+- startup/entrypoint tests validate the public OpenAPI path surface instead of FastAPI-internal route object shape.
+
+Current state after source mutation:
+```text
+issue #14 credential-boundary source: IMPLEMENTED
+route/startup prerequisite repair: IMPLEMENTED_ON_BRANCH
+fresh exact-head validation: PENDING
+merge: PENDING
+provider execution: NOT ACTIVATED
+credential authority in HCB: NONE
+```
+
+A fresh exact-head full workflow pass remains required before PR #20 merge.
