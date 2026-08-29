@@ -34,3 +34,13 @@ def test_consumer_transport_script_cannot_bearer_authorize_or_write_github():
     assert "urllib.request" not in text
     assert '"consumer_token_accepted": False' in text
     assert '"transport_performed": False' in text
+
+
+def test_internal_admin_bearer_processing_is_retired_fail_closed():
+    text = _text("api/app/main.py")
+    assert 'os.getenv("ADMIN_TOKEN"' not in text
+    assert "ADMIN_TOKEN =" not in text
+    assert 'ADMIN_AUTH_STATE = "TVC_ADMITTED_ADMIN_AUTH_REQUIRED"' in text
+    assert "set_dashboard_config(None, CGE.cge_path, ENTITY_REG)" in text
+    assert "status_code=503" in text
+    assert "detail=ADMIN_AUTH_STATE" in text
