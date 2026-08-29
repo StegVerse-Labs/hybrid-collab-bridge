@@ -49,7 +49,7 @@ else:
 REG = ProviderRegistry(cfg_path=str(cfg_path))
 
 ORG_ID = os.getenv("HCB_ORG_ID", "StegVerse-Labs")
-ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
+ADMIN_AUTH_STATE = "TVC_ADMITTED_ADMIN_AUTH_REQUIRED"
 CGE_MODE = os.getenv("HCB_CGE_MODE", "embedded")
 CGE_ENDPOINT = os.getenv("HCB_CGE_ENDPOINT", None)
 CGE_PATH = os.getenv("HCB_CGE_PATH", None)
@@ -71,7 +71,7 @@ DISCOVERY = ProviderDiscoveryEngine()
 
 # Configure dashboard
 from .governance.dashboard import set_config as set_dashboard_config
-set_dashboard_config(ADMIN_TOKEN, CGE.cge_path, ENTITY_REG)
+set_dashboard_config(None, CGE.cge_path, ENTITY_REG)
 STEGDB = StegDBClient(mode="direct" if os.getenv("HCB_STEGDB_ENDPOINT") else "filesystem")
 COMPENSATION = CompensationTracker(cge_client=CGE)
 HALT = EmergencyHalt(cge_client=CGE, constitution=constitution)
@@ -103,10 +103,17 @@ app.include_router(dashboard_router)
 # -- Auth --------------------------------------------------------
 
 def auth_or_403(token: str | None):
-    if not ADMIN_TOKEN:
-        return
-    if token != ADMIN_TOKEN:
-        raise HTTPException(status_code=403, detail="Forbidden: bad admin token")
+    """Fail closed until an admitted TV/TVC admin-authorization route exists.
+
+    The bridge must not materialize or compare an administrative bearer
+    credential. Caller-supplied token text is ignored and never becomes
+    authority.
+    """
+    del token
+    raise HTTPException(
+        status_code=503,
+        detail=ADMIN_AUTH_STATE,
+    )
 
 # -- Health ------------------------------------------------------
 
