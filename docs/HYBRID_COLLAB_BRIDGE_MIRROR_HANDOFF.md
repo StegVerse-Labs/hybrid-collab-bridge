@@ -477,3 +477,40 @@ COMPLETE overall bridge provider integration: NO
 ```
 
 The remaining boundary is not another consumer-side credential repair. It is an admitted TV/TVC provider-operation route owned outside HCB that returns bounded non-secret output/evidence while preserving HCB advisory authority.
+
+
+## CMC-030 internal admin credential boundary repair — 2026-08-28
+
+TVC residual credential census identified a credential class separate from the already-resolved external-provider CMC-007 lane:
+
+```text
+source: api/app/main.py
+historical behavior: ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
+historical consumer processing: direct x_admin_token plaintext comparison
+TVC finding: CMC-030
+```
+
+Bounded source repair on `fix/cmc030-admin-token-boundary`:
+
+- removes HCB-side `ADMIN_TOKEN` environment materialization;
+- removes direct caller bearer comparison;
+- passes no admin bearer into dashboard configuration;
+- preserves the public `/health` route;
+- makes every route that calls `auth_or_403` fail closed with `503 TVC_ADMITTED_ADMIN_AUTH_REQUIRED`;
+- accepts no replacement secret/token and creates no new Vault, auth broker, OAuth layer, or credential framework;
+- does not reopen CMC-007 or alter the seven fail-closed external-provider adapters.
+
+Lifecycle state at this source mutation:
+
+```text
+CMC-030 IMPLEMENTED: YES
+CMC-030 VALIDATED: PENDING exact-head repository workflows
+CMC-030 MERGED: NO
+admin authorization runtime route: NOT IMPLEMENTED IN HCB
+admin credential authority in HCB: NONE
+TV/TVC credential authority: PRESERVED
+external provider activation: NOT OBSERVED
+authority effect: NONE
+```
+
+The correct future runtime continuation is an already-admitted TV/TVC authorization/result boundary. Until that exists, protected HCB API operations remain unavailable rather than falling back to a consumer-owned bearer.
