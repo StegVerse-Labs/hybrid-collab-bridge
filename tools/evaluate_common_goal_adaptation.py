@@ -89,7 +89,7 @@ def evaluate_common_goal_adaptation(data: Any) -> dict[str, Any]:
             revoked and all(not p["attempted_after_revocation"] and
                             p["revocation_disposition"] in {"DENY", "DEFER"} for p in revoked)
             and all(p["consent"] or p["revoked"] for p in participants)
-            and (chosen is None or all(not p["revoked"] for p in participants))
+            and data.get("goal_recomputed_after_revocation") is True
         ) else "FAIL"
     else:
         errors.append("consent, revocation and post-revocation attempt/disposition are required")
