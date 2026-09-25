@@ -281,3 +281,7 @@ StegVerse Constitutional License — all changes require human+AI quorum.
 
 27/27 OK · 0 no-dispatch · 0 broken — _2026-08-27 16:33 UTC_
 <!-- /workflows:status -->
+
+## Common-goal mutual adaptation (candidate reconciliation)
+
+The existing [Human–LLM Interoperability handoff](docs/HUMAN_LLM_INTEROPERABILITY_MIRROR_HANDOFF.md) now references a [source-candidate reconciliation](docs/COMMON_GOAL_MUTUAL_ADAPTATION_RECONCILIATION.md) covering adaptation toward compatible common goals across living entities. It specifies measurable synthetic tests and retains existing governance/agency/custody boundaries; canonical Registry/COSV admission and operational proof remain separate.
