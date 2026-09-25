@@ -85,11 +85,22 @@ def evaluate_common_goal_adaptation(data: Any) -> dict[str, Any]:
                        p.get("revocation_disposition") in {"DENY", "DEFER", "NOT_APPLICABLE"}
                        for p in participants)
     if agency_typed:
+        # Independent post-withdrawal recomputation: a revoked participant's
+        # previous goal cannot be carried forward merely because a fixture
+        # asserts that the goal was recomputed.
+        eligible = [p for p in participants if p["consent"] and not p["revoked"]
+                    and p["goal_source"] != "unexpressed"]
+        post_common = (set.intersection(*(set(p["goals"]) for p in eligible))
+                       if len(eligible) >= 2 else set())
+        post_selected = data.get("selected_goal_after_revocation")
+        post_goal_valid = (isinstance(post_selected, str) and bool(post_selected)
+                           and post_selected in post_common) if post_common else post_selected is None
         results["independent_agency"] = "PASS" if (
             revoked and all(not p["attempted_after_revocation"] and
                             p["revocation_disposition"] in {"DENY", "DEFER"} for p in revoked)
             and all(p["consent"] or p["revoked"] for p in participants)
             and data.get("goal_recomputed_after_revocation") is True
+            and "selected_goal_after_revocation" in data and post_goal_valid
         ) else "FAIL"
     else:
         errors.append("consent, revocation and post-revocation attempt/disposition are required")
