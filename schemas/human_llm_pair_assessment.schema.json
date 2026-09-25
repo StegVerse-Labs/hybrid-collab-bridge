@@ -636,6 +636,7 @@
         "minimum_heldout",
         "maximum_clarification_increase",
         "goal_recomputed_after_revocation",
+        "selected_goal_after_revocation",
         "vocabulary_collision_injected",
         "vocabulary_collision_detected",
         "false_shared_goal_injected",
@@ -790,6 +791,12 @@
         },
         "goal_recomputed_after_revocation": {
           "type": "boolean"
+        },
+        "selected_goal_after_revocation": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "vocabulary_collision_injected": {
           "type": "boolean"
