@@ -13,6 +13,7 @@ import json
 import sys
 from pathlib import Path
 from typing import Any
+from tools.evaluate_common_goal_adaptation import evaluate_common_goal_adaptation
 
 REQUIRED_TESTS = {
     "meaning_preservation",
@@ -259,6 +260,13 @@ def recommended_outcome(record: dict[str, Any]) -> str:
         if decisions & {"quarantine", "defer"}:
             return "INDETERMINATE"
 
+    if "common_goal_adaptation" in record:
+        adaptation_result = evaluate_common_goal_adaptation(record["common_goal_adaptation"])
+        if adaptation_result["disposition"] == "FAIL":
+            return "FAIL"
+        if adaptation_result["disposition"] == "INDETERMINATE":
+            return "INDETERMINATE"
+
     if "INDETERMINATE" in statuses:
         return "INDETERMINATE"
     if "FAIL" in statuses or "PARTIAL" in statuses:
@@ -311,6 +319,18 @@ def validate_record(record: dict[str, Any]) -> list[str]:
 
     if "mediated_composition" in record:
         errors.extend(validate_mediated_composition(record["mediated_composition"]))
+
+    if "common_goal_adaptation" in record:
+        assessment = record["common_goal_adaptation"]
+        result = evaluate_common_goal_adaptation(assessment)
+        if not isinstance(assessment, dict):
+            errors.append("common_goal_adaptation must be an object")
+        else:
+            if assessment.get("expected_disposition") != result["disposition"]:
+                errors.append(f"common_goal_adaptation expected disposition must be {result['disposition']}")
+            if assessment.get("expected_tests") != result["tests"]:
+                errors.append("common_goal_adaptation expected tests do not match independent evaluation")
+            errors.extend("common_goal_adaptation: " + error for error in result["errors"])
 
     outcome = record.get("overall_outcome")
     if outcome not in VALID_OUTCOMES:
