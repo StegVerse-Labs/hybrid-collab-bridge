@@ -224,3 +224,8 @@ Files were committed directly. Repository-hosted CI observation remains separate
 This conversation can be archived when all unique concepts and active obligations are represented by this handoff, committed files, issues, receipts, or other durable records. Repository incompleteness alone is not a reason to retain the conversation.
 
 The Conectrr convergence record, smallest interoperable handoff contract, bidirectional failure fixtures, validator, tests, prior mediated-composition architecture, implementation commit identifiers, remaining integrations, and authority boundaries are durably represented. No additional part of this conversation is required to continue the work.
+
+
+## 2026-09-25 common-goal mutual-adaptation reconciliation
+
+Existing-owner candidate, not a new authority or admitted Registry task: see [`COMMON_GOAL_MUTUAL_ADAPTATION_RECONCILIATION.md`](COMMON_GOAL_MUTUAL_ADAPTATION_RECONCILIATION.md). Reuses the current mediated-composition evaluator and local admissibility controls; defines seven frozen acceptance tests for compatible goals, changing capacities, independently observed adaptation, revocation, viability, provenance, and authentic custody. Central Task Registry generation 243 has no exact task identity for this extension; authorized coordination must select existing canonical ownership and allocate/bind COSV before any canonical status claim. No production execution, live organism intervention, runtime disposition, or Master Records reconstruction is claimed by this source candidate.
