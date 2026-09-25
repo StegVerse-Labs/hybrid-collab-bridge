@@ -32,6 +32,7 @@ def case():
         selected_goal="shared-work", minimum_handoff=.75, minimum_gain=.1,
         minimum_heldout=.8, maximum_clarification_increase=0,
         goal_recomputed_after_revocation=True,
+        selected_goal_after_revocation=None,
         vocabulary_collision_injected=True, vocabulary_collision_detected=True,
         false_shared_goal_injected=True, false_shared_goal_flagged=True,
         local_receipts=[
@@ -95,6 +96,34 @@ class CommonGoalAdaptationTests(unittest.TestCase):
         self.assertEqual("FAIL", evaluate_common_goal_adaptation(d)["tests"]["independent_agency"])
         d = case()
         d["participants"][0]["revocation_disposition"] = "NOT_APPLICABLE"
+        self.assertEqual("FAIL", evaluate_common_goal_adaptation(d)["tests"]["independent_agency"])
+
+    def test_post_revocation_goal_must_be_independently_recomputed(self):
+        d = case()
+        # Both participants declared the same initial goal, but the revoked
+        # human cannot authorize it after withdrawal.
+        d["selected_goal_after_revocation"] = "shared-work"
+        d["goal_recomputed_after_revocation"] = True
+        self.assertEqual("FAIL", evaluate_common_goal_adaptation(d)["tests"]["independent_agency"])
+        self.assertEqual("FAIL", wrap(d)["overall_outcome"])
+        d["selected_goal_after_revocation"] = None
+        self.assertEqual("PASS", evaluate_common_goal_adaptation(d)["tests"]["independent_agency"])
+
+    def test_post_revocation_remaining_eligible_participants(self):
+        d = case()
+        d["participants"].append(participant("observer"))
+        d["local_receipts"].append(dict(participant_id="observer", receipt_ref="synthetic:observer",
+                                        predecessor_hash="synthetic:facilitator"))
+        d["selected_goal_after_revocation"] = "shared-work"
+        self.assertEqual("PASS", evaluate_common_goal_adaptation(d)["tests"]["independent_agency"])
+        d["participants"][-1]["goals"] = ["different-goal"]
+        self.assertEqual("FAIL", evaluate_common_goal_adaptation(d)["tests"]["independent_agency"])
+        d["selected_goal_after_revocation"] = None
+        self.assertEqual("PASS", evaluate_common_goal_adaptation(d)["tests"]["independent_agency"])
+
+    def test_missing_post_revocation_selected_goal_fails_closed(self):
+        d = case()
+        del d["selected_goal_after_revocation"]
         self.assertEqual("FAIL", evaluate_common_goal_adaptation(d)["tests"]["independent_agency"])
 
     def test_no_aggregate_override_of_local_viability(self):
