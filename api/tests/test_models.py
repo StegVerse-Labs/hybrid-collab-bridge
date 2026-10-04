@@ -5,7 +5,7 @@ external authority. They verify only the request/response contract needed by
 the repository's existing api-tests job.
 """
 
-from app.models import ArtifactManifest, IntegrityEvidence, RunRequest, RunResponse
+from app.models import (\n    ArtifactManifest, EcosystemChatInferenceSession, ExternalInferenceComparisonInput,\n    ExternalInferenceObservationRef, IntegrityEvidence, RunRequest, RunResponse,\n)
 
 
 def test_run_request_human_gate_is_exception_only_by_default():
@@ -95,3 +95,82 @@ def test_admissibility_failure_does_not_require_final_output():
 
     assert response.final is None
     assert response.requires_human is False
+
+
+def _external_session():
+    return EcosystemChatInferenceSession(
+        session_id="chat-session-1",
+        node_id="node-1",
+        receipt_1_sha256="sha256:" + "1" * 64,
+        prompt_sha256="sha256:" + "2" * 64,
+        observations=[
+            ExternalInferenceObservationRef(
+                observation_id="obs-openai",
+                provider="openai",
+                model="gpt-observed",
+                request_correlation="request-a",
+                response_sha256="sha256:" + "3" * 64,
+                observation_state="RETAINED",
+            ),
+            ExternalInferenceObservationRef(
+                observation_id="obs-anthropic",
+                provider="anthropic",
+                model=None,
+                request_correlation="request-b",
+                response_sha256="sha256:" + "4" * 64,
+                observation_state="FAILED",
+            ),
+        ],
+    )
+
+
+def test_ecosystem_chat_external_inference_is_evidence_only():
+    session = _external_session()
+    assert session.authority_effect == "NONE"
+    assert all(item.authority_effect == "NONE" for item in session.observations)
+    assert session.retained_observation_ids() == {"obs-openai"}
+
+
+def test_comparison_accepts_only_retained_observation_references():
+    session = _external_session()
+    comparison = ExternalInferenceComparisonInput(
+        session_id=session.session_id,
+        observation_refs=["obs-openai"],
+    )
+    session.require_retained_references(comparison.observation_refs)
+
+
+def test_comparison_fails_closed_on_missing_or_failed_response_evidence():
+    session = _external_session()
+    for refs in ([], ["obs-anthropic"], ["obs-missing"], ["obs-openai", "obs-openai"]):
+        try:
+            session.require_retained_references(refs)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("comparison must fail closed on unusable evidence")
+
+
+def test_provider_disagreement_is_not_collapsed_by_contract():
+    session = EcosystemChatInferenceSession(
+        session_id="chat-disagreement",
+        node_id="node-1",
+        receipt_1_sha256="sha256:" + "5" * 64,
+        prompt_sha256="sha256:" + "6" * 64,
+        observations=[
+            ExternalInferenceObservationRef(
+                observation_id="obs-a", provider="provider-a", model="model-a",
+                request_correlation="a", response_sha256="sha256:" + "7" * 64,
+                observation_state="RETAINED",
+            ),
+            ExternalInferenceObservationRef(
+                observation_id="obs-b", provider="provider-b", model="model-b",
+                request_correlation="b", response_sha256="sha256:" + "8" * 64,
+                observation_state="RETAINED",
+            ),
+        ],
+    )
+    session.require_retained_references(["obs-a", "obs-b"])
+    assert [o.response_sha256 for o in session.observations] == [
+        "sha256:" + "7" * 64, "sha256:" + "8" * 64
+    ]
