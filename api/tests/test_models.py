@@ -182,3 +182,39 @@ def test_provider_disagreement_is_not_collapsed_by_contract():
     assert [o.response_sha256 for o in session.observations] == [
         "sha256:" + "7" * 64, "sha256:" + "8" * 64
     ]
+
+
+def test_capability_descriptor_keeps_entitlement_separate_from_provider_availability():
+    from app.models import CapabilityDescriptor
+    cap = CapabilityDescriptor(
+        capability_id="image-generate",
+        work_class="image",
+        input_media=["text"],
+        output_media=["image"],
+        provider="example-image-provider",
+        entitlement_state="NOT_ENTITLED",
+        routing_disposition="UPGRADE_REQUIRED",
+        required_tier="pro",
+        execution_constraints={"ephemeral_surface": True},
+    )
+    assert cap.routing_disposition == "UPGRADE_REQUIRED"
+    assert cap.evidence_return == "RETAINED_OBSERVATION_REQUIRED"
+    assert cap.authority_effect == "NONE"
+
+
+def test_external_observation_can_retain_non_text_capability_identity():
+    obs = ExternalInferenceObservationRef(
+        observation_id="obs-image",
+        provider="example-image-provider",
+        model="image-model",
+        capability_id="image-generate",
+        work_class="image",
+        input_media=["text"],
+        output_media=["image"],
+        request_correlation="req-image",
+        response_sha256="sha256:" + "a" * 64,
+        observation_state="RETAINED",
+    )
+    assert obs.work_class == "image"
+    assert obs.output_media == ["image"]
+    assert obs.authority_effect == "NONE"
