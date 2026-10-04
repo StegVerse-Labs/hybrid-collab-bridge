@@ -56,11 +56,37 @@ class IntegrityEvidence(BaseModel):
     passed: bool
 
 
+WorkClass = Literal["text", "reasoning", "code", "image", "video", "audio", "science", "research", "data", "other"]
+MediaType = Literal["text", "code", "image", "video", "audio", "structured_data", "binary", "other"]
+EntitlementState = Literal["NOT_REQUIRED", "ENTITLED", "NOT_ENTITLED", "UNKNOWN"]
+RoutingDisposition = Literal["AVAILABLE", "UPGRADE_REQUIRED", "PURCHASE_REQUIRED", "PROVIDER_UNAVAILABLE", "DENIED", "ENTITLEMENT_UNKNOWN"]
+
+
+class CapabilityDescriptor(BaseModel):
+    """Provider-neutral capability metadata; descriptive only and never authority."""
+    capability_id: str
+    work_class: WorkClass
+    input_media: List[MediaType] = Field(default_factory=list)
+    output_media: List[MediaType] = Field(default_factory=list)
+    provider: str
+    model: Optional[str] = None
+    entitlement_state: EntitlementState = "UNKNOWN"
+    routing_disposition: RoutingDisposition = "ENTITLEMENT_UNKNOWN"
+    required_tier: Optional[str] = None
+    execution_constraints: Dict[str, Any] = Field(default_factory=dict)
+    evidence_return: Literal["RETAINED_OBSERVATION_REQUIRED"] = "RETAINED_OBSERVATION_REQUIRED"
+    authority_effect: Literal["NONE"] = "NONE"
+
+
 class ExternalInferenceObservationRef(BaseModel):
     """Retained, non-authoritative evidence for one external provider response."""
     observation_id: str
     provider: str
     model: Optional[str] = None
+    capability_id: Optional[str] = None
+    work_class: Optional[WorkClass] = None
+    input_media: List[MediaType] = Field(default_factory=list)
+    output_media: List[MediaType] = Field(default_factory=list)
     request_correlation: str
     response_sha256: str
     observation_state: Literal["RETAINED", "FAILED", "INDETERMINATE"]
@@ -180,6 +206,10 @@ class DiscoveryResultItem(BaseModel):
     requires_network: bool = True
     requires_api_key: bool = True
     estimated_cost_tier: str = "unknown"
+    capabilities: List[CapabilityDescriptor] = Field(default_factory=list)
+    entitlement_state: EntitlementState = "UNKNOWN"
+    routing_disposition: RoutingDisposition = "ENTITLEMENT_UNKNOWN"
+    required_tier: Optional[str] = None
 
 
 class DiscoveryResponse(BaseModel):
