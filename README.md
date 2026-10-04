@@ -15,6 +15,8 @@
 
 Canonical stack reference: [`docs/LLM_COMMUNICATIONS_STACK_POSITION.md`](docs/LLM_COMMUNICATIONS_STACK_POSITION.md)
 
+For Ecosystem Chat external inference, the bridge consumes only retained provider-observation references. The provider-neutral execution primitive remains `StegVerse-org/LLM-adapter:llm_adapter/external_llm_connection.py`; using that primitive does not route an established Ecosystem Chat Node through the adapter's external-framework `/api/sdk/*` admission lane. The collaboration-side evidence contract is `schemas/ecosystem_chat_external_inference_session.schema.json`; provider output and any comparison/consensus remain `authority_effect=NONE`.
+
 A **governed internal ecosystem adapter**: API orchestration + BCAT/GCAT admission + CGE-monitored traces.
 
 - **Internal-only**: Second LLM adapter within the StegVerse ecosystem (user-facing SDK is adapter #1)
