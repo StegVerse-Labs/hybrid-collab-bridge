@@ -56,6 +56,59 @@ class IntegrityEvidence(BaseModel):
     passed: bool
 
 
+class ExternalInferenceObservationRef(BaseModel):
+    """Retained, non-authoritative evidence for one external provider response."""
+    observation_id: str
+    provider: str
+    model: Optional[str] = None
+    request_correlation: str
+    response_sha256: str
+    observation_state: Literal["RETAINED", "FAILED", "INDETERMINATE"]
+    authority_effect: Literal["NONE"] = "NONE"
+
+
+class EcosystemChatInferenceSession(BaseModel):
+    """Receipt #1-bound ephemeral session; provider outputs remain evidence only."""
+    schema_name: Literal["stegverse.hybrid-collab.ecosystem-chat-external-inference-session/v1"] = Field(
+        default="stegverse.hybrid-collab.ecosystem-chat-external-inference-session/v1",
+        alias="schema",
+    )
+    session_id: str
+    node_id: str
+    receipt_1_sha256: str
+    prompt_sha256: str
+    observations: List[ExternalInferenceObservationRef]
+    authority_effect: Literal["NONE"] = "NONE"
+
+    def retained_observation_ids(self) -> set[str]:
+        return {
+            item.observation_id
+            for item in self.observations
+            if item.observation_state == "RETAINED"
+        }
+
+    def require_retained_references(self, observation_refs: List[str]) -> None:
+        """Fail closed unless comparison/synthesis cites retained observations only."""
+        retained = self.retained_observation_ids()
+        if not observation_refs:
+            raise ValueError("comparison requires retained observation references")
+        if len(set(observation_refs)) != len(observation_refs):
+            raise ValueError("comparison observation references must be unique")
+        missing = [ref for ref in observation_refs if ref not in retained]
+        if missing:
+            raise ValueError(
+                "comparison references missing or non-retained evidence: "
+                + ",".join(missing)
+            )
+
+
+class ExternalInferenceComparisonInput(BaseModel):
+    """Reference-only input to existing collaboration/synthesis logic."""
+    session_id: str
+    observation_refs: List[str]
+    authority_effect: Literal["NONE"] = "NONE"
+
+
 class RunRequest(BaseModel):
     """Request to run a governed collaboration."""
     slug: str = Field(..., description="folder slug under sessions/YYYY-MM-DD/")
