@@ -31,10 +31,33 @@ class DiscoveryResult:
     requires_network: bool = True
     requires_api_key: bool = True
     estimated_cost_tier: str = "unknown"
+    capabilities: List[Dict[str, Any]] = field(default_factory=list)
+    entitlement_state: str = "UNKNOWN"
+    routing_disposition: str = "ENTITLEMENT_UNKNOWN"
+    required_tier: str | None = None
 
 
 class ProviderDiscoveryEngine:
     """Describe available provider classes without becoming credential/runtime authority."""
+
+    TEXT_REASONING_CAPABILITIES = [
+        {
+            "capability_id": "text-generate",
+            "work_class": "text",
+            "input_media": ["text"],
+            "output_media": ["text"],
+            "evidence_return": "RETAINED_OBSERVATION_REQUIRED",
+            "authority_effect": "NONE",
+        },
+        {
+            "capability_id": "reasoning",
+            "work_class": "reasoning",
+            "input_media": ["text"],
+            "output_media": ["text"],
+            "evidence_return": "RETAINED_OBSERVATION_REQUIRED",
+            "authority_effect": "NONE",
+        },
+    ]
 
     CLOUD_PROVIDERS: Dict[str, Dict[str, Any]] = {
         "openai": {"name": "OpenAI", "type": "openai_text", "cost_tier": "premium"},
@@ -163,6 +186,14 @@ class ProviderDiscoveryEngine:
             requires_network=False,
             requires_api_key=False,
             estimated_cost_tier="free",
+            capabilities=[
+                dict(item, provider="stegverse_sovereign_local_model", model=None,
+                     entitlement_state="NOT_REQUIRED", routing_disposition="AVAILABLE",
+                     required_tier=None, execution_constraints={"route":"tvc_route"})
+                for item in self.TEXT_REASONING_CAPABILITIES
+            ],
+            entitlement_state="NOT_REQUIRED",
+            routing_disposition="AVAILABLE",
         )
 
     def _cloud_result(self, provider_id: str, info: Dict[str, Any]) -> DiscoveryResult:
@@ -187,4 +218,12 @@ class ProviderDiscoveryEngine:
             requires_network=True,
             requires_api_key=True,
             estimated_cost_tier=info["cost_tier"],
+            capabilities=[
+                dict(item, provider=provider_id, model=None,
+                     entitlement_state="UNKNOWN", routing_disposition="ENTITLEMENT_UNKNOWN",
+                     required_tier=None, execution_constraints={"ephemeral_surface":True,"network_required":True})
+                for item in self.TEXT_REASONING_CAPABILITIES
+            ],
+            entitlement_state="UNKNOWN",
+            routing_disposition="ENTITLEMENT_UNKNOWN",
         )
