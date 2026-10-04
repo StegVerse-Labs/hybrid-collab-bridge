@@ -5,7 +5,15 @@ external authority. They verify only the request/response contract needed by
 the repository's existing api-tests job.
 """
 
-from app.models import (\n    ArtifactManifest, EcosystemChatInferenceSession, ExternalInferenceComparisonInput,\n    ExternalInferenceObservationRef, IntegrityEvidence, RunRequest, RunResponse,\n)
+from app.models import (
+    ArtifactManifest,
+    EcosystemChatInferenceSession,
+    ExternalInferenceComparisonInput,
+    ExternalInferenceObservationRef,
+    IntegrityEvidence,
+    RunRequest,
+    RunResponse,
+)
 
 
 def test_run_request_human_gate_is_exception_only_by_default():
