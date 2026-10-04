@@ -514,3 +514,25 @@ authority effect: NONE
 ```
 
 The correct future runtime continuation is an already-admitted TV/TVC authorization/result boundary. Until that exists, protected HCB API operations remain unavailable rather than falling back to a consumer-owned bearer.
+
+
+## SHWP Ecosystem Chat inference evidence composition — 2026-10-04
+
+Goal: `SHWP-ECOSYSTEM-CHAT-INFERENCE-001` / COSV `50000000100000`.
+
+Ownership reconciliation confirms:
+- `StegVerse-org/LLM-adapter/llm_adapter/external_llm_connection.py` already owns the provider-neutral governed external-LLM connection primitive.
+- Its provider-operation Interlock/InTr + TV/TVC + exact-response egress sequence is distinct from the adapter's external-framework `/api/sdk/*` Node-admission lane.
+- `hybrid-collab-bridge` already owns collaboration-session construction, comparison/synthesis and collaboration receipts.
+- Site already owns Receipt #1 Node continuity and local Ecosystem Chat observation.
+
+Missing owner-aligned seam implemented on `contract/ecosystem-chat-inference-evidence`:
+- `schemas/ecosystem_chat_external_inference_session.schema.json`;
+- `ExternalInferenceObservationRef`, `EcosystemChatInferenceSession`, and `ExternalInferenceComparisonInput` models;
+- retained-reference fail-closed validation and regression tests;
+- independent provider observations preserve provider/model when observable, request correlation, response SHA-256, state and `authority_effect=NONE`;
+- comparison/synthesis may reference only observations in `RETAINED` state;
+- missing, failed, indeterminate or duplicate references fail closed;
+- disagreement remains independently retained and consensus confers no authority.
+
+No provider broker, SDK ingress, collaboration engine, runtime, credential route, device prerequisite, Node identity, continuity owner or authority plane is created by this change. Source/CI/merge do not prove live multi-provider execution.
