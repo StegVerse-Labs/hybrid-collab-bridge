@@ -283,3 +283,11 @@ StegVerse Constitutional License — all changes require human+AI quorum.
 
 27/27 OK · 0 no-dispatch · 0 broken — _2026-08-27 16:33 UTC_
 <!-- /workflows:status -->
+
+### Capability-addressed external AI contract
+
+Ecosystem Chat capability discovery is provider-neutral. A capability descriptor may identify text, reasoning, code, image, video, audio, science, research, data, or a future `other` work class; its input/output media, provider/model, entitlement state, routing disposition, execution constraints, and required retained-observation return are descriptive metadata only and have `authority_effect=NONE`.
+
+Provider availability and user entitlement are separate. A known provider may be discoverable while entitlement remains `UNKNOWN`; execution must not silently treat that as available. A resolved non-entitled paid capability uses `UPGRADE_REQUIRED` or `PURCHASE_REQUIRED`, while provider unavailability remains `PROVIDER_UNAVAILABLE`. No disposition silently substitutes another capability route.
+
+The existing LLM-adapter `external_llm_connection` remains the governed execution primitive for the text/reasoning capability family. This bridge does not become a general provider broker, credential authority, SDK ingress, persistent runtime, or Node-identity owner. Specialized external AI surfaces remain disposable execution surfaces and their outputs remain independently retained, non-authoritative observations.

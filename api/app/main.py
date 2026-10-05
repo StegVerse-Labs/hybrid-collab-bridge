@@ -626,6 +626,10 @@ def _convert_discovery(result: DiscoveryResult) -> DiscoveryResultItem:
         requires_network=result.requires_network,
         requires_api_key=result.requires_api_key,
         estimated_cost_tier=result.estimated_cost_tier,
+        capabilities=result.capabilities,
+        entitlement_state=result.entitlement_state,
+        routing_disposition=result.routing_disposition,
+        required_tier=result.required_tier,
     )
 
 

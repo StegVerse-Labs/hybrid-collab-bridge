@@ -536,3 +536,10 @@ Missing owner-aligned seam implemented on `contract/ecosystem-chat-inference-evi
 - disagreement remains independently retained and consensus confers no authority.
 
 No provider broker, SDK ingress, collaboration engine, runtime, credential route, device prerequisite, Node identity, continuity owner or authority plane is created by this change. Source/CI/merge do not prove live multi-provider execution.
+
+
+## Capability-addressed external AI extension — 2026-10-04
+
+The existing Ecosystem Chat retained-observation seam is generalized without replacing the LLM-adapter provider infrastructure. Provider discovery can now describe capability ID, work class, input/output media, provider/model, entitlement state, routing disposition, required tier, execution constraints and the required retained-observation evidence return. Provider availability is explicitly distinct from entitlement. The contract supports `UPGRADE_REQUIRED` and `PURCHASE_REQUIRED` without misclassifying those states as provider failure, and preserves `ENTITLEMENT_UNKNOWN` until account state is actually known.
+
+The existing `external_llm_connection` remains the text/reasoning execution primitive. Image, video, audio, code, science, research, data and future capability classes can use the same descriptor/evidence contract without becoming StegVerse Nodes. No broker, SDK ingress, persistent runtime, credential authority, device prerequisite or authority plane is added. Live specialized-provider execution remains NOT_OBSERVED until authentic retained response evidence exists.
