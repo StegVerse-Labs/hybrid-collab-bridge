@@ -59,10 +59,10 @@
     },
     {
       "id": "HIL-SG-006",
-      "goal": "Preserve admitted receipt identity, hashes, custody, supersession posture, and standing history in Master Records.",
+      "goal": "Record the admitted receipt identity, hashes, supersession posture and standing as a Master Records organization record.",
       "state": "MERGED_INTO_CANONICAL_WORKSTREAM",
-      "owner": "issue #11 custody work package",
-      "release_condition": "An admitted receipt exists and the authoritative Master Records handoff identifies the destination repository."
+      "owner": "issue #11 organization record work package",
+      "release_condition": "An admitted receipt exists and the Master Records mirror handoff identifies the destination repository."
     },
     {
       "id": "HIL-SG-007",

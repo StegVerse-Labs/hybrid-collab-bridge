@@ -1,4 +1,4 @@
-# Autonomous Delegation and Custody Handoff
+# Autonomous Delegation and Organization Record Handoff
 
 Repository: `StegVerse-Labs/hybrid-collab-bridge`
 
@@ -11,7 +11,7 @@ hybrid-collab-bridge
   -> DelegationCandidateEnvelope
   -> Ecosystem-Delegation intake validation
   -> bounded delegation evaluation
-  -> master-records/orchestration custody intake
+  -> master-records/orchestration organization record intake
 ```
 
 ## Installed bridge contract
@@ -58,7 +58,7 @@ tests/test_hcb_delegation_candidate_intake.py
 
 The hourly reconciler validates the aggregate delegation integration and hybrid-bridge intake contract, writes durable evidence and reconciliation state, and commits through `StegVerse Bot` without routine human action.
 
-## Installed master-record custody intake
+## Installed master-record organization record intake
 
 ```text
 master-records/orchestration
@@ -68,7 +68,7 @@ tests/test_delegation_bound_transition_intake.py
 .github/workflows/reconcile-delegation-bound-transition-intake.yml
 ```
 
-The hourly reconciler validates custody intake, preserves transition and run identity, writes durable evidence and state, and commits through `StegVerse Bot` without routine human action.
+The hourly reconciler validates organization record intake, preserves transition and run identity, writes the organization record and state, and commits through `StegVerse Bot` without routine human action.
 
 ## Authority boundaries
 
@@ -76,8 +76,8 @@ The hourly reconciler validates custody intake, preserves transition and run ide
 bridge envelope != delegation authority
 delegation intake != admissibility
 delegation result != execution authority
-custody intake != final receipt
-custody != release authority
+organization record intake != final receipt
+organization record != release authority
 workflow completion != commit-time admissibility
 ```
 

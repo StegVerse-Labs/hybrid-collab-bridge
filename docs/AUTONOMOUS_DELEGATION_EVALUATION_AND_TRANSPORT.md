@@ -10,9 +10,9 @@ governed session trace
 -> optional preserved delegation_context
 -> token-gated transport to Ecosystem-Delegation
 -> HPS delegation evaluation
--> custody-bound result generation
+-> bounded result generation
 -> token-gated transport to master-records/orchestration
--> autonomous custody intake or quarantine
+-> autonomous organization record intake or quarantine
 ```
 
 ## Bridge additions
@@ -65,7 +65,7 @@ final_receipt_authority = false
 manual_action_required = false
 ```
 
-The custody transport surface is:
+The Master Records organization record transport surface is:
 
 ```text
 scripts/transport_master_records_outbox.py
@@ -80,13 +80,13 @@ standing evidence preservation != delegation evaluation
 ALLOW_DELEGATION != final admissibility
 transport token != delegation authority
 transport completion != commit authority
-custody submission != release authority
+organization record transport != release authority
 workflow completion != final receipt
 ```
 
 ## Remaining bounded scope
 
 1. Observe workflow-generated reconciliation and transport state commits.
-2. Preserve transport acknowledgements and destination commit SHAs through custody.
+2. Preserve transport acknowledgements and destination commit SHAs in the organization record.
 3. Add duplicate-delivery and supersession receipts across both transport boundaries.
-4. Connect accepted custody records to reconstruction indexing without granting release.
+4. Connect accepted organization records to reconstruction indexing without granting release.

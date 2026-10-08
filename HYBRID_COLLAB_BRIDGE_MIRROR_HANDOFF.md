@@ -49,7 +49,7 @@ Ecosystem-Delegation
   -> evaluate governed delegation and authority references
 
 master-records/orchestration
-  -> lifecycle, final receipt, custody, reconstruction, Site index
+  -> lifecycle, final receipt, organization records, reconstruction, Site index
 ```
 
 ## Installed governed normalization
