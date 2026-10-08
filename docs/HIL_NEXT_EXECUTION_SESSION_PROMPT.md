@@ -30,7 +30,7 @@ Hosted evidence remains unresolved. The observed commit-run query returned no pu
 5. Commit immutable validation and replay receipts. Require byte identity across the two replay executions.
 6. Update `evidence/hil/HIL-TRACE-0001-admission-request-candidate.json` with input hashes and change submission posture only after hosted preconditions are satisfied.
 7. Read the authoritative `*_MIRROR_HANDOFF.md` in the selected `GCAT-BCAT-Engine` admission repository before mutation. Submit a bounded admission request and require `ALLOW`, `DENY`, or `ERROR` without authority expansion.
-8. After `ALLOW`, resolve the Master Records authority from its own mirror handoff and preserve exact bytes, hashes, source commit, admission decision, custody event, supersession posture, and standing history.
+8. After `ALLOW`, resolve the Master Records destination from its own mirror handoff and record exact bytes, hashes, source commit, admission decision, supersession posture and standing as an organization record.
 9. Issue an activation receipt only when every criterion in `HIL_MIRROR_HANDOFF.md` is evidenced.
 10. Only after activation, coordinate publication verification for `StegVerse-Labs/Site`, `GCAT-BCAT-Engine/Publisher`, `admissibility-wiki`, and `stegguardian-wiki`.
 

@@ -24,7 +24,7 @@ route authority:
 transport:
   StegVerse-org/LLM-adapter#18
 
-custody / reconstruction:
+organization records / reconstruction:
   master-records/orchestration
 ```
 

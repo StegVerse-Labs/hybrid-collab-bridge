@@ -1,6 +1,6 @@
-# Autonomous Custody Acknowledgement and Reconstruction
+# Autonomous Organization Record Acknowledgement and Reconstruction
 
-The governed lifecycle now continues beyond custody intake without routine human queue handling.
+The governed lifecycle now continues beyond Master Records organization record intake without routine human queue handling.
 
 ## Installed master-record lifecycle controls
 
@@ -11,18 +11,18 @@ tests/test_custody_lifecycle.py
 .github/workflows/reconcile-custody-lifecycle.yml
 ```
 
-Accepted custody evidence is indexed by the stable composite identity:
+Accepted organization records are indexed by the stable composite identity:
 
 ```text
 transition_id:run_id
 ```
 
-The reconciler emits deterministic custody acknowledgements while preserving:
+The reconciler emits deterministic organization record acknowledgements while preserving:
 
 ```text
 candidate_id
-custody_status
-custody evidence path and SHA-256
+record_status (legacy name: custody_status)
+organization record path and SHA-256
 admissibility_result = PENDING
 commit_time_validity = PENDING
 final_receipt_id = null
@@ -50,7 +50,7 @@ The transport is token-gated. Missing external transport authority produces a du
 ## Authority boundaries
 
 ```text
-custody acknowledgement != final receipt
+organization record acknowledgement != final receipt
 reconstruction index != present-time authority
 received-uncommitted != admissible
 transport completion != execution authority
@@ -63,10 +63,10 @@ duplicate detection != supersession authority
 governed session
 -> delegation candidate
 -> HPS delegation evaluation
--> custody-bound result
--> master-record custody intake
+-> bounded delegation result
+-> master-record organization record intake
 -> reconstruction index
--> custody acknowledgement
+-> organization record acknowledgement
 -> token-gated acknowledgement return
 -> upstream acknowledgement index
 ```

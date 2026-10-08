@@ -74,8 +74,8 @@ Active work is machine-owned through issue #11 and this handoff. New work must i
 | `HIL-QRL-002` | Schema, candidate, validator, fixtures | `StegVerse-Labs/hybrid-collab-bridge` | IMPLEMENTED / HOSTED EVIDENCE PENDING | Hosted run proves canonical acceptance and all negative rejections |
 | `HIL-QRL-003` | Deterministic replay receipt | workflow + issue #11 | MACHINE_OWNED | Two outputs are byte-identical and immutable receipts are committed |
 | `HIL-QRL-004` | Bounded admission decision | selected `GCAT-BCAT-Engine` authority | BLOCKED | Green hosted validation and replay receipts exist |
-| `HIL-QRL-005` | Receipt custody and standing history | authoritative Master Records repository | BLOCKED | Admitted receipt exists and destination handoff is resolved |
-| `HIL-QRL-006` | Governed activation receipt | `StegVerse-Labs/hybrid-collab-bridge` | BLOCKED | Validation, replay, admission, and custody evidence all exist |
+| `HIL-QRL-005` | Receipt organization record and standing | Master Records repository (organization records) | BLOCKED | Admitted receipt exists and destination handoff is resolved |
+| `HIL-QRL-006` | Governed activation receipt | `StegVerse-Labs/hybrid-collab-bridge` | BLOCKED | Validation, replay and admission evidence and the organization record all exist |
 | `HIL-QRL-007` | Public and release propagation | Site, Publisher, admissibility-wiki, stegguardian-wiki | BLOCKED | Activation receipt exists |
 
 ## Automation
@@ -109,7 +109,7 @@ The layer is activated only when all are true:
 2. Repair only defects proven by hosted logs.
 3. Commit immutable validation and replay receipts.
 4. Submit the bounded admission request to the selected GCAT/BCAT/CGE authority and preserve its `ALLOW`, `DENY`, or `ERROR` decision.
-5. Resolve the Master Records destination from its own mirror handoff and preserve exact bytes, hashes, source commit, decision, custody event, supersession posture, and standing history.
+5. Resolve the Master Records destination from its own mirror handoff and record exact bytes, hashes, source commit, decision, supersession posture and standing as an organization record.
 6. Issue an activation receipt only after every criterion is evidenced.
 7. Read each destination handoff before propagating to Site, Publisher, admissibility-wiki, and stegguardian-wiki.
 
