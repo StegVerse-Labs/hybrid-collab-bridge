@@ -38,7 +38,7 @@ Future sessions must read this file, the consolidation record, and issue #11 bef
 
 This repository owns the governed collaboration and trace adapter for the layer. It may reconstruct a contribution, record qualified examination, preserve attribution and consent posture, calculate a candidate participant-standing transition, emit a receipt, validate bounded candidate structure, and request admission.
 
-It may not independently establish identity, transfer authorship, create demographic representative authority, create execution authority, determine final admissibility, publish a claim, or replace Master Records custody.
+It may not independently establish identity, transfer authorship, create demographic representative authority, create execution authority, determine final admissibility, publish a claim, or replace Master Records organization record.
 
 ## Committed implementation receipts
 
