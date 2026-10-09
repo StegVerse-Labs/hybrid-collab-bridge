@@ -1,0 +1,13 @@
+{
+  "authority_effect": "NONE",
+  "contract": "stegverse.hybrid-collab.capability-descriptor/v1",
+  "dependencies": [],
+  "files": {
+    "hcb_contract/__init__.py": "sha256:9dbaba840fe3021a9d982065753ed4ffc6b5d7f65ee22a149a7e483f2eb8eb0b",
+    "hcb_contract/capability.py": "sha256:831ae30b416b3b6834df7f8a1a8c3f8cfb38b33f81adc2c60c7f7344950dac77",
+    "schemas/capability_descriptor.v1.schema.json": "sha256:0058537b7bac2f530500cbae1c8bd297c6e9232e1d3a3dd267ca1fb9e7388c4f"
+  },
+  "owning_existing_goal": "HCB-VERSIONED-CONTRACT-038",
+  "regenerate": "sha256 of raw file bytes; tests/test_hcb_contract.py fails on any drift",
+  "schema": "stegverse.hybrid-collab.vendor-manifest/v1"
+}
