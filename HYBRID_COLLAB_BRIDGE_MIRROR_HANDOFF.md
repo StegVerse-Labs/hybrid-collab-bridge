@@ -33,7 +33,8 @@ next_attempt: on exact-head CI completion of the #38 PRs
 ## Legacy and non-required surfaces
 
 - `LEGACY_ISOLATE`, non-authorizing: `api/app/governance/admission.py` BCAT/GCAT allow/deny/defer, `cge-light/` ledger receipts, quorum and `/v1/continue`, `DEFERRED` / `requires_human` run parking. These are local evidence only and never decide on the declared path; Interlock/InTr is the authority.
-- `NOT_REQUIRED` legacy (kept, candidates for removal): `render.yaml`, `infra/docker-compose.yml`, StegDB (`HCB_STEGDB_ENDPOINT`) and publisher (`PUBLISHER_ENDPOINT`) endpoints.
+- `REMOVED` (caller reachability traced; nothing reachable required them): `render.yaml`, `Dockerfile.style-api`, `infra/docker-compose.yml` (tvc sidecar, ollama container, `HCB_STEGDB_ENDPOINT`, `depends_on`), `infra/Dockerfile`, `api/dockerfile`, StegDB (`governance/stegdb.py`, `governance/stegdb_wiring.py`, `/v1/stegdb/*`), publisher (`governance/publisher.py`, `PUBLISHER_ENDPOINT`, `/v1/publish/*`), `api/app/providers/{admission,cge_client,compensation,dashboard,halt,stegdb,entity,discovery}.py`, top-level `app/`.
+- `KEPT` with reason: `stegtvc_client.py` (local stub, no network; imported by `.github/ai_entity_runner.py` and two diagnostic workflows); `requirements-style-api.txt` (FastAPI style API dependency surface).
 
 ## Current goal
 

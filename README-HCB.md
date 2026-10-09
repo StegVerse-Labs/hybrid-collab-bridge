@@ -22,7 +22,6 @@ Provision a complete, standalone `hybrid-collab-bridge/` directory and verify it
 | Type | File / Path | Purpose |
 |------|--------------|---------|
 | **API Service** | [`hybrid-collab-bridge/api/app/`](hybrid-collab-bridge/api/app/) | Core FastAPI endpoints for `/health`, `/v1/run`, `/v1/continue` |
-| **Infra / Docker** | [`hybrid-collab-bridge/infra/docker-compose.yml`](hybrid-collab-bridge/infra/docker-compose.yml) | Local + CI bootstrap environment |
 | **Providers Registry** | [`hybrid-collab-bridge/providers.yaml`](hybrid-collab-bridge/providers.yaml) | Lists AI adapters (currently `claude`) |
 | **Environment Template** | [`hybrid-collab-bridge/.env.example`](hybrid-collab-bridge/.env.example) | Minimal configuration: `ADMIN_TOKEN`, `ANTHROPIC_API_KEY`, etc. |
 | **Workflow** | [`.github/workflows/hybrid_bridge_ci.yml`](.github/workflows/hybrid_bridge_ci.yml) | CI smoke test workflow |

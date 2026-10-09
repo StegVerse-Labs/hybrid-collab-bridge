@@ -52,9 +52,27 @@ class ConformanceRepairTests(unittest.TestCase):
         for surface in ("admission.py", "cge-light/", "/v1/continue", "requires_human"):
             self.assertRegex(readme, rf"\|[^\n]*{re.escape(surface)}[^\n]*\| `LEGACY_ISOLATE`")
         for surface in ("render.yaml", "infra/docker-compose.yml", "HCB_STEGDB_ENDPOINT", "PUBLISHER_ENDPOINT"):
-            self.assertRegex(readme, rf"\|[^\n]*{re.escape(surface)}[^\n]*\| `NOT_REQUIRED` legacy")
-        for kept in ("render.yaml", "infra/docker-compose.yml"):
-            self.assertTrue((ROOT / kept).exists(), kept)
+            self.assertRegex(readme, rf"\|[^\n]*{re.escape(surface)}[^\n]*\| `REMOVED`")
+
+    def test_removed_external_service_surfaces_stay_removed(self):
+        for removed in (
+            "render.yaml",
+            "Dockerfile.style-api",
+            "infra/docker-compose.yml",
+            "infra/Dockerfile",
+            "api/dockerfile",
+            "api/app/governance/stegdb.py",
+            "api/app/governance/stegdb_wiring.py",
+            "api/app/governance/publisher.py",
+            "api/app/providers/stegdb.py",
+            "app/main.py",
+        ):
+            self.assertFalse((ROOT / removed).exists(), removed)
+        main = _read("api/app/main.py")
+        for marker in ("StegDB", "STEGDB", "PublisherClient", "PUBLISHER_ENDPOINT", "/v1/publish/", "/v1/stegdb/"):
+            self.assertNotIn(marker, main)
+        for workflow in (ROOT / ".github/workflows").glob("*.yml"):
+            self.assertNotIn("docker build", workflow.read_text(encoding="utf-8"), workflow.name)
 
     def test_reconcile_workflow_skips_no_op_commits(self):
         workflow = _read(".github/workflows/reconcile-internal-adapter.yml")
