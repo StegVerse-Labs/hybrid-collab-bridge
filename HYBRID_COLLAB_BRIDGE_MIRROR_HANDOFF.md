@@ -528,17 +528,17 @@ external provider adapters:
   Perplexity
 ```
 
-All seven external adapters now instantiate without reading provider secrets and return:
+All seven external adapters now instantiate without reading provider secrets and return (legacy keys kept for existing callers):
 
 ```text
-state: BLOCKED   # legacy source label; conforming disposition below
+state: BLOCKED   # legacy source label; six-field disposition below is emitted in the same result
 error: TVC_ADMITTED_PROVIDER_ROUTE_REQUIRED
 credential_material_present: false
 provider_execution_performed: false
 authority_effect: false
 ```
 
-Conforming six-field disposition for the legacy `BLOCKED` adapter state:
+Six-field disposition emitted in code by every non-ALLOW provider result (`api/app/providers/disposition.py`; covered by `api/tests/test_provider_six_field.py`, which also covers unsupported-task DENY, unreachable local endpoints and `TVProviderAdapter`):
 
 ```text
 disposition: FAIL_CLOSED

@@ -8,6 +8,7 @@ import httpx
 from typing import Dict, Any
 from ..tasks import Task
 from .base import Provider
+from .disposition import provider_unreachable, unsupported_task
 
 
 class OllamaText(Provider):
@@ -21,7 +22,7 @@ class OllamaText(Provider):
 
     async def run(self, task: Task) -> Dict[str, Any]:
         if task.task_type != "text-generate":
-            return {"error": "unsupported task"}
+            return unsupported_task(self, task.task_type)
 
         payload = {
             "model": self.model,
@@ -43,6 +44,8 @@ class OllamaText(Provider):
                 data = r.json()
                 return {"text": data.get("response", "").strip()}
         except httpx.ConnectError:
-            return {"error": f"Ollama not reachable at {self.base_url}. Run: ollama serve"}
+            return provider_unreachable(
+                self, f"Ollama not reachable at {self.base_url}", self.base_url
+            )
         except Exception as e:
-            return {"error": str(e)}
+            return provider_unreachable(self, str(e), self.base_url)

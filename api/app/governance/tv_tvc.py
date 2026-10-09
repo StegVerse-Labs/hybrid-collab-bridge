@@ -117,15 +117,9 @@ class TVProviderAdapter:
         self.credential_id = credential_id
 
     async def run(self, task: Any) -> Dict[str, Any]:
-        return {
-            "state": "BLOCKED",
-            "error": BLOCKED_REASON,
-            "provider": self.name,
-            "provider_type": self.type,
-            "credential_material_present": False,
-            "provider_execution_performed": False,
-            "authority_effect": False,
-        }
+        from ..providers.disposition import admitted_route_required
+
+        return admitted_route_required(self, BLOCKED_REASON)
 
     def supports(self, task_type: str) -> bool:
         return self.base.supports(task_type)

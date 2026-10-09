@@ -11,6 +11,7 @@ import httpx
 from typing import Dict, Any
 from ..tasks import Task
 from .base import Provider
+from .disposition import provider_unreachable, unsupported_task
 
 
 class CustomProviderTemplate(Provider):
@@ -51,7 +52,7 @@ class CustomProviderTemplate(Provider):
 
     async def run(self, task: Task) -> Dict[str, Any]:
         if task.task_type != "text-generate":
-            return {"error": "unsupported task"}
+            return unsupported_task(self, task.task_type)
 
         # --- PAYLOAD: Modify for your provider's API format ---
         # OpenAI-compatible format (most common):
@@ -107,6 +108,8 @@ class CustomProviderTemplate(Provider):
                 return {"text": content.strip()}
 
         except httpx.HTTPStatusError as e:
-            return {"error": f"HTTP {e.response.status_code}: {e.response.text[:200]}"}
+            return provider_unreachable(
+                self, f"HTTP {e.response.status_code}: {e.response.text[:200]}", self.base_url
+            )
         except Exception as e:
-            return {"error": str(e)}
+            return provider_unreachable(self, str(e), self.base_url)
