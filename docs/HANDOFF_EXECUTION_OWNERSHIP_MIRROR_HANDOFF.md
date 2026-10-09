@@ -4,7 +4,7 @@
 
 This file is the canonical execution-ownership and collision-partition record for `StegVerse-Labs/hybrid-collab-bridge` under `StegVerse-Labs/repo-standards#37` and `StegVerse-Labs/Continuity/docs/REPOSITORY_HANDOFF_STANDARD.md`.
 
-It supersedes only execution-ownership interpretation for the current HCB `*_MIRROR_HANDOFF.md` set. It does not supersede product semantics, validation evidence, active issue/task ownership, credential-policy findings, runtime/provider state, release state, claims/fences/leases, or authority records. `docs/HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md` remains the product/task source of truth.
+It supersedes only execution-ownership interpretation for the current HCB `*_MIRROR_HANDOFF.md` set. It does not supersede product semantics, validation evidence, active issue/task ownership, credential-policy findings, runtime/provider state, release state, claims/fences/leases, or authority records. `HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md` (repository root; `docs/` copy is a pointer) remains the product/task source of truth.
 
 Current live product boundary preserved from the root handoff:
 
@@ -39,9 +39,9 @@ Standard: `stegverse.handoff-execution-ownership/v1`.
 
 ```yaml
 - task_id: HCB-ACTIVE-WORK-AGGREGATE
-  execution_owner: current per-task worker/machine owner recorded by docs/HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md, active issues/PRs, task records, claims/fences/leases, TV/TVC findings, and newer scoped handoffs
+  execution_owner: current per-task worker/machine owner recorded by HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md, active issues/PRs, task records, claims/fences/leases, TV/TVC findings, and newer scoped handoffs
   claim_state: MACHINE_OWNED
-  worker_registry_ref: docs/HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md + current issues/PRs + TV/TVC credential consistency records + current scoped handoffs
+  worker_registry_ref: HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md + current issues/PRs + TV/TVC credential consistency records + current scoped handoffs
   manual_execution_allowed: false
   manual_allowed_role: observation
   collision_scope: CMC-030, admitted provider-operation integration, HIL/product implementation, workflow/runtime validation, provider execution, credential-boundary work, safety/admission envelope work, receipt execution, deployment/publication observation, and any capability with a current owner

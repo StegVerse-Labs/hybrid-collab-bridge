@@ -56,7 +56,15 @@ jobs:
             tests/test_repair_candidate.py \
             tests/test_delegation_candidate.py
       - name: Commit reconciled runtime and state
+        # Only the default branch may push to main; branch/PR pushes validate only.
+        if: github.ref == 'refs/heads/main'
         run: |
+          # Commit only when the reconciler actually applied changes; a bare
+          # reconciled_at timestamp refresh is a no-op and is not committed.
+          if ! python -c "import json, sys; sys.exit(0 if json.load(open('state/internal_adapter_reconciliation.json')).get('changes_applied') else 1)"; then
+            echo "No reconciliation changes applied; skipping no-op commit."
+            exit 0
+          fi
           if git diff --quiet -- api/app/main.py state/internal_adapter_reconciliation.json; then
             echo "Internal adapter already reconciled."
             exit 0
