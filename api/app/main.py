@@ -94,7 +94,7 @@ ENTITY_REG.register(BRIDGE_ENTITY)
 
 
 
-app = FastAPI(title="Hybrid Collab Bridge (Governed)", version="1.0.0")
+app = FastAPI(title="Hybrid Collab Bridge (Governed)", version="v1.2")
 
 # Include dashboard router
 from .governance.dashboard import router as dashboard_router
@@ -121,7 +121,7 @@ def auth_or_403(token: str | None):
 async def health():
     return {
         "ok": True,
-        "version": "1.0.0",
+        "version": "v1.2",
         "providers": REG.list(),
         "providers_path": str(cfg_path),
         "org_id": ORG_ID,

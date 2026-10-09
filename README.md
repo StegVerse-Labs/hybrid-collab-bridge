@@ -2,7 +2,25 @@
 [![Badges Keeper](https://github.com/StegVerse-Labs/hybrid-collab-bridge/actions/workflows/docs-badge-sync.yml/badge.svg)](https://github.com/StegVerse-Labs/hybrid-collab-bridge/actions/workflows/docs-badge-sync.yml)
 <!-- badges:end -->
 
-# hybrid-collab-bridge v1.0.0
+# hybrid-collab-bridge v1.2
+
+## Conformance status (HCB-VERSIONED-CONTRACT-038, issue #38)
+
+Version: `v1.2` (single value from `VERSION`). Canonical handoff: [`HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md`](HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md).
+
+HCB is optional and never a mandatory hop; all of its outputs carry `authority_effect: NONE`. Authority on the declared path belongs to Interlock/InTr, reached through SDK manifest submission. HCB awaits no external machine, receiver or observer. Every non-ALLOW state carries `failure_code`, `failed_predicate`, `required_evidence_or_repair`, `retry_entrypoint`, `owning_existing_goal` and `next_attempt`.
+
+| Surface | Classification | Meaning |
+|---|---|---|
+| `api/app/governance/admission.py` (BCAT/GCAT allow/deny/defer) | `LEGACY_ISOLATE` | Local evidence only, non-authorizing; never an admission decision on the declared path |
+| `cge-light/` (embedded CGE ledger and receipts) | `LEGACY_ISOLATE` | Local trace evidence only, non-authorizing; not the org ledger |
+| Quorum rules and `POST /v1/continue` | `LEGACY_ISOLATE` | Non-authorizing; a quorum approval confers no authority |
+| `DEFERRED` / `requires_human` run parking | `LEGACY_ISOLATE` | Non-authorizing; nothing on the declared path waits on it |
+| `render.yaml` (hosted Render service) | `NOT_REQUIRED` legacy | Kept for now; candidate for removal |
+| `infra/docker-compose.yml` (tvc sidecar, ollama container) | `NOT_REQUIRED` legacy | Kept for now; candidate for removal |
+| StegDB (`HCB_STEGDB_ENDPOINT`) and publisher (`PUBLISHER_ENDPOINT`) endpoints | `NOT_REQUIRED` legacy | Optional HTTP; not required by any path |
+
+Sections below that describe these surfaces document legacy behavior, not current authority.
 
 ## Position in the StegVerse LLM Communications Stack
 
@@ -110,7 +128,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
 
 - `GET  /health` — returns bridge entity, CGE mode, providers
 - `POST /v1/run` — start a governed collaboration (writes session folder with JSON traces)
-- `POST /v1/continue` — mark session reviewed and finalize (supports quorum approval)
+- `POST /v1/continue` — mark session reviewed and finalize (supports quorum approval). `LEGACY_ISOLATE`, non-authorizing.
 
 **Example**
 
@@ -136,7 +154,7 @@ Outputs go to `hybrid-collab-bridge/sessions/<today>/first-governed-run/`:
 - `01_claude.json` (structured trace with admission metadata + receipt)
 - `03_referee.json` (merge trace with final admission + receipt chain)
 
-## CGE Light (per-org drop-in)
+## CGE Light (per-org drop-in) — `LEGACY_ISOLATE`, non-authorizing
 
 The `cge_light/` directory contains a self-contained governance engine:
 
@@ -156,7 +174,7 @@ Adapters declare capabilities like `text-generate`, `image-generate`, `music-gen
 
 ## Governance Model
 
-### Quorum Rules (Constitutional)
+### Quorum Rules (Constitutional) — `LEGACY_ISOLATE`, non-authorizing
 
 | Action | Required Approvers |
 |--------|-------------------|
@@ -211,7 +229,7 @@ CRED_OPENAI=cred-openai-prod
 CRED_ANTHROPIC=cred-anthropic-prod
 ```
 
-### Docker Compose
+### Docker Compose (`NOT_REQUIRED` legacy)
 
 ```bash
 # TVC runs as internal sidecar — no external ports
