@@ -20,6 +20,7 @@ HCB is optional and never a mandatory hop; all of its outputs carry `authority_e
 | `infra/docker-compose.yml` (tvc sidecar, ollama container, `HCB_STEGDB_ENDPOINT`, `depends_on`), `infra/Dockerfile`, `api/dockerfile` | `REMOVED` | Deleted; referenced only by docs |
 | StegDB (`HCB_STEGDB_ENDPOINT`; `governance/stegdb.py`, `governance/stegdb_wiring.py`, `/v1/stegdb/*`) and publisher (`PUBLISHER_ENDPOINT`; `governance/publisher.py`, `/v1/publish/*`) | `REMOVED` | Optional external-service calls; references removed from `api/app/main.py` and modules deleted |
 | `api/app/providers/{admission,cge_client,compensation,dashboard,halt,stegdb,entity,discovery}.py`, top-level `app/` | `REMOVED` | Diverged duplicates / unimportable copies; no importer |
+| Remote CGE mode (`HCB_CGE_MODE=remote`, `HCB_CGE_ENDPOINT`; httpx POSTs to `/v1/ingest` and `/v1/ledger/append` in `governance/cge_client.py`) | `REMOVED` | External service and competing ledger; no workflow or test set it. Embedded is the only mode; any other `HCB_CGE_MODE` fails closed with six-field `REMOTE_CGE_REMOVED` and contacts nothing. `httpx` stays in `api/requirements.txt` for `providers/ollama_text.py` and `providers/custom_template.py` |
 | `stegtvc_client.py` | `KEPT` | Local deterministic stub, no network; imported by `.github/ai_entity_runner.py` and the `diagnostic` / `stegtv-connectivity-diagnostic` workflows |
 | `requirements-style-api.txt` | `KEPT` | Declared dependency surface of the FastAPI style API (`api/app/style_api.py`); asserted minimal by `tests/test_style_api_deployment.py` |
 
