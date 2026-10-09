@@ -1,0 +1,25 @@
+{
+  "actor": "test-actor",
+  "bcat": {
+    "authority_clarity": 0.7,
+    "context_stability": 0.75,
+    "observability": 0.8,
+    "reversibility_margin": 0.9,
+    "risk": 0.2,
+    "trust_continuity": 0.7
+  },
+  "decision": "admitted",
+  "entry_hash": "c1eb7434ef519534bee782296be6ae74ad8cb6a59598730124501b940baae06d",
+  "gcat": {
+    "a": 0.057142857142857134,
+    "c": 0.4285714285714286,
+    "g": 0.4,
+    "t": 0.11428571428571431
+  },
+  "ledger_entry_id": "9dd7481a-f089-4d73-b6d0-3f1f294d1597",
+  "mutation_class": "reject",
+  "prev_hash": "20890a6e5f449e5f29e25cf7a28bab6bb4c21336f5fe7b5156064fe5601da59b",
+  "receipt_hash": "a9c619808ae8c50480363926c028f9c6f32fc9697343ccb5d6948b3aa93c5a68",
+  "receipt_id": "4b19de9e-dc24-4f73-8198-44c61e5b0735",
+  "timestamp": 1791563529
+}

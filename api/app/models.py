@@ -1,6 +1,6 @@
 """Pydantic models with CGE receipt and artifact-integrity integration."""
 from typing import List, Literal, Optional, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 StrategyName = Literal["consensus", "committee"]
 Decision = Literal["allow", "deny", "defer"]
@@ -62,8 +62,21 @@ EntitlementState = Literal["NOT_REQUIRED", "ENTITLED", "NOT_ENTITLED", "UNKNOWN"
 RoutingDisposition = Literal["AVAILABLE", "UPGRADE_REQUIRED", "PURCHASE_REQUIRED", "PROVIDER_UNAVAILABLE", "DENIED", "ENTITLEMENT_UNKNOWN"]
 
 
+CAPABILITY_DESCRIPTOR_SCHEMA_ID = "stegverse.hybrid-collab.capability-descriptor/v1"
+
+
 class CapabilityDescriptor(BaseModel):
-    """Provider-neutral capability metadata; descriptive only and never authority."""
+    """Provider-neutral capability metadata; descriptive only and never authority.
+
+    Canonical contract: schemas/capability_descriptor.v1.schema.json, vendorable
+    as stdlib code via hcb_contract/capability.py. Serialized with by_alias=True
+    the version field is emitted as "schema".
+    """
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_id: Literal["stegverse.hybrid-collab.capability-descriptor/v1"] = Field(
+        default=CAPABILITY_DESCRIPTOR_SCHEMA_ID, alias="schema"
+    )
     capability_id: str
     work_class: WorkClass
     input_media: List[MediaType] = Field(default_factory=list)

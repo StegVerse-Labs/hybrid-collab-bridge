@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stegverse.hybrid-collab.capability-descriptor/v1",
+  "title": "HCB capability descriptor v1",
+  "description": "Provider-neutral capability metadata. Descriptive only; never authority. Mirrors api/app/models.py CapabilityDescriptor plus the required schema id.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "capability_id", "work_class", "provider"],
+  "properties": {
+    "schema": {"const": "stegverse.hybrid-collab.capability-descriptor/v1"},
+    "capability_id": {"type": "string", "minLength": 1},
+    "work_class": {
+      "enum": ["text", "reasoning", "code", "image", "video", "audio", "science", "research", "data", "other"]
+    },
+    "input_media": {"type": "array", "items": {"$ref": "#/$defs/media_type"}, "default": []},
+    "output_media": {"type": "array", "items": {"$ref": "#/$defs/media_type"}, "default": []},
+    "provider": {"type": "string", "minLength": 1},
+    "model": {"type": ["string", "null"], "default": null},
+    "entitlement_state": {
+      "enum": ["NOT_REQUIRED", "ENTITLED", "NOT_ENTITLED", "UNKNOWN"],
+      "default": "UNKNOWN"
+    },
+    "routing_disposition": {
+      "enum": ["AVAILABLE", "UPGRADE_REQUIRED", "PURCHASE_REQUIRED", "PROVIDER_UNAVAILABLE", "DENIED", "ENTITLEMENT_UNKNOWN"],
+      "default": "ENTITLEMENT_UNKNOWN"
+    },
+    "required_tier": {"type": ["string", "null"], "default": null},
+    "execution_constraints": {"type": "object", "default": {}},
+    "evidence_return": {"const": "RETAINED_OBSERVATION_REQUIRED", "default": "RETAINED_OBSERVATION_REQUIRED"},
+    "authority_effect": {"const": "NONE", "default": "NONE"}
+  },
+  "$defs": {
+    "media_type": {
+      "enum": ["text", "code", "image", "video", "audio", "structured_data", "binary", "other"]
+    }
+  }
+}
