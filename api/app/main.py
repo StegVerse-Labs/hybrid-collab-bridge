@@ -18,12 +18,9 @@ from .governance.entity import EntityIdentity, EntityRegistry
 from .governance.cge_client import CGELightClient
 from .governance.admission import AdmissionGate
 from .governance.discovery import ProviderDiscoveryEngine, DiscoveryResult
-from .governance.stegdb import StegDBClient
 from .governance.compensation import CompensationTracker
 from .governance.halt import EmergencyHalt
 from .governance.sdk_alignment import SharedGovernanceSurface
-from .governance.stegdb_wiring import StegDBWiring
-from .governance.publisher import PublisherClient, PublishableOutput
 from .governance.aacte_demo import AaCTEDemoPipeline
 from .governance.stegcge_compiler import StegCGECompiler
 from .models import (
@@ -72,12 +69,9 @@ DISCOVERY = ProviderDiscoveryEngine()
 # Configure dashboard
 from .governance.dashboard import set_config as set_dashboard_config
 set_dashboard_config(None, CGE.cge_path, ENTITY_REG)
-STEGDB = StegDBClient(mode="direct" if os.getenv("HCB_STEGDB_ENDPOINT") else "filesystem")
 COMPENSATION = CompensationTracker(cge_client=CGE)
 HALT = EmergencyHalt(cge_client=CGE, constitution=constitution)
 SDK_SURFACE = SharedGovernanceSurface(cge_client=CGE, constitution=constitution)
-STEGDB_WIRING = StegDBWiring()
-PUBLISHER = PublisherClient()
 AACTE = AaCTEDemoPipeline(cge_client=CGE, constitution=constitution)
 STEGCGE = StegCGECompiler()
 
@@ -236,7 +230,7 @@ async def run_collab(req: RunRequest, x_admin_token: str | None = Header(default
         integrity_evidence = IntegrityEvidence(**integrity_result.to_dict())
 
     # Attach bounded integrity evidence to a copied receipt. A candidate with
-    # failed integrity cannot enter StegDB as an accepted run result.
+    # failed integrity cannot become an accepted run result.
     receipt_for_ingest = final_admission.receipt
     if final_admission.receipt and integrity_result is not None:
         receipt_for_ingest = json.loads(json.dumps(final_admission.receipt))
@@ -302,13 +296,6 @@ async def run_collab(req: RunRequest, x_admin_token: str | None = Header(default
             },
             gcat={"g": 0.25, "c": 0.25, "a": 0.25, "t": 0.25},
         )
-
-    if boundary.may_ingest_accepted_result:
-        asyncio.create_task(STEGDB.ingest_receipt(
-            receipt=receipt_for_ingest,
-            actor=BRIDGE_ENTITY,
-            source="hybrid-collab-bridge/run",
-        ))
 
     if req.trace_level == "full":
         final_trace = {
@@ -674,120 +661,6 @@ async def verify_cross_adapter(
     """Verify SDK and bridge receipts are consistent."""
     auth_or_403(x_admin_token)
     return await SDK_SURFACE.verify_cross_adapter(sdk_receipt, bridge_receipt)
-
-
-# -- StegDB Wiring -----------------------------------------------
-
-@app.post("/v1/stegdb/push")
-async def stegdb_push_run(
-    session_path: str,
-    receipt: Dict[str, Any],
-    x_admin_token: str | None = Header(default=None),
-):
-    """Manually push a run result to StegDB."""
-    auth_or_403(x_admin_token)
-
-    return await STEGDB_WIRING.push_run_result(
-        session_path=session_path,
-        final_receipt=receipt,
-        turns=[],
-        bridge_entity=BRIDGE_ENTITY,
-    )
-
-
-@app.get("/v1/stegdb/history/{entity_id}")
-async def stegdb_history(
-    entity_id: str,
-    limit: int = 100,
-    x_admin_token: str | None = Header(default=None),
-):
-    """Query StegDB for entity history."""
-    auth_or_403(x_admin_token)
-    return await STEGDB_WIRING.query_entity_history(entity_id, limit)
-
-
-# -- Publisher Integration ---------------------------------------
-
-@app.post("/v1/publish/paper")
-async def publish_paper(
-    title: str,
-    content: str,
-    authors: List[str],
-    venue: str,
-    receipt_id: str,
-    bcat: Dict[str, Any],
-    gcat: Dict[str, Any],
-    tags: List[str] = [],
-    x_admin_token: str | None = Header(default=None),
-):
-    """Submit governed output as academic paper."""
-    auth_or_403(x_admin_token)
-
-    output = PublishableOutput(
-        content=content,
-        title=title,
-        authors=authors,
-        receipt_id=receipt_id,
-        bcat=bcat,
-        gcat=gcat,
-        tags=tags,
-        format="paper",
-    )
-
-    return await PUBLISHER.submit_paper(output, venue)
-
-
-@app.post("/v1/publish/social")
-async def publish_social(
-    title: str,
-    content: str,
-    platform: str,
-    receipt_id: str,
-    tags: List[str] = [],
-    thread: bool = False,
-    x_admin_token: str | None = Header(default=None),
-):
-    """Post governed output to social media."""
-    auth_or_403(x_admin_token)
-
-    output = PublishableOutput(
-        content=content,
-        title=title,
-        authors=[BRIDGE_ENTITY.owner_human],
-        receipt_id=receipt_id,
-        bcat={},
-        gcat={},
-        tags=tags,
-        format="social",
-    )
-
-    return await PUBLISHER.post_social(output, platform, thread)
-
-
-@app.post("/v1/publish/blog")
-async def publish_blog(
-    title: str,
-    content: str,
-    platform: str = "stegverse",
-    receipt_id: str = "",
-    tags: List[str] = [],
-    x_admin_token: str | None = Header(default=None),
-):
-    """Publish governed output as blog post."""
-    auth_or_403(x_admin_token)
-
-    output = PublishableOutput(
-        content=content,
-        title=title,
-        authors=[BRIDGE_ENTITY.owner_human],
-        receipt_id=receipt_id,
-        bcat={},
-        gcat={},
-        tags=tags,
-        format="blog",
-    )
-
-    return await PUBLISHER.publish_blog(output, platform)
 
 
 # -- AaCT-E Demo Pipeline ----------------------------------------

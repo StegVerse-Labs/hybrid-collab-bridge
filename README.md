@@ -16,9 +16,12 @@ HCB is optional and never a mandatory hop; all of its outputs carry `authority_e
 | `cge-light/` (embedded CGE ledger and receipts) | `LEGACY_ISOLATE` | Local trace evidence only, non-authorizing; not the org ledger |
 | Quorum rules and `POST /v1/continue` | `LEGACY_ISOLATE` | Non-authorizing; a quorum approval confers no authority |
 | `DEFERRED` / `requires_human` run parking | `LEGACY_ISOLATE` | Non-authorizing; nothing on the declared path waits on it |
-| `render.yaml` (hosted Render service) | `NOT_REQUIRED` legacy | Kept for now; candidate for removal |
-| `infra/docker-compose.yml` (tvc sidecar, ollama container) | `NOT_REQUIRED` legacy | Kept for now; candidate for removal |
-| StegDB (`HCB_STEGDB_ENDPOINT`) and publisher (`PUBLISHER_ENDPOINT`) endpoints | `NOT_REQUIRED` legacy | Optional HTTP; not required by any path |
+| `render.yaml` (hosted Render service) and `Dockerfile.style-api` | `REMOVED` | Deleted; no reachable caller (only its own shape test and a CI `docker build` step, both removed) |
+| `infra/docker-compose.yml` (tvc sidecar, ollama container, `HCB_STEGDB_ENDPOINT`, `depends_on`), `infra/Dockerfile`, `api/dockerfile` | `REMOVED` | Deleted; referenced only by docs |
+| StegDB (`HCB_STEGDB_ENDPOINT`; `governance/stegdb.py`, `governance/stegdb_wiring.py`, `/v1/stegdb/*`) and publisher (`PUBLISHER_ENDPOINT`; `governance/publisher.py`, `/v1/publish/*`) | `REMOVED` | Optional external-service calls; references removed from `api/app/main.py` and modules deleted |
+| `api/app/providers/{admission,cge_client,compensation,dashboard,halt,stegdb,entity,discovery}.py`, top-level `app/` | `REMOVED` | Diverged duplicates / unimportable copies; no importer |
+| `stegtvc_client.py` | `KEPT` | Local deterministic stub, no network; imported by `.github/ai_entity_runner.py` and the `diagnostic` / `stegtv-connectivity-diagnostic` workflows |
+| `requirements-style-api.txt` | `KEPT` | Declared dependency surface of the FastAPI style API (`api/app/style_api.py`); asserted minimal by `tests/test_style_api_deployment.py` |
 
 Sections below that describe these surfaces document legacy behavior, not current authority.
 
@@ -101,7 +104,7 @@ PROPOSE -> ADMIT (BCAT/GCAT) -> EXECUTE -> PROVE -> RECEIPT
 │  └────────────────────────────────────────────────────────┘  │
 │         │                                                    │
 │  ┌──────▼────────────────────────────────────────────────┐  │
-│  │              STEGDB / FINCO INTEGRATION                  │  │
+│  │      FINCO INTEGRATION (StegDB ingestion REMOVED)        │  │
 │  │  ┌─────────────┐    ┌─────────────┐    ┌──────────┐   │  │
 │  │  │ Receipt     │    │ Session     │    │Compensation│  │  │
 │  │  │ Ingestion   │    │ Trace       │    │ Tracking  │  │  │
@@ -229,15 +232,9 @@ CRED_OPENAI=cred-openai-prod
 CRED_ANTHROPIC=cred-anthropic-prod
 ```
 
-### Docker Compose (`NOT_REQUIRED` legacy)
+### Docker Compose — `REMOVED`
 
-```bash
-# TVC runs as internal sidecar — no external ports
-docker-compose up -d tvc hybrid-bridge
-
-# TVC is on internal network only
-# Bridge requests credentials via Docker DNS: http://tvc:8080/v1
-```
+`infra/docker-compose.yml` (tvc sidecar, ollama container) was deleted under HCB-VERSIONED-CONTRACT-038; HCB requires no container or sidecar.
 
 ### Development (File Mode)
 
