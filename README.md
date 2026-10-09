@@ -297,7 +297,7 @@ StegVerse Constitutional License — all changes require human+AI quorum.
 <!-- workflows:status -->
 [![workflows](.github/badges/workflows.svg)](.github/docs/WORKFLOWS_STATUS.md)
 
-27/27 OK · 0 no-dispatch · 0 broken — _2026-10-09 21:26 UTC_
+27/27 OK · 0 no-dispatch · 0 broken — _2026-10-09 23:09 UTC_
 <!-- /workflows:status -->
 
 ### Capability-addressed external AI contract
