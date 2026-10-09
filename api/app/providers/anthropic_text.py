@@ -8,6 +8,7 @@ from typing import Dict, Any
 
 from ..tasks import Task
 from .base import Provider
+from .disposition import admitted_route_required, unsupported_task
 
 
 BLOCKED_REASON = "TVC_ADMITTED_PROVIDER_ROUTE_REQUIRED"
@@ -21,13 +22,5 @@ class AnthropicText(Provider):
 
     async def run(self, task: Task) -> Dict[str, Any]:
         if task.task_type != "text-generate":
-            return {"error": "unsupported task"}
-        return {
-            "state": "BLOCKED",
-            "error": BLOCKED_REASON,
-            "provider": self.name,
-            "provider_type": self.type,
-            "credential_material_present": False,
-            "provider_execution_performed": False,
-            "authority_effect": False,
-        }
+            return unsupported_task(self, task.task_type)
+        return admitted_route_required(self, BLOCKED_REASON)
