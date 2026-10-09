@@ -94,7 +94,6 @@ def configure(
     CGE_CLIENT = cge_client or CGELightClient(
         org_id=os.getenv("HCB_ORG_ID", "StegVerse-Labs"),
         mode=os.getenv("HCB_CGE_MODE", "embedded"),
-        endpoint=os.getenv("HCB_CGE_ENDPOINT") or None,
         cge_path=str(CGE_PATH),
     )
     if admission_gate is not None:

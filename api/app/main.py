@@ -48,13 +48,11 @@ REG = ProviderRegistry(cfg_path=str(cfg_path))
 ORG_ID = os.getenv("HCB_ORG_ID", "StegVerse-Labs")
 ADMIN_AUTH_STATE = "TVC_ADMITTED_ADMIN_AUTH_REQUIRED"
 CGE_MODE = os.getenv("HCB_CGE_MODE", "embedded")
-CGE_ENDPOINT = os.getenv("HCB_CGE_ENDPOINT", None)
 CGE_PATH = os.getenv("HCB_CGE_PATH", None)
 
 CGE = CGELightClient(
     org_id=ORG_ID,
     mode=CGE_MODE,
-    endpoint=CGE_ENDPOINT,
     cge_path=CGE_PATH,
 )
 

@@ -1,27 +1,63 @@
-"""CGE Light client for per-org governance."""
+"""CGE Light client for per-org governance.
+
+Embedded mode is the only mode. The former ``remote`` mode (HTTP POSTs to
+``{HCB_CGE_ENDPOINT}/v1/ingest`` and ``/v1/ledger/append``) was an external
+service dependency and a competing ledger; HCB holds no ledger authority. Any
+non-embedded mode fails closed with a six-field disposition and contacts
+nothing.
+"""
 from __future__ import annotations
-import os
 import json
 import time
 import uuid
 from pathlib import Path
 from typing import Dict, Any, Optional
-import httpx
 
 from .entity import EntityIdentity
+
+EMBEDDED_MODE = "embedded"
+OWNING_EXISTING_GOAL = "HCB-VERSIONED-CONTRACT-038"
+
+
+def remote_cge_removed(mode: str) -> Dict[str, Any]:
+    """Six-field FAIL_CLOSED disposition for a requested non-embedded CGE mode."""
+    return {
+        "state": "BLOCKED",
+        "disposition": "FAIL_CLOSED",
+        "error": "REMOTE_CGE_REMOVED",
+        "requested_cge_mode": mode,
+        "failure_code": "REMOTE_CGE_REMOVED",
+        "failed_predicate": f"HCB_CGE_MODE == 'embedded' (got {mode!r})",
+        "required_evidence_or_repair": (
+            "unset HCB_CGE_MODE or set it to 'embedded'; the remote CGE service and "
+            "HCB_CGE_ENDPOINT were removed and HCB holds no ledger authority"
+        ),
+        "retry_entrypoint": "restart with HCB_CGE_MODE=embedded",
+        "owning_existing_goal": OWNING_EXISTING_GOAL,
+        "next_attempt": "immediately after reconfiguring; nothing waits for a remote CGE",
+        "admissible": False,
+        "remote_contacted": False,
+        "authority_effect": False,
+    }
+
+
+class RemoteCGERemoved(RuntimeError):
+    """Raised when a ledger append is requested in a removed (non-embedded) mode."""
+
+    def __init__(self, mode: str):
+        self.disposition = remote_cge_removed(mode)
+        super().__init__(self.disposition["failed_predicate"])
 
 
 class CGELightClient:
     def __init__(
         self,
         org_id: str,
-        mode: str = "embedded",
-        endpoint: Optional[str] = None,
+        mode: str = EMBEDDED_MODE,
         cge_path: Optional[str] = None,
     ):
         self.org_id = org_id
         self.mode = mode
-        self.endpoint = endpoint
         self.cge_path = Path(cge_path) if cge_path else Path(__file__).resolve().parents[3] / "cge_light"
         self._ensure_dirs()
 
@@ -45,17 +81,9 @@ class CGELightClient:
             "ingest_id": str(uuid.uuid4()),
         }
 
-        if self.mode == "embedded":
-            return self._ingest_embedded(ingest_obj)
-        elif self.mode == "remote":
-            return await self._ingest_remote(ingest_obj)
-        else:
-            try:
-                return self._ingest_embedded(ingest_obj)
-            except Exception:
-                if self.endpoint:
-                    return await self._ingest_remote(ingest_obj)
-                raise
+        if self.mode != EMBEDDED_MODE:
+            return remote_cge_removed(self.mode)
+        return self._ingest_embedded(ingest_obj)
 
     def _ingest_embedded(self, obj: Dict[str, Any]) -> Dict[str, Any]:
         import sys
@@ -84,23 +112,6 @@ class CGELightClient:
         }
         return result
 
-    async def _ingest_remote(self, obj: Dict[str, Any]) -> Dict[str, Any]:
-        async with httpx.AsyncClient(timeout=30) as client:
-            r = await client.post(
-                f"{self.endpoint}/v1/ingest",
-                json=obj,
-                headers={"X-ORG-ID": self.org_id},
-            )
-            r.raise_for_status()
-            result = r.json()
-            if isinstance(result, dict):
-                result.setdefault("evaluator", {
-                    "mode": "remote",
-                    "endpoint": self.endpoint,
-                    "regeneration_supported": bool(result.get("evaluation_input")),
-                })
-            return result
-
     def _check_admissibility(self, bcat: Dict, gcat: Dict) -> bool:
         constitution_path = self.cge_path / "repo_constitution.txt"
         if not constitution_path.exists():
@@ -127,39 +138,25 @@ class CGELightClient:
         bcat: Dict[str, Any],
         gcat: Dict[str, Any],
     ) -> Dict[str, Any]:
-        if self.mode == "embedded":
-            import sys
-            cge_path = str(self.cge_path)
-            if cge_path not in sys.path:
-                sys.path.insert(0, cge_path)
-            from cge.ledger import append_ledger_entry
-            from cge.receipts import verify_receipt
+        if self.mode != EMBEDDED_MODE:
+            raise RemoteCGERemoved(self.mode)
+        import sys
+        cge_path = str(self.cge_path)
+        if cge_path not in sys.path:
+            sys.path.insert(0, cge_path)
+        from cge.ledger import append_ledger_entry
+        from cge.receipts import verify_receipt
 
-            receipt = append_ledger_entry(
-                mutation_class=mutation_class,
-                actor=actor.entity_id,
-                payload=payload,
-                bcat=bcat,
-                gcat=gcat,
-            )
-            verified = verify_receipt(receipt)
-            receipt["verified"] = verified
-            return receipt
-        else:
-            async with httpx.AsyncClient(timeout=30) as client:
-                r = await client.post(
-                    f"{self.endpoint}/v1/ledger/append",
-                    json={
-                        "mutation_class": mutation_class,
-                        "actor": actor.to_dict(),
-                        "payload": payload,
-                        "bcat": bcat,
-                        "gcat": gcat,
-                    },
-                    headers={"X-ORG-ID": self.org_id},
-                )
-                r.raise_for_status()
-                return r.json()
+        receipt = append_ledger_entry(
+            mutation_class=mutation_class,
+            actor=actor.entity_id,
+            payload=payload,
+            bcat=bcat,
+            gcat=gcat,
+        )
+        verified = verify_receipt(receipt)
+        receipt["verified"] = verified
+        return receipt
 
     async def chain_receipt(
         self,
