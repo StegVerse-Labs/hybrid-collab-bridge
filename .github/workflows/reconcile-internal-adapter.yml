@@ -56,6 +56,8 @@ jobs:
             tests/test_repair_candidate.py \
             tests/test_delegation_candidate.py
       - name: Commit reconciled runtime and state
+        # Only the default branch may push to main; branch/PR pushes validate only.
+        if: github.ref == 'refs/heads/main'
         run: |
           # Commit only when the reconciler actually applied changes; a bare
           # reconciled_at timestamp refresh is a no-op and is not committed.

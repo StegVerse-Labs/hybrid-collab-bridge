@@ -59,6 +59,7 @@ class ConformanceRepairTests(unittest.TestCase):
     def test_reconcile_workflow_skips_no_op_commits(self):
         workflow = _read(".github/workflows/reconcile-internal-adapter.yml")
         commit_step = workflow.split("Commit reconciled runtime and state", 1)[1]
+        self.assertIn("if: github.ref == 'refs/heads/main'", commit_step.split("run: |", 1)[0])
         guard = commit_step.index("changes_applied")
         self.assertLess(guard, commit_step.index("git commit"))
         state = json.loads(_read("state/internal_adapter_reconciliation.json"))
