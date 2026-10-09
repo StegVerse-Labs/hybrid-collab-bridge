@@ -9,3 +9,7 @@ __pycache__/
 .vscode/
 .idea/
 sessions/**/artifacts/tmp/
+
+# Local CGE test artifacts (written by api/tests)
+cge-light/meta/
+cge-light/state/
