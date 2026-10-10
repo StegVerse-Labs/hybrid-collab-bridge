@@ -18,16 +18,30 @@ conformance repairs: this handoff consolidation, six-field dispositions, README 
 authority_effect: NONE (HCB is optional and never a mandatory hop; Interlock/InTr is the authority)
 ```
 
-Remaining disposition for this task:
+Current disposition and verified cross-issue evidence (2026-10-10):
 
 ```text
-disposition: FAIL_CLOSED
-failure_code: IMPLEMENTATION_AND_AUTHENTIC_TRANSITION_EVIDENCE_PENDING
-failed_predicate: proposed_repairs_have_exact_head_checks_and_authentic_org_ledger_readback
-required_evidence_or_repair: merge the contract and conformance-repair PRs with green exact-head CI; obtain authentic manifest-directed Interlock/InTr and org-ledger evidence
-retry_entrypoint: StegVerse-Labs/hybrid-collab-bridge#38
+source_contract: IMPLEMENTED_AND_MERGED
+authority_effect: NONE
+open_HCB_pull_requests_at_reconciliation: 0
+shared_LLMA_368_manifest_disposition: ALLOW
+shared_LLMA_368_authoritative_ledger_ref: StegVerse-org/.github refs/stegverse/organization-ledger
+shared_LLMA_368_ledger_commit: 6b2705fe480d70afa15338ca93eb0ca19033e0ac
+shared_LLMA_368_receipt_sha256: sha256:4643742af4298db9c27e9c88de31bfa25163778d29383fd4fccbd63cd23de55d
+shared_LLMA_368_authenticated_run: https://github.com/StegVerse-org/.github/actions/runs/38020580790
+HCB_specific_manifest_transition: NOT_CLAIMED
+HCB_registry_location: OWNER_DESIGNATION_PENDING
+owner_terminal_COSV_transition: NOT_CLAIMED
+work_can_begin: true
+```
+
+The previously recorded `IMPLEMENTATION_AND_AUTHENTIC_TRANSITION_EVIDENCE_PENDING` predicate is **superseded**: the optional stdlib-only contract and remote-CGE removal are merged, and the *shared LLMA #368* SDK-to-organization-ledger transition was authentically observed and independently read back. That receipt proves the shared declared path, **not an independent HCB invocation**. No additional HCB runtime transition is required merely to prove that HCB is optional and non-authoritative. No source merge or historical fixture grants COSV terminal authority.
+
+The remaining owner-held Registry-location decision is not a runtime refusal and must not be represented as a fabricated `FAIL_CLOSED` transition. Existing canonical organization registry `StegVerse-Labs/.github/control/organization-task-registry.json` was inspected; `HCB-VERSIONED-CONTRACT-038` was not present. Do not silently create a competing Registry, assume that location is authorized, or gate SDK/Interlock/InTr on this decision.
+
+```text
 owning_existing_goal: HCB-VERSIONED-CONTRACT-038
-next_attempt: on exact-head CI completion of the #38 PRs
+next_attempt: owner identifies the existing authoritative HCB Task Registry location, followed by COSV final review
 ```
 
 ## Legacy and non-required surfaces
