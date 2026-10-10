@@ -23,10 +23,9 @@ route authority:
 
 transport:
   StegVerse-org/LLM-adapter#18
-
-organization records / reconstruction:
-  master-records/orchestration
 ```
+
+Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`.
 
 Canonical runtime/model state:
 
@@ -69,7 +68,7 @@ The bridge now:
 2. represents cloud capability as requiring a governed TV/TVC route;
 3. maps local/Ollama/llama.cpp/vLLM discovery to the canonical sovereign model/runtime workstream instead of launching a competing runtime;
 4. marks the local route machine-owned and disabled for bridge-local activation;
-5. names micro-node-runtime, the sovereign heartbeat, TVC, LLM-adapter, and Master Records as the continuation chain;
+5. names micro-node-runtime, the sovereign heartbeat, TVC, and LLM-adapter as the continuation chain (Master Records is not part of it; it only records released organization batch receipts downstream);
 6. performs no arbitrary LAN probing;
 7. grants no route, credential, execution, model, wallet, signing, broadcast, or custody authority;
 8. applies any bridge-local constitution only as a restrictive admission overlay: an upstream allow may be downgraded, but an upstream denial can never be upgraded.
@@ -218,7 +217,7 @@ Therefore this session has no outstanding propagation mutation.
 | sovereign live route activation | `StegVerse-Labs/.github` + `TVC` | `MACHINE_OWNED` | node-local/runtime evidence pending | durable canonical chain installed | no chat dependency | machine owner executes canonical G18 chain |
 | `SV-COST-NINE-LANE-RESULTS-001` | `GCAT-BCAT-Engine/workflows` | source `COMPLETE_RELEASED`; result `MACHINE_OWNED_BLOCKED` | 2/2 hosted PASS | durable candidate task-state installed | no chat dependency | candidate workflow runs when validating credentialless candidates exist |
 | `STEGFIN-BASE-ROUNDTRIP-001` pre-sign boundary | `StegVerse-Labs/stegfin-governance` | `COMPLETE_ACTIVATED_AT_PRE_SIGN_BOUNDARY` | 8/8 PASS | 8/8 pre-sign | no chat dependency | USER_ONLY may review/sign/broadcast if desired |
-| post-settlement StegFin economics | `stegfin-governance` + `master-records/orchestration` | `NOT_YET_APPLICABLE` | requires real settlement | durable owner documented | no chat dependency | begins only after USER_ONLY settlement evidence |
+| post-settlement StegFin economics | `stegfin-governance` (Master Records may only record released batch receipts downstream; non-gating) | `NOT_YET_APPLICABLE` | requires real settlement | durable owner documented | no chat dependency | begins only after USER_ONLY settlement evidence |
 
 ## Session-specific requirements transferred
 
@@ -240,7 +239,6 @@ StegVerse-002/micro-node-runtime/docs/SOVEREIGN_LOCAL_MODEL_RUNTIME_MIRROR_HANDO
 -> StegVerse-Labs/.github/handoffs/SHWP-DURABLE-RUNTIME-ACTIVATION.json
 -> StegVerse-Labs/TVC/tasks/TVC-SOVEREIGN-LOCAL-MODEL-ROUTE-002.json
 -> StegVerse-org/LLM-adapter#18
--> master-records/orchestration
 
 GCAT-BCAT-Engine/workflows/experiments/sv-cost-program/nine-lane-results/SV_COST_NINE_LANE_MIRROR_HANDOFF.md
 

@@ -1,15 +1,10 @@
 # Autonomous Final Receipt Return
 
-The downstream lifecycle now returns governed final receipts from `master-records/orchestration` to `StegVerse-Labs/Ecosystem-Delegation` without routine operator work.
+Final receipts are issued by their own release authority and reconciled by `StegVerse-Labs/Ecosystem-Delegation` without routine operator work.
 
-## Installed master-record transport
+Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`. Master Records does not issue, hold, or return final receipts.
 
-```text
-master-records/orchestration
-scripts/transport_final_receipts.py
-tests/test_final_receipt_transport.py
-.github/workflows/transport-final-receipts.yml
-```
+## Final receipt transport
 
 The transport is token-gated by `STEGVERSE_TRANSPORT_TOKEN`. Missing authority records `BLOCKED_EXTERNAL_AUTHORITY` with `manual_action_required=false`. It does not infer release authority from final-receipt issuance.
 

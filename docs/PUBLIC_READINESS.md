@@ -23,7 +23,7 @@ The legacy `bridge-openai.yml` direct-provider bridge is already contained as ma
 - Repository visibility has not been changed by automation.
 - Owner must make the final visibility change.
 - Any future addition of credentials, personal data, resident runtime state, private KV/SKAP content, or unpublished implementation evidence must keep that content out of public history.
-- GitHub Actions must remain validation/evidence transport only and must not claim runtime, credential, Interlock/InTr, WorkerCoordinator, or Master Records authority.
+- GitHub Actions must remain validation/evidence transport only and must not claim runtime, credential, Interlock/InTr, or WorkerCoordinator authority, and must not treat Master Records as an authority or gate (it only records released organization batch receipts downstream).
 
 ## Current recommendation
 

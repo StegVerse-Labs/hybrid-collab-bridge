@@ -33,7 +33,7 @@ Sections below that describe these surfaces document legacy behavior, not curren
 - **Bounded role:** Internal multi-model collaboration adapter for governed expert coordination, synthesis, admission, trace creation, and collaboration receipts.
 - **Consumes:** Governed collaboration requests, provider capabilities, policy and admission inputs, and evidence references.
 - **Produces:** Expert traces, synthesis candidates, admission results, collaboration receipts, and governed return payloads.
-- **Does not own:** General provider brokerage, model hosting, communication-source normalization, continuity truth, identity, commit-time execution authority, publication authority, or Master Records organization record.
+- **Does not own:** General provider brokerage, model hosting, communication-source normalization, continuity truth, identity, commit-time execution authority, publication authority, or Master Records batch-receipt recording (a downstream, non-gating recorder of released organization batch receipts; see `docs/MASTER_RECORDS_ROLE.md`).
 
 Canonical stack reference: [`docs/LLM_COMMUNICATIONS_STACK_POSITION.md`](docs/LLM_COMMUNICATIONS_STACK_POSITION.md)
 

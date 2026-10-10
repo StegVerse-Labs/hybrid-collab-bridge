@@ -40,8 +40,9 @@ def semantic_errors(packet: dict[str, Any]) -> list[str]:
 
     if submission.get("master_record_appended") is not False:
         errors.append(
-            "submission_record/master_record_appended: append authority requires a "
-            "separate verified Master Record receipt"
+            "submission_record/master_record_appended: intake cannot self-assert a "
+            "Master Records append; Master Records only records released "
+            "organization batch receipts downstream"
         )
 
     if submission.get("intake_status") != UNVALIDATED_INTAKE_STATUS:

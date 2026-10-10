@@ -1,0 +1,1085 @@
+{
+  "audit_id": "HCB-MASTER-RECORDS-ROLE-AUDIT-001",
+  "repository": "StegVerse-Labs/hybrid-collab-bridge",
+  "goal": "HCB-VERSIONED-CONTRACT-038",
+  "tracking": [
+    "StegVerse-Labs/hybrid-collab-bridge#38",
+    "StegVerse-org/LLM-adapter#368"
+  ],
+  "canonical_role_source": "StegVerse-org/.github/docs/ORGANIZATION_ROLE_RUNTIME_REALITY_DEPLOYMENT.md",
+  "canonical_role": "Master Records is the recorder of released organization batch receipts: downstream evidence preservation only. Not authority, not a gate, not custody, not runtime reality; nothing awaits it.",
+  "required_regex": "(?i)master[-_ ]?records",
+  "inventory_regex": "(?i)master[-_ ]?records? (singular variants inventoried as well)",
+  "classifications": [
+    "PROPER",
+    "IMPROPER_CODE",
+    "IMPROPER_DOC",
+    "HISTORICAL_EVIDENCE",
+    "NAMING_ONLY"
+  ],
+  "excluded_paths": [
+    "api/tests/test_master_records_role_audit.py",
+    "data/master-records-role-audit.json"
+  ],
+  "counts": {
+    "before_required_regex": {
+      "HISTORICAL_EVIDENCE": 3,
+      "IMPROPER_CODE": 2,
+      "IMPROPER_DOC": 28,
+      "TOTAL": 33
+    },
+    "before_all_variants": {
+      "HISTORICAL_EVIDENCE": 5,
+      "IMPROPER_CODE": 4,
+      "IMPROPER_DOC": 40,
+      "NAMING_ONLY": 14,
+      "PROPER": 1,
+      "TOTAL": 64
+    },
+    "after_required_regex": {
+      "HISTORICAL_EVIDENCE": 3,
+      "PROPER": 46,
+      "TOTAL": 49
+    },
+    "after_all_variants": {
+      "HISTORICAL_EVIDENCE": 5,
+      "NAMING_ONLY": 14,
+      "PROPER": 48,
+      "TOTAL": 67
+    }
+  },
+  "historical_evidence_sha256": {
+    "evidence/hil-independent-responses/HIL-RESP-GPT56-20260726-001.json": "532c45d4496f2d4e3011d51ddda74f435cfa3fd09b76f8ef552b52922209e69f",
+    "receipts/hps_bridge_activation_receipt.json": "ba4531fd922e9b57a8059d66d51e9b6c9919c827145ee53566705a5b752c4070",
+    "state/hil_qualified_recognition_session_consolidation.json": "df3630e0f8ab7e400638c8203a7bc5b5a7fba31511dacc888bb2fe70807de4cc"
+  },
+  "before": [
+    {
+      "file": "HIL_MIRROR_HANDOFF.md",
+      "line": 41,
+      "text": "It may not independently establish identity, transfer authorship, create demographic representative authority, create execution authority, determine final admissibility, publish a claim, or replace Master Records organization record.",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "HIL_MIRROR_HANDOFF.md",
+      "line": 77,
+      "text": "| `HIL-QRL-005` | Receipt organization record and standing | Master Records repository (organization records) | BLOCKED | Admitted receipt exists and destination handoff is resolved |",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "HIL_MIRROR_HANDOFF.md",
+      "line": 112,
+      "text": "5. Resolve the Master Records destination from its own mirror handoff and record exact bytes, hashes, source commit, decision, supersession posture and standing as an organization record.",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md",
+      "line": 81,
+      "text": "master-records/orchestration",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md",
+      "line": 222,
+      "text": "master-records/orchestration:",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md",
+      "line": 236,
+      "text": "6. Return bounded delegation results to master-records/orchestration.",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "README.md",
+      "line": 36,
+      "text": "- **Does not own:** General provider brokerage, model hosting, communication-source normalization, continuity truth, identity, commit-time execution authority, publication authority, or Master Records organization record.",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "api/app/governance/discovery.py",
+      "line": 11,
+      "text": "- organization records/reconstruction: master-records/orchestration",
+      "classification": "IMPROPER_CODE",
+      "rationale": "Listed Master Records among canonical authorities / as an organization-records/reconstruction owner; removed and replaced with downstream non-authority note.",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "api/app/governance/discovery.py",
+      "line": 172,
+      "text": "\"Transport: StegVerse-org/LLM-adapter#18; organization records/reconstruction: master-records/orchestration.\",",
+      "classification": "IMPROPER_CODE",
+      "rationale": "Listed Master Records among canonical authorities / as an organization-records/reconstruction owner; removed and replaced with downstream non-authority note.",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_CUSTODY_ACKNOWLEDGEMENT_AND_RECONSTRUCTION.md",
+      "line": 3,
+      "text": "The governed lifecycle now continues beyond Master Records organization record intake without routine human queue handling.",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_CUSTODY_ACKNOWLEDGEMENT_AND_RECONSTRUCTION.md",
+      "line": 5,
+      "text": "## Installed master-record lifecycle controls",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_CUSTODY_ACKNOWLEDGEMENT_AND_RECONSTRUCTION.md",
+      "line": 8,
+      "text": "master-records/orchestration",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_CUSTODY_ACKNOWLEDGEMENT_AND_RECONSTRUCTION.md",
+      "line": 37,
+      "text": "master-records/orchestration",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_CUSTODY_ACKNOWLEDGEMENT_AND_RECONSTRUCTION.md",
+      "line": 67,
+      "text": "-> master-record organization record intake",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_AND_CUSTODY_HANDOFF.md",
+      "line": 14,
+      "text": "-> master-records/orchestration organization record intake",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_AND_CUSTODY_HANDOFF.md",
+      "line": 61,
+      "text": "## Installed master-record organization record intake",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_AND_CUSTODY_HANDOFF.md",
+      "line": 64,
+      "text": "master-records/orchestration",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_EVALUATION_AND_TRANSPORT.md",
+      "line": 14,
+      "text": "-> token-gated transport to master-records/orchestration",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_EVALUATION_AND_TRANSPORT.md",
+      "line": 68,
+      "text": "The Master Records organization record transport surface is:",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_EVALUATION_AND_TRANSPORT.md",
+      "line": 71,
+      "text": "scripts/transport_master_records_outbox.py",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_EVALUATION_AND_TRANSPORT.md",
+      "line": 72,
+      "text": "tests/test_master_records_transport.py",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_EVALUATION_AND_TRANSPORT.md",
+      "line": 73,
+      "text": ".github/workflows/transport-master-records-outbox.yml",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_FINAL_RECEIPT_RETURN.md",
+      "line": 3,
+      "text": "The downstream lifecycle now returns governed final receipts from `master-records/orchestration` to `StegVerse-Labs/Ecosystem-Delegation` without routine operator work.",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_FINAL_RECEIPT_RETURN.md",
+      "line": 5,
+      "text": "## Installed master-record transport",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_FINAL_RECEIPT_RETURN.md",
+      "line": 8,
+      "text": "master-records/orchestration",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_INTERNAL_ADAPTER_RECONCILIATION.md",
+      "line": 73,
+      "text": "3. return bounded delegation evidence to master-records/orchestration;",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_QUEUE_RECONCILIATION.md",
+      "line": 7,
+      "text": "Remove routine manual handling between governed runtime traces, bridge delegation candidates, Ecosystem-Delegation intake, and master-record custody intake.",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_QUEUE_RECONCILIATION.md",
+      "line": 53,
+      "text": "## Master-record custody inbox",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/AUTONOMOUS_QUEUE_RECONCILIATION.md",
+      "line": 56,
+      "text": "master-records/orchestration",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/HIL_INDEPENDENT_RESPONSE_INTAKE_TRANCHE.md",
+      "line": 22,
+      "text": "- unsupported Master Record append authority;",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/HIL_INDEPENDENT_RESPONSE_INTAKE_TRANCHE.md",
+      "line": 30,
+      "text": "cryptographic authorization, or Master Record append authority. The validator rejects",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/HIL_INDEPENDENT_RESPONSE_INTAKE_TRANCHE.md",
+      "line": 31,
+      "text": "self-granted publication and Master Record states. Independent disagreement must remain",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/HIL_INDEPENDENT_RESPONSE_INTAKE_TRANCHE.md",
+      "line": 44,
+      "text": "- Master Record fixture: `f46c9dcbe5a74185e0d1c14b90ae6bda2e4cbd8c`",
+      "classification": "HISTORICAL_EVIDENCE",
+      "rationale": "Commit receipt label for an existing fixture; preserved unedited.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "docs/HIL_NEXT_EXECUTION_SESSION_PROMPT.md",
+      "line": 33,
+      "text": "8. After `ALLOW`, resolve the Master Records destination from its own mirror handoff and record exact bytes, hashes, source commit, admission decision, supersession posture and standing as an organization record.",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/HPS_ROUTE_BRIDGE.md",
+      "line": 27,
+      "text": "master-records/orchestration",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/HPS_ROUTE_BRIDGE.md",
+      "line": 61,
+      "text": "The bridge does not replace master-record orchestration.",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/LLM_COMMUNICATIONS_STACK_POSITION.md",
+      "line": 38,
+      "text": "- Master Record custody;",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/LOCAL_RUNTIME_MODEL_MIRROR_HANDOFF.md",
+      "line": 28,
+      "text": "master-records/orchestration",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/LOCAL_RUNTIME_MODEL_MIRROR_HANDOFF.md",
+      "line": 72,
+      "text": "5. names micro-node-runtime, the sovereign heartbeat, TVC, LLM-adapter, and Master Records as the continuation chain;",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/LOCAL_RUNTIME_MODEL_MIRROR_HANDOFF.md",
+      "line": 221,
+      "text": "| post-settlement StegFin economics | `stegfin-governance` + `master-records/orchestration` | `NOT_YET_APPLICABLE` | requires real settlement | durable owner documented | no chat dependency | begins only after USER_ONLY settlement evidence |",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/LOCAL_RUNTIME_MODEL_MIRROR_HANDOFF.md",
+      "line": 243,
+      "text": "-> master-records/orchestration",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/PUBLIC_READINESS.md",
+      "line": 26,
+      "text": "- GitHub Actions must remain validation/evidence transport only and must not claim runtime, credential, Interlock/InTr, WorkerCoordinator, or Master Records authority.",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": true,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "docs/RUN_BOUNDARY_AND_REPAIR_CONTRACT.md",
+      "line": 104,
+      "text": "5. Preserve transition and run identities through delegation and master-record lifecycle custody.",
+      "classification": "IMPROPER_DOC",
+      "rationale": "Described Master Records as authority, custody, lifecycle/intake stage, final-receipt issuer, transport destination, or gate; rewritten to the canonical downstream recorder role (non-gating).",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "evidence/hil-independent-responses/HIL-RESP-GPT56-20260726-001.json",
+      "line": 96,
+      "text": "\"master_record_appended\": false",
+      "classification": "HISTORICAL_EVIDENCE",
+      "rationale": "Dated receipt/state/evidence record; preserved unedited.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/hil-independent-response.invalid-canonical-altered.json",
+      "line": 30,
+      "text": "\"master_record_appended\": false",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/hil-independent-response.invalid-disagreement-suppressed.json",
+      "line": 12,
+      "text": "\"submission_record\": {\"independent_disagreement_preserved\": false, \"canonical_input_altered\": false, \"external_sources_used\": false, \"submission_status\": \"complete\", \"intake_status\": \"recorded_as_repository_evidence_not_yet_validated_or_accepted_for_publication\", \"participant_attribution\": null, \"publication_authority\": false, \"master_record_appended\": false}",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/hil-independent-response.invalid-hash.json",
+      "line": 12,
+      "text": "\"submission_record\": {\"independent_disagreement_preserved\": true, \"canonical_input_altered\": false, \"external_sources_used\": false, \"submission_status\": \"complete\", \"intake_status\": \"recorded_as_repository_evidence_not_yet_validated_or_accepted_for_publication\", \"participant_attribution\": null, \"publication_authority\": false, \"master_record_appended\": false}",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/hil-independent-response.invalid-master-record.json",
+      "line": 12,
+      "text": "\"submission_record\": {\"independent_disagreement_preserved\": true, \"canonical_input_altered\": false, \"external_sources_used\": false, \"submission_status\": \"complete\", \"intake_status\": \"recorded_as_repository_evidence_not_yet_validated_or_accepted_for_publication\", \"participant_attribution\": null, \"publication_authority\": false, \"master_record_appended\": true}",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/hil-independent-response.invalid-publication-authority.json",
+      "line": 12,
+      "text": "\"submission_record\": {\"independent_disagreement_preserved\": true, \"canonical_input_altered\": false, \"external_sources_used\": false, \"submission_status\": \"complete\", \"intake_status\": \"recorded_as_repository_evidence_not_yet_validated_or_accepted_for_publication\", \"participant_attribution\": null, \"publication_authority\": true, \"master_record_appended\": false}",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/llm_transition_candidate.input.json",
+      "line": 35,
+      "text": "\"master_record_ref\": null,",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/llm_transition_candidate.input.json",
+      "line": 36,
+      "text": "\"master_record_status\": \"NOT_YET_SUBMITTED\",",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/sdk_transition_candidate.input.json",
+      "line": 35,
+      "text": "\"master_record_ref\": null,",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/sdk_transition_candidate.input.json",
+      "line": 36,
+      "text": "\"master_record_status\": \"NOT_YET_SUBMITTED\",",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "receipts/hps_bridge_activation_receipt.json",
+      "line": 9,
+      "text": "\"orchestration_source\": \"master-records/orchestration\",",
+      "classification": "HISTORICAL_EVIDENCE",
+      "rationale": "Dated receipt/state/evidence record; preserved unedited.",
+      "matches_required_regex": true
+    },
+    {
+      "file": "schemas/hil_independent_response.schema.json",
+      "line": 68,
+      "text": "\"required\": [\"independent_disagreement_preserved\", \"canonical_input_altered\", \"external_sources_used\", \"submission_status\", \"intake_status\", \"participant_attribution\", \"publication_authority\", \"master_record_appended\"],",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "schemas/hil_independent_response.schema.json",
+      "line": 77,
+      "text": "\"master_record_appended\": { \"type\": \"boolean\" }",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "scripts/normalize_governed_transition_candidate.py",
+      "line": 76,
+      "text": "normalized[\"continuity\"][\"master_record_ref\"] = None",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "scripts/normalize_governed_transition_candidate.py",
+      "line": 77,
+      "text": "normalized[\"continuity\"][\"master_record_status\"] = \"NOT_YET_SUBMITTED\"",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "state/hil_qualified_recognition_session_consolidation.json",
+      "line": 62,
+      "text": "\"goal\": \"Record the admitted receipt identity, hashes, supersession posture and standing as a Master Records organization record.\",",
+      "classification": "HISTORICAL_EVIDENCE",
+      "rationale": "Dated receipt/state/evidence record; preserved unedited.",
+      "matches_required_regex": true
+    },
+    {
+      "file": "state/hil_qualified_recognition_session_consolidation.json",
+      "line": 65,
+      "text": "\"release_condition\": \"An admitted receipt exists and the Master Records mirror handoff identifies the destination repository.\"",
+      "classification": "HISTORICAL_EVIDENCE",
+      "rationale": "Dated receipt/state/evidence record; preserved unedited.",
+      "matches_required_regex": true
+    },
+    {
+      "file": "tests/test_hil_independent_response.py",
+      "line": 16,
+      "text": "ROOT / \"examples\" / \"hil-independent-response.invalid-master-record.json\",",
+      "classification": "NAMING_ONLY",
+      "rationale": "Field/fixture name; value is always null/false/NOT_YET_SUBMITTED and gates nothing.",
+      "matches_required_regex": false
+    },
+    {
+      "file": "tools/validate_hil_independent_response.py",
+      "line": 41,
+      "text": "if submission.get(\"master_record_appended\") is not False:",
+      "classification": "PROPER",
+      "rationale": "Guard rejecting any self-asserted Master Records append (non-authority enforcement).",
+      "matches_required_regex": false
+    },
+    {
+      "file": "tools/validate_hil_independent_response.py",
+      "line": 43,
+      "text": "\"submission_record/master_record_appended: append authority requires a \"",
+      "classification": "IMPROPER_CODE",
+      "rationale": "Error text implied a Master Records receipt confers append authority; reworded to canonical downstream role.",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    },
+    {
+      "file": "tools/validate_hil_independent_response.py",
+      "line": 44,
+      "text": "\"separate verified Master Record receipt\"",
+      "classification": "IMPROPER_CODE",
+      "rationale": "Error text implied a Master Records receipt confers append authority; reworded to canonical downstream role.",
+      "matches_required_regex": false,
+      "remediation": "REMEDIATED"
+    }
+  ],
+  "after": [
+    {
+      "file": "HIL_MIRROR_HANDOFF.md",
+      "line": 41,
+      "text": "It may not independently establish identity, transfer authorship, create demographic representative authority, create execution authority, determine final admissibility, or publish a claim. Master Records is not an authority or gate for this layer: it only records released organization batch receipts downstream, and no HIL step awaits it.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "HIL_MIRROR_HANDOFF.md",
+      "line": 77,
+      "text": "| `HIL-QRL-005` | Downstream batch-receipt recording (non-gating) | Master Records (recorder of released organization batch receipts only) | NOT_GATING | Optional; may occur only after release; nothing awaits it |",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "HIL_MIRROR_HANDOFF.md",
+      "line": 122,
+      "text": "- Integration: 0/2 complete — admission and activation/publication integration remain unresolved. Master Records recording is downstream and not counted as a gate.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md",
+      "line": 82,
+      "text": "Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md",
+      "line": 223,
+      "text": "No Master Records deliverable is required by this bridge; Master Records only records released organization batch receipts downstream and nothing here awaits it.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md",
+      "line": 233,
+      "text": "6. Keep bounded delegation results in the delegation boundary (not transported to Master Records).",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "README.md",
+      "line": 36,
+      "text": "- **Does not own:** General provider brokerage, model hosting, communication-source normalization, continuity truth, identity, commit-time execution authority, publication authority, or Master Records batch-receipt recording (a downstream, non-gating recorder of released organization batch receipts; see `docs/MASTER_RECORDS_ROLE.md`).",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "api/app/governance/discovery.py",
+      "line": 12,
+      "text": "Master Records is not an authority here: it only records released organization",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_CUSTODY_ACKNOWLEDGEMENT_AND_RECONSTRUCTION.md",
+      "line": 5,
+      "text": "Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`. The lifecycle controls below do not run in, depend on, or wait for Master Records.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_CUSTODY_ACKNOWLEDGEMENT_AND_RECONSTRUCTION.md",
+      "line": 63,
+      "text": "All routine validation, indexing, duplicate detection, evidence writing, state writing, and acknowledgement processing are scheduled or push-triggered. Master Records may afterwards record released organization batch receipts downstream; no step above awaits it.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_AND_CUSTODY_HANDOFF.md",
+      "line": 16,
+      "text": "Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_AND_CUSTODY_HANDOFF.md",
+      "line": 64,
+      "text": "Delegation-bound transitions are not handed to Master Records and no intake there",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_AND_CUSTODY_HANDOFF.md",
+      "line": 65,
+      "text": "gates this pipeline. Master Records may record a released organization batch",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_AND_CUSTODY_HANDOFF.md",
+      "line": 74,
+      "text": "Master Records record != authority, gate, custody, or final receipt",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_EVALUATION_AND_TRANSPORT.md",
+      "line": 16,
+      "text": "Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_EVALUATION_AND_TRANSPORT.md",
+      "line": 68,
+      "text": "There is no Master Records transport surface in this pipeline: delegation results",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_DELEGATION_EVALUATION_AND_TRANSPORT.md",
+      "line": 69,
+      "text": "are not transported to Master Records, and nothing waits on it.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_FINAL_RECEIPT_RETURN.md",
+      "line": 5,
+      "text": "Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`. Master Records does not issue, hold, or return final receipts.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_INTERNAL_ADAPTER_RECONCILIATION.md",
+      "line": 73,
+      "text": "3. keep bounded delegation evidence in the delegation boundary (Master Records is not a destination for delegation evidence; it only records released organization batch receipts downstream);",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_QUEUE_RECONCILIATION.md",
+      "line": 9,
+      "text": "Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_QUEUE_RECONCILIATION.md",
+      "line": 57,
+      "text": "Master Records does not run a custody inbox in this pipeline and no queue stage",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/AUTONOMOUS_QUEUE_RECONCILIATION.md",
+      "line": 58,
+      "text": "waits on it. After a batch has been released by its own authority, Master Records",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/HIL_INDEPENDENT_RESPONSE_INTAKE_TRANCHE.md",
+      "line": 22,
+      "text": "- self-asserted Master Records append;",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/HIL_INDEPENDENT_RESPONSE_INTAKE_TRANCHE.md",
+      "line": 30,
+      "text": "or cryptographic authorization, and cannot assert a Master Records append (Master",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/HIL_INDEPENDENT_RESPONSE_INTAKE_TRANCHE.md",
+      "line": 46,
+      "text": "- Master Record fixture: `f46c9dcbe5a74185e0d1c14b90ae6bda2e4cbd8c`",
+      "classification": "HISTORICAL_EVIDENCE",
+      "matches_required_regex": false
+    },
+    {
+      "file": "docs/HIL_NEXT_EXECUTION_SESSION_PROMPT.md",
+      "line": 33,
+      "text": "8. Issue an activation receipt only when every criterion in `HIL_MIRROR_HANDOFF.md` is evidenced. Do not wait on Master Records: it is not a gate and only records released organization batch receipts downstream.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/HPS_ROUTE_BRIDGE.md",
+      "line": 28,
+      "text": "Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`. It is not a canonical source for HPS routing.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/HPS_ROUTE_BRIDGE.md",
+      "line": 60,
+      "text": "The bridge does not route to, await, or depend on Master Records.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/LLM_COMMUNICATIONS_STACK_POSITION.md",
+      "line": 38,
+      "text": "- Master Records batch-receipt recording (downstream, non-gating; Master Records holds no custody);",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/LOCAL_RUNTIME_MODEL_MIRROR_HANDOFF.md",
+      "line": 28,
+      "text": "Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/LOCAL_RUNTIME_MODEL_MIRROR_HANDOFF.md",
+      "line": 71,
+      "text": "5. names micro-node-runtime, the sovereign heartbeat, TVC, and LLM-adapter as the continuation chain (Master Records is not part of it; it only records released organization batch receipts downstream);",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/LOCAL_RUNTIME_MODEL_MIRROR_HANDOFF.md",
+      "line": 220,
+      "text": "| post-settlement StegFin economics | `stegfin-governance` (Master Records may only record released batch receipts downstream; non-gating) | `NOT_YET_APPLICABLE` | requires real settlement | durable owner documented | no chat dependency | begins only after USER_ONLY settlement evidence |",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/MASTER_RECORDS_ROLE.md",
+      "line": 1,
+      "text": "# Master Records Role (canonical, downstream only)",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/MASTER_RECORDS_ROLE.md",
+      "line": 6,
+      "text": "Master Records is the **recorder of released organization batch receipts**. It is",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/MASTER_RECORDS_ROLE.md",
+      "line": 10,
+      "text": "Master Records != authority",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/MASTER_RECORDS_ROLE.md",
+      "line": 11,
+      "text": "Master Records != gate",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/MASTER_RECORDS_ROLE.md",
+      "line": 12,
+      "text": "Master Records != custody",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/MASTER_RECORDS_ROLE.md",
+      "line": 13,
+      "text": "Master Records != runtime reality",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/MASTER_RECORDS_ROLE.md",
+      "line": 14,
+      "text": "nothing awaits Master Records",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/MASTER_RECORDS_ROLE.md",
+      "line": 20,
+      "text": "step is blocked on, ordered behind, or conditioned on a Master Records record;",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/MASTER_RECORDS_ROLE.md",
+      "line": 21,
+      "text": "- Master Records is never a destination for candidates, delegation results,",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/MASTER_RECORDS_ROLE.md",
+      "line": 24,
+      "text": "- Master Records does not issue or return final receipts and holds no custody;",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/MASTER_RECORDS_ROLE.md",
+      "line": 29,
+      "text": "`data/master-records-role-audit.json`, enforced by",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/MASTER_RECORDS_ROLE.md",
+      "line": 30,
+      "text": "`api/tests/test_master_records_role_audit.py`.",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/PUBLIC_READINESS.md",
+      "line": 26,
+      "text": "- GitHub Actions must remain validation/evidence transport only and must not claim runtime, credential, Interlock/InTr, or WorkerCoordinator authority, and must not treat Master Records as an authority or gate (it only records released organization batch receipts downstream).",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "docs/RUN_BOUNDARY_AND_REPAIR_CONTRACT.md",
+      "line": 104,
+      "text": "5. Preserve transition and run identities through delegation. (Master Records is not a lifecycle or custody stage; it may only record released organization batch receipts downstream.)",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "evidence/hil-independent-responses/HIL-RESP-GPT56-20260726-001.json",
+      "line": 96,
+      "text": "\"master_record_appended\": false",
+      "classification": "HISTORICAL_EVIDENCE",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/hil-independent-response.invalid-canonical-altered.json",
+      "line": 30,
+      "text": "\"master_record_appended\": false",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/hil-independent-response.invalid-disagreement-suppressed.json",
+      "line": 12,
+      "text": "\"submission_record\": {\"independent_disagreement_preserved\": false, \"canonical_input_altered\": false, \"external_sources_used\": false, \"submission_status\": \"complete\", \"intake_status\": \"recorded_as_repository_evidence_not_yet_validated_or_accepted_for_publication\", \"participant_attribution\": null, \"publication_authority\": false, \"master_record_appended\": false}",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/hil-independent-response.invalid-hash.json",
+      "line": 12,
+      "text": "\"submission_record\": {\"independent_disagreement_preserved\": true, \"canonical_input_altered\": false, \"external_sources_used\": false, \"submission_status\": \"complete\", \"intake_status\": \"recorded_as_repository_evidence_not_yet_validated_or_accepted_for_publication\", \"participant_attribution\": null, \"publication_authority\": false, \"master_record_appended\": false}",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/hil-independent-response.invalid-master-record.json",
+      "line": 12,
+      "text": "\"submission_record\": {\"independent_disagreement_preserved\": true, \"canonical_input_altered\": false, \"external_sources_used\": false, \"submission_status\": \"complete\", \"intake_status\": \"recorded_as_repository_evidence_not_yet_validated_or_accepted_for_publication\", \"participant_attribution\": null, \"publication_authority\": false, \"master_record_appended\": true}",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/hil-independent-response.invalid-publication-authority.json",
+      "line": 12,
+      "text": "\"submission_record\": {\"independent_disagreement_preserved\": true, \"canonical_input_altered\": false, \"external_sources_used\": false, \"submission_status\": \"complete\", \"intake_status\": \"recorded_as_repository_evidence_not_yet_validated_or_accepted_for_publication\", \"participant_attribution\": null, \"publication_authority\": true, \"master_record_appended\": false}",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/llm_transition_candidate.input.json",
+      "line": 35,
+      "text": "\"master_record_ref\": null,",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/llm_transition_candidate.input.json",
+      "line": 36,
+      "text": "\"master_record_status\": \"NOT_YET_SUBMITTED\",",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/sdk_transition_candidate.input.json",
+      "line": 35,
+      "text": "\"master_record_ref\": null,",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "examples/sdk_transition_candidate.input.json",
+      "line": 36,
+      "text": "\"master_record_status\": \"NOT_YET_SUBMITTED\",",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "receipts/hps_bridge_activation_receipt.json",
+      "line": 9,
+      "text": "\"orchestration_source\": \"master-records/orchestration\",",
+      "classification": "HISTORICAL_EVIDENCE",
+      "matches_required_regex": true
+    },
+    {
+      "file": "schemas/hil_independent_response.schema.json",
+      "line": 68,
+      "text": "\"required\": [\"independent_disagreement_preserved\", \"canonical_input_altered\", \"external_sources_used\", \"submission_status\", \"intake_status\", \"participant_attribution\", \"publication_authority\", \"master_record_appended\"],",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "schemas/hil_independent_response.schema.json",
+      "line": 77,
+      "text": "\"master_record_appended\": { \"type\": \"boolean\" }",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "scripts/normalize_governed_transition_candidate.py",
+      "line": 76,
+      "text": "normalized[\"continuity\"][\"master_record_ref\"] = None",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "scripts/normalize_governed_transition_candidate.py",
+      "line": 77,
+      "text": "normalized[\"continuity\"][\"master_record_status\"] = \"NOT_YET_SUBMITTED\"",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "state/hil_qualified_recognition_session_consolidation.json",
+      "line": 62,
+      "text": "\"goal\": \"Record the admitted receipt identity, hashes, supersession posture and standing as a Master Records organization record.\",",
+      "classification": "HISTORICAL_EVIDENCE",
+      "matches_required_regex": true
+    },
+    {
+      "file": "state/hil_qualified_recognition_session_consolidation.json",
+      "line": 65,
+      "text": "\"release_condition\": \"An admitted receipt exists and the Master Records mirror handoff identifies the destination repository.\"",
+      "classification": "HISTORICAL_EVIDENCE",
+      "matches_required_regex": true
+    },
+    {
+      "file": "tests/test_hil_independent_response.py",
+      "line": 16,
+      "text": "ROOT / \"examples\" / \"hil-independent-response.invalid-master-record.json\",",
+      "classification": "NAMING_ONLY",
+      "matches_required_regex": false
+    },
+    {
+      "file": "tools/validate_hil_independent_response.py",
+      "line": 41,
+      "text": "if submission.get(\"master_record_appended\") is not False:",
+      "classification": "PROPER",
+      "matches_required_regex": false
+    },
+    {
+      "file": "tools/validate_hil_independent_response.py",
+      "line": 43,
+      "text": "\"submission_record/master_record_appended: intake cannot self-assert a \"",
+      "classification": "PROPER",
+      "matches_required_regex": false
+    },
+    {
+      "file": "tools/validate_hil_independent_response.py",
+      "line": 44,
+      "text": "\"Master Records append; Master Records only records released \"",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    }
+  ]
+}

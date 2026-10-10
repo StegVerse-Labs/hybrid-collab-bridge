@@ -11,9 +11,9 @@ governed session trace
 -> token-gated transport to Ecosystem-Delegation
 -> HPS delegation evaluation
 -> bounded result generation
--> token-gated transport to master-records/orchestration
--> autonomous organization record intake or quarantine
 ```
+
+Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`.
 
 ## Bridge additions
 
@@ -65,13 +65,8 @@ final_receipt_authority = false
 manual_action_required = false
 ```
 
-The Master Records organization record transport surface is:
-
-```text
-scripts/transport_master_records_outbox.py
-tests/test_master_records_transport.py
-.github/workflows/transport-master-records-outbox.yml
-```
+There is no Master Records transport surface in this pipeline: delegation results
+are not transported to Master Records, and nothing waits on it.
 
 ## Authority invariant
 
@@ -80,13 +75,12 @@ standing evidence preservation != delegation evaluation
 ALLOW_DELEGATION != final admissibility
 transport token != delegation authority
 transport completion != commit authority
-organization record transport != release authority
 workflow completion != final receipt
 ```
 
 ## Remaining bounded scope
 
 1. Observe workflow-generated reconciliation and transport state commits.
-2. Preserve transport acknowledgements and destination commit SHAs in the organization record.
-3. Add duplicate-delivery and supersession receipts across both transport boundaries.
-4. Connect accepted organization records to reconstruction indexing without granting release.
+2. Preserve transport acknowledgements and destination commit SHAs in delegation evidence.
+3. Add duplicate-delivery and supersession receipts across the transport boundary.
+4. Connect accepted delegation evidence to reconstruction indexing without granting release.

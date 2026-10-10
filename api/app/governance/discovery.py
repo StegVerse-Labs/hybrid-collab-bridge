@@ -8,7 +8,9 @@ routes. Those authorities are already canonical elsewhere:
 - live carrier: StegVerse-Labs/.github#60 / SHWP-DURABLE-RUNTIME-ACTIVATION
 - route authority: StegVerse-Labs/TVC / TVC-SOVEREIGN-LOCAL-MODEL-ROUTE-002
 - transport: StegVerse-org/LLM-adapter#18
-- organization records/reconstruction: master-records/orchestration
+
+Master Records is not an authority here: it only records released organization
+batch receipts downstream, and nothing in this bridge awaits it.
 """
 from __future__ import annotations
 
@@ -169,7 +171,7 @@ class ProviderDiscoveryEngine:
                 "Canonical model/runtime: StegVerse-002/micro-node-runtime#22.",
                 "Canonical live carrier: StegVerse-Labs/.github#60 / SHWP-DURABLE-RUNTIME-ACTIVATION.",
                 "Canonical route task: StegVerse-Labs/TVC/tasks/TVC-SOVEREIGN-LOCAL-MODEL-ROUTE-002.json.",
-                "Transport: StegVerse-org/LLM-adapter#18; organization records/reconstruction: master-records/orchestration.",
+                "Transport: StegVerse-org/LLM-adapter#18.",
                 "Credential requirement for the repository-local model is NONE; TV/TVC remains credential authority.",
                 "This bridge must not launch, select, prove, or admit a competing local runtime.",
             ],

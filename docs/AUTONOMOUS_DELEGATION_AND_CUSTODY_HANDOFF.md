@@ -11,8 +11,9 @@ hybrid-collab-bridge
   -> DelegationCandidateEnvelope
   -> Ecosystem-Delegation intake validation
   -> bounded delegation evaluation
-  -> master-records/orchestration organization record intake
 ```
+
+Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`.
 
 ## Installed bridge contract
 
@@ -58,17 +59,11 @@ tests/test_hcb_delegation_candidate_intake.py
 
 The hourly reconciler validates the aggregate delegation integration and hybrid-bridge intake contract, writes durable evidence and reconciliation state, and commits through `StegVerse Bot` without routine human action.
 
-## Installed master-record organization record intake
+## Downstream recording (non-gating)
 
-```text
-master-records/orchestration
-scripts/validate_delegation_bound_transition.py
-examples/delegation_bound_transition.input.json
-tests/test_delegation_bound_transition_intake.py
-.github/workflows/reconcile-delegation-bound-transition-intake.yml
-```
-
-The hourly reconciler validates organization record intake, preserves transition and run identity, writes the organization record and state, and commits through `StegVerse Bot` without routine human action.
+Delegation-bound transitions are not handed to Master Records and no intake there
+gates this pipeline. Master Records may record a released organization batch
+receipt downstream after release by its own authority.
 
 ## Authority boundaries
 
@@ -76,8 +71,7 @@ The hourly reconciler validates organization record intake, preserves transition
 bridge envelope != delegation authority
 delegation intake != admissibility
 delegation result != execution authority
-organization record intake != final receipt
-organization record != release authority
+Master Records record != authority, gate, custody, or final receipt
 workflow completion != commit-time admissibility
 ```
 

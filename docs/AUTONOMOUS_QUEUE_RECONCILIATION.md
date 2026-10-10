@@ -4,7 +4,9 @@ Repository: `StegVerse-Labs/hybrid-collab-bridge`
 
 ## Purpose
 
-Remove routine manual handling between governed runtime traces, bridge delegation candidates, Ecosystem-Delegation intake, and master-record custody intake.
+Remove routine manual handling between governed runtime traces, bridge delegation candidates, and Ecosystem-Delegation intake.
+
+Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`.
 
 ## Source outbox
 
@@ -50,27 +52,11 @@ evidence/hcb-delegation-intake/
 state/hcb_delegation_inbox_reconciliation.json
 ```
 
-## Master-record custody inbox
+## Downstream recording (non-gating)
 
-```text
-master-records/orchestration
-scripts/reconcile_delegation_bound_transition_inbox.py
-tests/test_delegation_bound_transition_inbox.py
-.github/workflows/reconcile-delegation-bound-transition-inbox.yml
-```
-
-Delivered records under:
-
-```text
-inbox/ecosystem-delegation/
-```
-
-are reconciled automatically into custody acceptance or quarantine evidence under:
-
-```text
-evidence/delegation-bound-transition-intake/
-state/delegation_bound_transition_inbox_reconciliation.json
-```
+Master Records does not run a custody inbox in this pipeline and no queue stage
+waits on it. After a batch has been released by its own authority, Master Records
+may record the released organization batch receipt as downstream evidence.
 
 ## Authority posture
 

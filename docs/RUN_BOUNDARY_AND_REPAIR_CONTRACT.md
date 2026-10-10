@@ -101,4 +101,4 @@ The bridge does not execute, publish, delegate, or issue final receipts.
 2. Record green bounded tests or exact failure evidence.
 3. Wire repair-candidate declaration into `NEEDS_REPAIR` and `INTEGRITY_FAILED` traces without automatic execution.
 4. Add the normalized transition-candidate intake contract to `StegVerse-Labs/Ecosystem-Delegation`.
-5. Preserve transition and run identities through delegation and master-record lifecycle custody.
+5. Preserve transition and run identities through delegation. (Master Records is not a lifecycle or custody stage; it may only record released organization batch receipts downstream.)
