@@ -6,7 +6,7 @@ Repository: `StegVerse-Labs/hybrid-collab-bridge`
 
 This file is the single canonical handoff and task source of truth for this repository. `docs/HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md` is only a pointer here; its former content is consolidated below under "Consolidated record". Bare blocked / not-observed status labels are not used: every non-ALLOW state carries the six fields required by `StegVerse-org/.github:docs/ORGANIZATION_ROLE_RUNTIME_REALITY_DEPLOYMENT.md` (failure_code, failed_predicate, required_evidence_or_repair, retry_entrypoint, owning_existing_goal, next_attempt). HCB never awaits an external machine, receiver or observer.
 
-## Active task — HCB-VERSIONED-CONTRACT-038
+## Terminal source task — HCB-VERSIONED-CONTRACT-038
 
 ```text
 task_id: HCB-VERSIONED-CONTRACT-038
@@ -30,18 +30,25 @@ shared_LLMA_368_ledger_commit: 6b2705fe480d70afa15338ca93eb0ca19033e0ac
 shared_LLMA_368_receipt_sha256: sha256:4643742af4298db9c27e9c88de31bfa25163778d29383fd4fccbd63cd23de55d
 shared_LLMA_368_authenticated_run: https://github.com/StegVerse-org/.github/actions/runs/38020580790
 HCB_specific_manifest_transition: NOT_CLAIMED
-HCB_registry_location: OWNER_DESIGNATION_PENDING
-owner_terminal_COSV_transition: NOT_CLAIMED
+HCB_registry_location: StegVerse-Labs/.github:data/canonical-task-registry.json (existing canonical work Registry; registered at generation 305)
+HCB_registry_record: StegVerse-Labs/.github:data/canonical-task-records/HCB-VERSIONED-CONTRACT-038.json
+HCB_registry_coordination_state: CLOSED
+HCB_registry_checkout_state: RETIRED
+HCB_terminal_COSV: 71000000100100
+HCB_terminal_evidence_class: CI_VALIDATED_SOURCE_SCOPE_ONLY
+HCB_runtime_activated: false
+HCB_runtime_propagated: false
+owner_terminal_COSV_transition: SOURCE_SCOPE_COMPLETE_IN_CANONICAL_REGISTRY; NO_RUNTIME_TRANSITION_CLAIM
 work_can_begin: true
 ```
 
 The previously recorded `IMPLEMENTATION_AND_AUTHENTIC_TRANSITION_EVIDENCE_PENDING` predicate is **superseded**: the optional stdlib-only contract and remote-CGE removal are merged, and the *shared LLMA #368* SDK-to-organization-ledger transition was authentically observed and independently read back. That receipt proves the shared declared path, **not an independent HCB invocation**. No additional HCB runtime transition is required merely to prove that HCB is optional and non-authoritative. No source merge or historical fixture grants COSV terminal authority.
 
-The remaining owner-held Registry-location decision is not a runtime refusal and must not be represented as a fabricated `FAIL_CLOSED` transition. Existing canonical organization registry `StegVerse-Labs/.github/control/organization-task-registry.json` was inspected; `HCB-VERSIONED-CONTRACT-038` was not present. Do not silently create a competing Registry, assume that location is authorized, or gate SDK/Interlock/InTr on this decision.
+The owner-held Registry-location decision has been resolved in the **existing canonical work Registry** `StegVerse-Labs/.github:data/canonical-task-registry.json`, not the separate federation-readiness summary `control/organization-task-registry.json`. The exact HCB record is `data/canonical-task-records/HCB-VERSIONED-CONTRACT-038.json`; terminal source coordination is `CLOSED`/`RETIRED`, with COSV `71000000100100` and `CI_VALIDATED` evidence. The canonical reconciliation handoff is `StegVerse-Labs/.github:docs/HCB_VERSIONED_CONTRACT_REGISTRATION_MIRROR_HANDOFF.md`. These source-only terminal claims do not constitute HCB runtime activation, provider execution, Sandbox activation, release, propagation, or Master Records reconstruction. The LLMA organization ledger receipt is already retained and must not be replayed.
 
 ```text
 owning_existing_goal: HCB-VERSIONED-CONTRACT-038
-next_attempt: owner identifies the existing authoritative HCB Task Registry location, followed by COSV final review
+next_attempt: none for completed source scope; new runtime work requires distinct owner authorization and authentic evidence
 ```
 
 ## Legacy and non-required surfaces
