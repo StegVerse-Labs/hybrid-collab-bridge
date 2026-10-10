@@ -38,14 +38,14 @@
     },
     "after_required_regex": {
       "HISTORICAL_EVIDENCE": 3,
-      "PROPER": 46,
-      "TOTAL": 49
+      "PROPER": 47,
+      "TOTAL": 50
     },
     "after_all_variants": {
       "HISTORICAL_EVIDENCE": 5,
       "NAMING_ONLY": 14,
-      "PROPER": 48,
-      "TOTAL": 67
+      "PROPER": 49,
+      "TOTAL": 68
     }
   },
   "historical_evidence_sha256": {
@@ -1078,6 +1078,13 @@
       "file": "tools/validate_hil_independent_response.py",
       "line": 44,
       "text": "\"Master Records append; Master Records only records released \"",
+      "classification": "PROPER",
+      "matches_required_regex": true
+    },
+    {
+      "file": "HYBRID_COLLAB_BRIDGE_MIRROR_HANDOFF.md",
+      "line": 47,
+      "text": "The owner-held Registry-location decision has been resolved in the **existing canonical work Registry** `StegVerse-Labs/.github:data/canonical-task-registry.json`, not the separate federation-readiness summary `control/organization-task-registry.json`. The exact HCB record is `data/canonical-task-records/HCB-VERSIONED-CONTRACT-038.json`; terminal source coordination is `CLOSED`/`RETIRED`, with COSV `71000000100100` and `CI_VALIDATED` evidence. The canonical reconciliation handoff is `StegVerse-Labs/.github:docs/HCB_VERSIONED_CONTRACT_REGISTRATION_MIRROR_HANDOFF.md`. These source-only terminal claims do not constitute HCB runtime activation, provider execution, Sandbox activation, release, propagation, or Master Records reconstruction. The LLMA organization ledger receipt is already retained and must not be replayed.",
       "classification": "PROPER",
       "matches_required_regex": true
     }
