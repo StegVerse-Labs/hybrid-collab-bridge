@@ -70,6 +70,6 @@ After repository-local reconciliation completes, the next automated scope is:
 
 1. emit a normalized transition candidate for `StegVerse-Labs/Ecosystem-Delegation`;
 2. preserve `transition_id` and `run_id` across delegation;
-3. return bounded delegation evidence to master-records/orchestration;
+3. keep bounded delegation evidence in the delegation boundary (Master Records is not a destination for delegation evidence; it only records released organization batch receipts downstream);
 4. preserve integrity and repair evidence for reconstruction;
 5. never grant this bridge cross-repository mutation authority implicitly.

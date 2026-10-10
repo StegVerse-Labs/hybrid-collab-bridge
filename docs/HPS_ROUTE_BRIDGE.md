@@ -23,10 +23,9 @@ LLM-adapter input  /
 ```text
 Admissible-Existence/HPS
   -> canonical HPS formalism, standing equation, heartbeat/capability/expiration/verifier logic
-
-master-records/orchestration
-  -> ecosystem cycle state, receipts, participant records, reconstruction references
 ```
+
+Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`. It is not a canonical source for HPS routing.
 
 ## Bridge responsibility
 
@@ -58,7 +57,7 @@ The bridge does not execute.
 The bridge does not publish.
 The bridge does not grant authority.
 The bridge does not replace HPS formalism.
-The bridge does not replace master-record orchestration.
+The bridge does not route to, await, or depend on Master Records.
 ```
 
 `ALLOW_NEXT_BOUNDARY` means only that the request may continue to the next governed boundary.

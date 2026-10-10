@@ -6,7 +6,7 @@
 
 ## Determination
 
-The Human Interoperability Layer qualified-recognition / participant-continuation capability is **being built**. It has a committed contract, schema, candidate receipt, deterministic validator, positive/negative fixtures, hosted validation workflow, bounded admission-request candidate, execution prompt, issue-based task surface, and session-consolidation record. It is not an activated governed layer because hosted validation evidence, replay receipts, admission, custody, activation, and publication propagation remain unresolved.
+The Human Interoperability Layer qualified-recognition / participant-continuation capability is **being built**. It has a committed contract, schema, candidate receipt, deterministic validator, positive/negative fixtures, hosted validation workflow, bounded admission-request candidate, execution prompt, issue-based task surface, and session-consolidation record. It is not an activated governed layer because hosted validation evidence, replay receipts, admission, activation, and publication propagation remain unresolved.
 
 ## Canonical continuation
 
@@ -38,7 +38,7 @@ Future sessions must read this file, the consolidation record, and issue #11 bef
 
 This repository owns the governed collaboration and trace adapter for the layer. It may reconstruct a contribution, record qualified examination, preserve attribution and consent posture, calculate a candidate participant-standing transition, emit a receipt, validate bounded candidate structure, and request admission.
 
-It may not independently establish identity, transfer authorship, create demographic representative authority, create execution authority, determine final admissibility, publish a claim, or replace Master Records organization record.
+It may not independently establish identity, transfer authorship, create demographic representative authority, create execution authority, determine final admissibility, or publish a claim. Master Records is not an authority or gate for this layer: it only records released organization batch receipts downstream, and no HIL step awaits it.
 
 ## Committed implementation receipts
 
@@ -74,8 +74,8 @@ Active work is machine-owned through issue #11 and this handoff. New work must i
 | `HIL-QRL-002` | Schema, candidate, validator, fixtures | `StegVerse-Labs/hybrid-collab-bridge` | IMPLEMENTED / HOSTED EVIDENCE PENDING | Hosted run proves canonical acceptance and all negative rejections |
 | `HIL-QRL-003` | Deterministic replay receipt | workflow + issue #11 | MACHINE_OWNED | Two outputs are byte-identical and immutable receipts are committed |
 | `HIL-QRL-004` | Bounded admission decision | selected `GCAT-BCAT-Engine` authority | BLOCKED | Green hosted validation and replay receipts exist |
-| `HIL-QRL-005` | Receipt organization record and standing | Master Records repository (organization records) | BLOCKED | Admitted receipt exists and destination handoff is resolved |
-| `HIL-QRL-006` | Governed activation receipt | `StegVerse-Labs/hybrid-collab-bridge` | BLOCKED | Validation, replay and admission evidence and the organization record all exist |
+| `HIL-QRL-005` | Downstream batch-receipt recording (non-gating) | Master Records (recorder of released organization batch receipts only) | NOT_GATING | Optional; may occur only after release; nothing awaits it |
+| `HIL-QRL-006` | Governed activation receipt | `StegVerse-Labs/hybrid-collab-bridge` | BLOCKED | Validation, replay and admission evidence all exist |
 | `HIL-QRL-007` | Public and release propagation | Site, Publisher, admissibility-wiki, stegguardian-wiki | BLOCKED | Activation receipt exists |
 
 ## Automation
@@ -88,7 +88,7 @@ Deterministic outputs: validation receipt and replay receipt.
 
 Persistent state: this handoff, issue #11, and `state/hil_qualified_recognition_session_consolidation.json`.
 
-Fail-closed rule: absent run, job, log, artifact, receipt, admission, or custody evidence remains unresolved and cannot become success by inference.
+Fail-closed rule: absent run, job, log, artifact, receipt, or admission evidence remains unresolved and cannot become success by inference.
 
 ## Activation criteria
 
@@ -99,9 +99,8 @@ The layer is activated only when all are true:
 3. contribution, attribution, consent, scope, causal effect, and standing transition are independently represented;
 4. the bridge emits a receipt without claiming final authority;
 5. BCAT/GCAT/CGE returns an admission result;
-6. accepted receipt custody is preserved by the designated records authority;
-7. replay proves the same inputs produce byte-identical bounded validation output;
-8. publication surfaces clearly distinguish observation, candidate standing, admitted standing, and authority.
+6. replay proves the same inputs produce byte-identical bounded validation output;
+7. publication surfaces clearly distinguish observation, candidate standing, admitted standing, and authority.
 
 ## Immediate machine-owned execution order
 
@@ -109,19 +108,18 @@ The layer is activated only when all are true:
 2. Repair only defects proven by hosted logs.
 3. Commit immutable validation and replay receipts.
 4. Submit the bounded admission request to the selected GCAT/BCAT/CGE authority and preserve its `ALLOW`, `DENY`, or `ERROR` decision.
-5. Resolve the Master Records destination from its own mirror handoff and record exact bytes, hashes, source commit, decision, supersession posture and standing as an organization record.
-6. Issue an activation receipt only after every criterion is evidenced.
-7. Read each destination handoff before propagating to Site, Publisher, admissibility-wiki, and stegguardian-wiki.
+5. Issue an activation receipt only after every criterion is evidenced.
+6. Read each destination handoff before propagating to Site, Publisher, admissibility-wiki, and stegguardian-wiki.
 
 ## Completion accounting
 
 Denominator: seven canonical work packages, `HIL-QRL-001` through `HIL-QRL-007`.
 
 - Task completion: 2/7 = 28% complete; five packages remain evidence-bound or blocked.
-- Developed implementation files: 10/12 = 83%; activation receipt and custody integration artifact remain missing.
+- Developed implementation files: 10/11 = 91%; the activation receipt remains missing.
 - Scaffolding or stubs: 0 canonical HIL files are classified as stubs.
 - Validation levels: 3/6 complete — static structure, deterministic local validator design, and fixture coverage; hosted run, immutable artifact inspection, and governed activation remain incomplete.
-- Integration: 0/3 complete — admission, custody, and activation/publication integration remain unresolved.
+- Integration: 0/2 complete — admission and activation/publication integration remain unresolved. Master Records recording is downstream and not counted as a gate.
 - Session consolidation: 8/8 session goals complete or transferred.
 
 ## Session consolidation and archive posture

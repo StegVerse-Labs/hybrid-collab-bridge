@@ -1,15 +1,10 @@
 # Autonomous Organization Record Acknowledgement and Reconstruction
 
-The governed lifecycle now continues beyond Master Records organization record intake without routine human queue handling.
+The governed lifecycle continues without routine human queue handling.
 
-## Installed master-record lifecycle controls
+Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`. The lifecycle controls below do not run in, depend on, or wait for Master Records.
 
-```text
-master-records/orchestration
-scripts/reconcile_custody_lifecycle.py
-tests/test_custody_lifecycle.py
-.github/workflows/reconcile-custody-lifecycle.yml
-```
+## Lifecycle controls
 
 Accepted organization records are indexed by the stable composite identity:
 
@@ -34,11 +29,6 @@ Conflicting evidence for the same transition/run identity is recorded as a dupli
 ## Installed acknowledgement return path
 
 ```text
-master-records/orchestration
-scripts/transport_custody_acknowledgements.py
-tests/test_custody_ack_transport.py
-.github/workflows/transport-custody-acknowledgements.yml
-
 StegVerse-Labs/Ecosystem-Delegation
 scripts/reconcile_custody_acknowledgements.py
 tests/test_custody_acknowledgements.py
@@ -64,11 +54,10 @@ governed session
 -> delegation candidate
 -> HPS delegation evaluation
 -> bounded delegation result
--> master-record organization record intake
 -> reconstruction index
 -> organization record acknowledgement
 -> token-gated acknowledgement return
 -> upstream acknowledgement index
 ```
 
-All routine validation, indexing, duplicate detection, evidence writing, state writing, and acknowledgement processing are scheduled or push-triggered.
+All routine validation, indexing, duplicate detection, evidence writing, state writing, and acknowledgement processing are scheduled or push-triggered. Master Records may afterwards record released organization batch receipts downstream; no step above awaits it.

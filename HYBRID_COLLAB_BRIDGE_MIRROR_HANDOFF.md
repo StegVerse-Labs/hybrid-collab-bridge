@@ -77,10 +77,9 @@ hybrid-collab-bridge / internal LLM adapter
 
 Ecosystem-Delegation
   -> evaluate governed delegation and authority references
-
-master-records/orchestration
-  -> lifecycle, final receipt, organization records, reconstruction, Site index
 ```
+
+Master Records role: downstream recorder of released organization batch receipts only — not an authority, gate, custody holder, or lifecycle stage; nothing awaits it. See `docs/MASTER_RECORDS_ROLE.md`.
 
 ## Installed governed normalization
 
@@ -219,11 +218,9 @@ StegVerse-Labs/Ecosystem-Delegation:
   - normalized transition-candidate intake contract
   - bounded delegation result contract
 
-master-records/orchestration:
-  - observed workflow evidence record
-  - transition_id and run_id lifecycle preservation record
-  - integrity evidence custody and reconstruction mapping
 ```
+
+No Master Records deliverable is required by this bridge; Master Records only records released organization batch receipts downstream and nothing here awaits it.
 
 ## Next task
 
@@ -233,7 +230,7 @@ master-records/orchestration:
 3. Emit a bounded CGE integrity-evaluation ledger event containing hash, manifest, missing sections, and decision.
 4. Define the repair-candidate contract and preserve the original artifact hash and run identity.
 5. Install normalized transition-candidate intake in Ecosystem-Delegation.
-6. Return bounded delegation results to master-records/orchestration.
+6. Keep bounded delegation results in the delegation boundary (not transported to Master Records).
 7. Preserve transition_id and run_id through delegation and final receipt.
 ```
 

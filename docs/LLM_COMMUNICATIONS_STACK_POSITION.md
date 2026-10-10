@@ -35,7 +35,7 @@ Stack identifier: `STEGVERSE-LLM-COMMS-STACK-v1`
 - general communication-source normalization;
 - continuity truth or identity;
 - final commit-time authority;
-- Master Record custody;
+- Master Records batch-receipt recording (downstream, non-gating; Master Records holds no custody);
 - external execution authority.
 
 ## Related stack components

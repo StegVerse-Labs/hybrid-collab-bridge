@@ -19,7 +19,7 @@ Source handoff: `docs/HUMAN_LLM_INTEROPERABILITY_MIRROR_HANDOFF.md`
   - canonical input alteration;
   - disagreement suppression;
   - false publication authority;
-  - unsupported Master Record append authority;
+  - self-asserted Master Records append;
   - malformed canonical hashes.
 - GitHub Actions path and execution coverage in:
   `.github/workflows/human-llm-interoperability.yml`
@@ -27,8 +27,10 @@ Source handoff: `docs/HUMAN_LLM_INTEROPERABILITY_MIRROR_HANDOFF.md`
 ## Authority boundary
 
 Repository recording does not confer validation, acceptance, publication, custody,
-cryptographic authorization, or Master Record append authority. The validator rejects
-self-granted publication and Master Record states. Independent disagreement must remain
+or cryptographic authorization, and cannot assert a Master Records append (Master
+Records only records released organization batch receipts downstream and is not an
+authority). The validator rejects self-granted publication and self-asserted Master
+Records states. Independent disagreement must remain
 preserved and the canonical input must remain unaltered.
 
 ## Implementation commits
