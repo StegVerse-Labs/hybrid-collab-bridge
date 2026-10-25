@@ -1,0 +1,9 @@
+{
+  "schema": "stegverse.canonical-pin/v1",
+  "authority_effect": "NONE",
+  "source_repository": "StegVerse-Labs/StegDB",
+  "tag": "canonical-d412c83daece1b4b737b282664f5f1e82b4793a5",
+  "source_commit": "d412c83daece1b4b737b282664f5f1e82b4793a5",
+  "bundle_sha256": "e8b6eda6d3bb8cd208e4ffd688c6ef4593f4ab7c40abfd44abe4ed2078cbb817",
+  "changed_by": "pull request only"
+}
